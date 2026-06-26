@@ -836,14 +836,31 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
     </div>
     <div class="candle-card">
       <div class="candle-header">
-        <div class="candle-title">📊 Candles Recentes</div>
+        <div class="candle-title">📊 Gráfico em Tempo Real</div>
         <div class="candle-tf-row">
           <div class="ctf active" data-itv="1min" onclick="selectInterval(this)">M1</div>
           <div class="ctf" data-itv="5min" onclick="selectInterval(this)">M5</div>
           <div class="ctf" data-itv="15min" onclick="selectInterval(this)">M15</div>
           <div class="ctf" data-itv="1h" onclick="selectInterval(this)">H1</div>
         </div>
+        <div style="display:flex;gap:5px;margin-top:5px;">
+          <div onclick="chartToggle('ema')" id="togEMA" style="font-size:8px;padding:2px 6px;border-radius:3px;cursor:pointer;background:rgba(0,152,255,.2);color:var(--blue);font-weight:700;">EMA</div>
+          <div onclick="chartToggle('bb')" id="togBB" style="font-size:8px;padding:2px 6px;border-radius:3px;cursor:pointer;background:rgba(139,92,246,.15);color:#A78BFA;font-weight:700;">BB</div>
+          <div onclick="chartToggle('vol')" id="togVOL" style="font-size:8px;padding:2px 6px;border-radius:3px;cursor:pointer;background:rgba(0,212,170,.1);color:var(--accent);font-weight:700;">VOL</div>
+          <div onclick="chartToggle('sr')" id="togSR" style="font-size:8px;padding:2px 6px;border-radius:3px;cursor:pointer;background:rgba(245,166,35,.1);color:var(--gold);font-weight:700;">S/R</div>
+        </div>
       </div>
+      <!-- CANVAS CHART -->
+      <div style="position:relative;width:100%;background:var(--s2);border-radius:8px;overflow:hidden;margin-bottom:4px;">
+        <canvas id="chartCanvas" style="width:100%;display:block;" height="220"></canvas>
+        <div id="chartCrosshair" style="position:absolute;top:0;left:0;pointer-events:none;display:none;">
+          <div id="chartVLine" style="position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.2);"></div>
+          <div id="chartHLine" style="position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.2);"></div>
+          <div id="chartTooltip" style="position:absolute;background:var(--s1);border:1px solid var(--br);border-radius:5px;padding:4px 7px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text);white-space:nowrap;pointer-events:none;"></div>
+        </div>
+        <div id="chartEmpty" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:var(--muted);text-align:center;">Aguardando dados reais...</div>
+      </div>
+      <!-- TABELA COMPACTA -->
       <div id="candleBody">
         <div class="candle-empty">Conecte a API para ver candles reais</div>
       </div>
@@ -2161,6 +2178,10 @@ function showAndFinalizeResult(r){
 
   // — Sons, timer, toast, MTF, save —
   playSignalSoundByForce(isCall, r.force_score||8);
+  // Marca sinal no gráfico
+  lastSignalMark=r.direction;
+  drawCandleChart();
+  setTimeout(()=>{lastSignalMark=null;drawCandleChart();},120000);
   startClock(r.clockSecs||60);
   showToast(`${isCall?'🟢 CALL':'🔴 PUT'} · ${r.setup} · ${r.confidence}% · Força ${r.force_score||'—'}/10`,isCall?'call-t':'put-t');
   updateBancaSignal();
@@ -3865,6 +3886,7 @@ async function fetchTwelveData(){
       tag.style.background = 'rgba(0,212,170,.12)';
 
       renderCandleTable(realCandles.slice(-10));
+      drawCandleChart();
       renderLiveIndicators(realCandles);
       renderVolumeBars(realCandles.slice(-15));
       renderTrend(realCandles);
@@ -5031,6 +5053,324 @@ async function checkDailyReport(){
   try{localStorage.setItem(key,'1');}catch(e){}
 }
 
+// ╔══════════════════════════════════════════════════════╗
+// ║     GRÁFICO DE CANDLES EM TEMPO REAL                 ║
+// ╚══════════════════════════════════════════════════════╝
+const chartOpts={ema:true,bb:true,vol:true,sr:true};
+let lastSignalMark=null; // {dir,idx} para marcar entrada no gráfico
+let chartAnimFrame=null;
+
+function chartToggle(key){
+  chartOpts[key]=!chartOpts[key];
+  const el=document.getElementById('tog'+key.toUpperCase());
+  if(el) el.style.opacity=chartOpts[key]?'1':'0.35';
+  drawCandleChart();
+}
+
+function drawCandleChart(){
+  const canvas=document.getElementById('chartCanvas');
+  const empty=document.getElementById('chartEmpty');
+  if(!canvas) return;
+
+  const candles=realCandles.length>0?realCandles:[];
+  if(candles.length<3){
+    if(empty) empty.style.display='block';
+    return;
+  }
+  if(empty) empty.style.display='none';
+
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||380;
+  const H=220;
+  canvas.width=W*dpr;
+  canvas.height=H*dpr;
+  canvas.style.width=W+'px';
+  canvas.style.height=H+'px';
+
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  // Mostrar últimos N candles que cabem
+  const maxCandles=Math.floor((W-45)/7);
+  const data=candles.slice(-Math.min(maxCandles,50));
+  const n=data.length;
+  if(n<2) return;
+
+  const isJPY=pair.includes('JPY');
+  const dec=isJPY?3:5;
+
+  // Calcula range de preços
+  const closes=data.map(c=>c.close);
+  const highs=data.map(c=>c.high);
+  const lows=data.map(c=>c.low);
+  const vols=data.map(c=>c.volume||0);
+  let pHigh=Math.max(...highs);
+  let pLow=Math.min(...lows);
+
+  // Calcula EMAs para incluir no range
+  const allCloses=realCandles.map(c=>c.close);
+  const ema9=calcEMA(allCloses,9);
+  const ema21=calcEMA(allCloses,21);
+  const ema50=calcEMA(allCloses.slice(-50),50);
+  const bb=calcBollinger(allCloses);
+
+  const volH=chartOpts.vol?40:0; // altura do painel de volume
+  const chartH=H-volH-4;
+  const pad=4;
+  const priceH=chartH-pad*2;
+
+  if(chartOpts.bb&&bb){
+    pHigh=Math.max(pHigh,bb.upper||pHigh);
+    pLow=Math.min(pLow,bb.lower||pLow);
+  }
+  const pRange=pHigh-pLow||0.0001;
+  const toY=(price)=>pad+(priceH-(price-pLow)/pRange*priceH);
+
+  const candleW=Math.max(3,Math.min(9,Math.floor((W-45)/n)-1));
+  const candleX=(i)=>45+(i*(candleW+1))+candleW/2;
+
+  // Fundo grid
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--s2').trim()||'#0F1628';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid linhas
+  ctx.strokeStyle='rgba(255,255,255,0.04)';
+  ctx.lineWidth=0.5;
+  for(let i=0;i<5;i++){
+    const y=pad+priceH/4*i;
+    ctx.beginPath();ctx.moveTo(45,y);ctx.lineTo(W,y);ctx.stroke();
+    // preço label
+    const price=pHigh-(pRange/4*i);
+    ctx.fillStyle='rgba(255,255,255,0.25)';
+    ctx.font=`${Math.max(7,9)}px JetBrains Mono,monospace`;
+    ctx.textAlign='right';
+    ctx.fillText(price.toFixed(dec),42,y+3);
+  }
+
+  // Bollinger Bands
+  if(chartOpts.bb&&bb){
+    const bbUpper=[], bbLower=[], bbMid=[];
+    for(let i=0;i<n;i++){
+      const idx=realCandles.length-n+i;
+      const slice=allCloses.slice(0,idx+1);
+      if(slice.length>=20){
+        const b=calcBollinger(slice);
+        bbUpper.push({x:candleX(i),y:toY(b.upper)});
+        bbLower.push({x:candleX(i),y:toY(b.lower)});
+        bbMid.push({x:candleX(i),y:toY(b.mid)});
+      }
+    }
+    // Área BB
+    if(bbUpper.length>1){
+      ctx.beginPath();
+      ctx.moveTo(bbUpper[0].x,bbUpper[0].y);
+      bbUpper.forEach(p=>ctx.lineTo(p.x,p.y));
+      bbLower.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.closePath();
+      ctx.fillStyle='rgba(139,92,246,0.06)';
+      ctx.fill();
+      // Linhas BB
+      ctx.strokeStyle='rgba(139,92,246,0.4)';
+      ctx.lineWidth=0.8;
+      ctx.beginPath();bbUpper.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+      ctx.beginPath();bbLower.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+      ctx.strokeStyle='rgba(139,92,246,0.25)';
+      ctx.setLineDash([3,3]);
+      ctx.beginPath();bbMid.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // S/R zones
+  if(chartOpts.sr){
+    const resistance=Math.max(...highs.slice(-20));
+    const support=Math.min(...lows.slice(-20));
+    ctx.strokeStyle='rgba(245,166,35,0.5)';
+    ctx.lineWidth=0.8;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(45,toY(resistance));ctx.lineTo(W,toY(resistance));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(45,toY(support));ctx.lineTo(W,toY(support));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(245,166,35,0.7)';
+    ctx.font='7px sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText('R',46,toY(resistance)-2);
+    ctx.fillText('S',46,toY(support)+9);
+  }
+
+  // EMA lines
+  if(chartOpts.ema){
+    const emaLines=[
+      {color:'rgba(0,152,255,0.8)',period:9,label:'9'},
+      {color:'rgba(245,166,35,0.8)',period:21,label:'21'},
+      {color:'rgba(255,59,85,0.6)',period:50,label:'50'},
+    ];
+    emaLines.forEach(({color,period,label})=>{
+      const pts=[];
+      for(let i=0;i<n;i++){
+        const idx=realCandles.length-n+i;
+        const sl=allCloses.slice(0,idx+1);
+        if(sl.length>=period){
+          const e=calcEMA(sl,period);
+          if(e>=pLow&&e<=pHigh) pts.push({x:candleX(i),y:toY(e)});
+          else pts.push(null);
+        }
+      }
+      if(pts.filter(Boolean).length>1){
+        ctx.strokeStyle=color;
+        ctx.lineWidth=1.2;
+        ctx.beginPath();
+        let moved=false;
+        pts.forEach(p=>{
+          if(!p){moved=false;return;}
+          if(!moved){ctx.moveTo(p.x,p.y);moved=true;}
+          else ctx.lineTo(p.x,p.y);
+        });
+        ctx.stroke();
+      }
+    });
+  }
+
+  // Candles
+  for(let i=0;i<n;i++){
+    const c=data[i];
+    const x=candleX(i);
+    const isBull=c.close>=c.open;
+    const bullColor='#00D4AA';
+    const bearColor='#FF3B55';
+    const color=isBull?bullColor:bearColor;
+
+    // Wick
+    ctx.strokeStyle=color;
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(x,toY(c.high));
+    ctx.lineTo(x,toY(c.low));
+    ctx.stroke();
+
+    // Body
+    const yOpen=toY(c.open), yClose=toY(c.close);
+    const bodyTop=Math.min(yOpen,yClose);
+    const bodyH=Math.max(Math.abs(yClose-yOpen),1);
+    ctx.fillStyle=isBull?'rgba(0,212,170,0.85)':'rgba(255,59,85,0.85)';
+    ctx.fillRect(x-candleW/2,bodyTop,candleW,bodyH);
+
+    // Último candle — destaca
+    if(i===n-1){
+      ctx.strokeStyle=isBull?bullColor:bearColor;
+      ctx.lineWidth=1.5;
+      ctx.strokeRect(x-candleW/2-0.5,bodyTop-0.5,candleW+1,bodyH+1);
+    }
+  }
+
+  // Marca sinal (seta CALL/PUT)
+  if(lastSignalMark){
+    const si=n-1;
+    const x=candleX(si);
+    const isCall=lastSignalMark==='CALL';
+    const arrowY=isCall?toY(data[si].low)+14:toY(data[si].high)-14;
+    ctx.fillStyle=isCall?'#00D4AA':'#FF3B55';
+    ctx.font='bold 14px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(isCall?'▲':'▼',x,arrowY);
+    ctx.font='bold 8px sans-serif';
+    ctx.fillStyle='#fff';
+    ctx.fillText(isCall?'CALL':'PUT',x,arrowY+(isCall?10:-10));
+  }
+
+  // Painel de Volume
+  if(chartOpts.vol&&vols.some(v=>v>0)){
+    const maxVol=Math.max(...vols)||1;
+    const volBase=H-2;
+    for(let i=0;i<n;i++){
+      const c=data[i];
+      const x=candleX(i);
+      const vh=Math.max(2,(vols[i]/maxVol)*volH*0.9);
+      const isBull=c.close>=c.open;
+      ctx.fillStyle=isBull?'rgba(0,212,170,0.3)':'rgba(255,59,85,0.3)';
+      ctx.fillRect(x-candleW/2,volBase-vh,candleW,vh);
+    }
+    // Label VOL
+    ctx.fillStyle='rgba(255,255,255,0.2)';
+    ctx.font='7px sans-serif';
+    ctx.textAlign='right';
+    ctx.fillText('VOL',42,H-2);
+  }
+
+  // Preço atual
+  if(data.length>0){
+    const lastC=data[data.length-1];
+    const lastY=toY(lastC.close);
+    ctx.strokeStyle=lastC.close>=lastC.open?'rgba(0,212,170,0.6)':'rgba(255,59,85,0.6)';
+    ctx.lineWidth=0.8;
+    ctx.setLineDash([2,2]);
+    ctx.beginPath();ctx.moveTo(45,lastY);ctx.lineTo(W,lastY);ctx.stroke();
+    ctx.setLineDash([]);
+    // Badge preço atual
+    const priceTag=lastC.close.toFixed(dec);
+    const tagW=priceTag.length*5.5+6;
+    ctx.fillStyle=lastC.close>=lastC.open?'rgba(0,212,170,0.9)':'rgba(255,59,85,0.9)';
+    ctx.fillRect(W-tagW-2,lastY-8,tagW,14);
+    ctx.fillStyle='#fff';
+    ctx.font='bold 8px JetBrains Mono,monospace';
+    ctx.textAlign='center';
+    ctx.fillText(priceTag,W-tagW/2-2,lastY+3);
+  }
+
+  // Legend
+  if(chartOpts.ema){
+    const legends=[
+      {c:'rgba(0,152,255,0.9)',l:'EMA9'},
+      {c:'rgba(245,166,35,0.9)',l:'EMA21'},
+      {c:'rgba(255,59,85,0.7)',l:'EMA50'},
+    ];
+    let lx=48;
+    legends.forEach(({c,l})=>{
+      ctx.fillStyle=c;ctx.fillRect(lx,6,14,2);
+      ctx.fillStyle='rgba(255,255,255,0.5)';
+      ctx.font='7px sans-serif';ctx.textAlign='left';
+      ctx.fillText(l,lx+16,9);
+      lx+=42;
+    });
+  }
+}
+
+// Crosshair
+function initChartCrosshair(){
+  const canvas=document.getElementById('chartCanvas');
+  if(!canvas) return;
+  canvas.addEventListener('mousemove',(e)=>{
+    const ch=document.getElementById('chartCrosshair');
+    const vl=document.getElementById('chartVLine');
+    const hl=document.getElementById('chartHLine');
+    const tt=document.getElementById('chartTooltip');
+    if(!ch||!vl||!hl||!tt) return;
+    const rect=canvas.getBoundingClientRect();
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    ch.style.display='block';
+    vl.style.left=mx+'px';
+    hl.style.top=my+'px';
+    // Tooltip com dados do candle
+    const n=realCandles.length;
+    const maxC=Math.min(Math.floor((canvas.offsetWidth-45)/7),50);
+    const data=realCandles.slice(-maxC);
+    const cw=Math.max(3,Math.min(9,Math.floor((canvas.offsetWidth-45)/data.length)-1));
+    const idx=Math.round((mx-45)/(cw+1));
+    if(idx>=0&&idx<data.length){
+      const c=data[idx];
+      const isJPY=pair.includes('JPY');const dec=isJPY?3:5;
+      tt.textContent=`O:${c.open.toFixed(dec)} H:${c.high.toFixed(dec)} L:${c.low.toFixed(dec)} C:${c.close.toFixed(dec)}`;
+      tt.style.left=(mx+8)+'px';
+      tt.style.top=(my-20)+'px';
+    }
+  });
+  canvas.addEventListener('mouseleave',()=>{
+    const ch=document.getElementById('chartCrosshair');
+    if(ch) ch.style.display='none';
+  });
+}
+
 loadOps();
 loadTheme();
 loadNightMode();
@@ -5042,6 +5382,8 @@ setTimeout(renderHeatmap, 600);
 setTimeout(renderWeeklyStats, 700);
 setTimeout(updateSeqVisual, 800);
 setTimeout(renderMLPanel, 900);
+setTimeout(initChartCrosshair, 1000);
+window.addEventListener('resize',()=>{if(realCandles.length>0) drawCandleChart();});
 bankStopTriggered=false;
 startPriceFeed();
 fetchNews();
