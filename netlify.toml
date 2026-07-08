@@ -1,0 +1,14 @@
+# ═══════════════════════════════════════════════════════════════
+#  ProTrader AI — configuração Netlify
+# ═══════════════════════════════════════════════════════════════
+
+[build]
+  # Publica a raiz do repositório (onde está o protrader.html / index.html)
+  publish = "."
+  functions = "netlify/functions"
+
+# Atalho opcional: /api/td?url=... vira a função td
+[[redirects]]
+  from = "/api/td"
+  to = "/.netlify/functions/td"
+  status = 200
