@@ -1053,7 +1053,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
             <div class="force-dots" id="forceDots"></div>
           </div>
           <div id="sigStake" style="display:none;margin:6px 0;padding:7px 9px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:7px;"></div>
-          <div class="cbar-row"><span>Pontuação</span><span id="confPct">0/100</span></div>
+          <div class="cbar-row"><span>Indicadores a favor</span><span id="confPct">—</span></div>
           <div class="cbar"><div class="cfill" id="cfill"></div></div>
           <div id="confNota" style="font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4;"></div>
 
@@ -1275,11 +1275,11 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <div class="bh-title">🔬 Backtest — o mesmo motor da tela</div>
         <div id="backtestResult" style="font-size:10px;color:var(--muted);text-align:center;padding:8px;">Roda o motor em até 5.000 velas reais de 1 min do par atual (1 consulta da API)</div>
         <div style="font-size:8px;color:var(--muted);line-height:1.45;margin-top:4px;padding:6px;border:1px dashed var(--br);border-radius:6px;">
-          <b>Calibração 2026.10.05b</b> (velas de 1 min, fechamento → fechamento, 14/09–02/10, 6 pares):<br>
-          • motor sem filtro BOS: 54,9% (faixa 53,9–55,9%) — empate com payout 85% = 54,05%<br>
-          • <b>com BOS exigido: 66,2%</b> (1.625 sinais) · por semana 66 / 68 / 65% · por par 64–69%<br>
-          • entrando 1 vela depois: ~50% · expiração de 2 a 5 min: 45–47%<br>
-          Cuidado: o efeito some com atraso — pode ser do feed da Twelve Data. Só o W/L corrigido pelo preço da Valyn (painel "Concordância") confirma.
+          <b>Calibração 2026.10.05c</b> (velas de 1 min, 14/09–02/10, 6 pares, BOS exigido):<br>
+          • vela oficial disponível na hora: 66,1% · <b>como o app roda ao vivo (vela montada pelo preço do fechamento): 65,9%</b><br>
+          • esperando a API publicar a vela (10–40 s, medido ao vivo): 49,9% — por isso o app não espera<br>
+          • sem BOS: ~53% · expiração de 2 a 5 min: 45–47%<br>
+          Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na Valyn" (Stats).
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
       </div>
@@ -1317,7 +1317,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.05b (motor único + BOS + Auto no par selecionado; ver CHANGELOG no fim do arquivo)
+// ProTrader AI — versão 2026.10.05c (vela de fechamento em tempo real; ver CHANGELOG no fim do arquivo)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -1527,8 +1527,11 @@ function msDoCandle(t){const x=Date.parse(String(t).replace(' ','T')+'-03:00');r
 let dadosFrescos=false;
 // Atualiza sempre logo depois da virada do minuto: 1 consulta por minuto
 function agendarBusca(){
+  // A Twelve Data publica a vela de 1 min 10–40 s depois de fechar: buscar aos :40 pega a vela nova.
+  // O sinal não espera por ela — usa o preço em tempo real (ver "AO VIVO").
   clearTimeout(priceInterval);
-  const espera=60000-(Date.now()%60000)+3000;
+  const seg=Date.now()%60000;
+  const espera=(seg<38000?40000-seg:100000-seg);
   priceInterval=setTimeout(()=>{priceInterval=null;fetchTwelveData();},espera);
 }
 
@@ -1965,7 +1968,7 @@ async function runScanner(){
   }
   renderScanResults(results,minConf);
   if(results.length>0){showToast(`🔍 ${results.length} sinal(is) com pontuação ≥ ${minConf}`,'scan-t');document.getElementById('scanTab').classList.add('has-alert');}
-  status.textContent=`✓ Concluído — ${results.length} sinal(is) · ${now} BRT`+(semDados?` · ${semDados} par(es) sem dados agora (limite da API)`:'');
+  status.textContent=`✓ Concluído — ${results.length} sinal(is) · ${now} BRT · usa velas publicadas (10–40 s de atraso): serve para mapear, não para entrar`+(semDados?` · ${semDados} par(es) sem dados agora (limite da API)`:'');
 }
 function renderScanResults(results,minConf){
   const wrap=document.getElementById('scanResults');
@@ -1980,12 +1983,13 @@ function renderScanResults(results,minConf){
 // ═══ WIN/LOSS ═══
 function markResult(id,result){
   const op=ops.find(o=>o.id===id); if(!op) return false;
-  if(op.result===result) return false;
   const antes=op.result;
+  if(antes==='open'){ op.corretora='manual'; }                    // você informou o resultado da corretora
+  else if(antes===result){ op.corretora='igual'; updateStats(); updateDiary(); renderHistory(); showToast(`✓ ${result==='win'?'WIN':'LOSS'} confirmado na Valyn`,'call-t'); return true; }
+  else { op.corretora=antes==='empate'?'manual':'diferente'; op.corrigido=antes; }
   op.result=result; op.resolvidoPor='manual';
-  if(antes!=='open') op.corrigido=antes; // correção pelo preço da corretora
   updateStats(); updateDiary(); renderHistory(); updateSeqBadge();
-  showToast(result==='win'?(antes!=='open'?'✓ Corrigido para WIN':'✓ WIN registrado!'):(antes!=='open'?'✗ Corrigido para LOSS':'✗ LOSS registrado.'),result==='win'?'call-t':'put-t');
+  showToast(result==='win'?(antes!=='open'?'✏️ Corrigido para WIN (Valyn)':'✓ WIN registrado'):(antes!=='open'?'✏️ Corrigido para LOSS (Valyn)':'✗ LOSS registrado'),result==='win'?'call-t':'put-t');
   return true;
 }
 
@@ -2030,22 +2034,27 @@ function updateDiary(){
   const body=document.getElementById('diaryBody');
   if(ops.length===0){body.innerHTML='<div class="diary-empty">Nenhuma operação registrada ainda.</div>';return;}
   const rot={win:'✓ WIN',loss:'✗ LOSS',empate:'= EMPATE','sem-dado':'? SEM DADO',open:'⏳ Aguardando'};
+  const selo={igual:'✓ igual na Valyn',diferente:'≠ diferente na Valyn',manual:'informado da Valyn'};
+  const bt=(txt,tit,acao,cor)=>`<button title="${tit}" onclick="${acao}" style="padding:3px 7px;font-size:9px;font-weight:700;border-radius:4px;border:1px solid ${cor};background:transparent;color:${cor};cursor:pointer;white-space:nowrap;">${txt}</button>`;
   body.innerHTML=[...ops].reverse().slice(0,200).map(o=>{
     const origem=o.origem==='auto'?'🤖 Auto':o.origem==='noticia'?'🏄 Notícia':'👆 Tela';
     const entrou=o.entrou===false?'não entrou':'entrou';
-    const precos=o.entrada&&o.entrada.preco!=null&&o.saida?` · ${fmtPreco(o.pair,o.entrada.preco)} → ${fmtPreco(o.pair,o.saida.preco)}`:'';
-    const fonte=o.resolvidoPor==='api'?' · conferido pela API':o.resolvidoPor==='manual'?' · marcado à mão':'';
+    const fonteE=o.entrada&&o.entrada.fonte==='tempo-real'?'':' (vela)';
+    const precos=o.entrada&&o.entrada.preco!=null&&o.saida?` · ${fmtPreco(o.pair,o.entrada.preco)} → ${fmtPreco(o.pair,o.saida.preco)}${o.saida.fonte==='vela'?' (vela)':fonteE}`:'';
+    const fonte=o.corretora?` · ${selo[o.corretora]}`:o.resolvidoPor==='api'?' · pela API, falta conferir':o.resolvidoPor==='manual'?' · marcado à mão':'';
+    let botoes='';
+    if(o.result==='open') botoes=bt('W','WIN na Valyn',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na Valyn',`markResultAndSave('${o.id}','loss')`,'var(--red)');
+    else if(o.result==='empate') botoes=bt('= igual','Empate também na Valyn',`confirmarCorretora('${o.id}',true)`,'var(--muted)')+bt('W','WIN na Valyn',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na Valyn',`markResultAndSave('${o.id}','loss')`,'var(--red)');
+    else if(fechada(o)&&o.entrou!==false&&!o.corretora) botoes=bt('✓ igual','A Valyn mostrou o mesmo resultado',`confirmarCorretora('${o.id}',true)`,'var(--green)')+bt('≠ diferente','A Valyn mostrou o resultado contrário',`confirmarCorretora('${o.id}',false)`,'var(--gold)');
+    if(o.entrou===false) botoes+=bt('＋ entrei','Eu entrei nesta',`marcarEntrou('${o.id}')`,'var(--blue)');
     return `<div class="diary-item" style="${o.entrou===false?'opacity:.7':''}">
       <div class="di-top"><div class="di-pair">${o.pair}</div><div class="di-dir ${o.dir.toLowerCase()}">${o.dir}</div><div class="di-result ${o.result}">${rot[o.result]||o.result}</div></div>
-      <div class="di-meta"><span>${o.tf}</span><span>${o.conf} pts</span><span>${o.ts}</span><span>${origem} · ${entrou}</span></div>
+      <div class="di-meta"><span>${o.tf}</span><span>${o.bos?'BOS ✓':o.conf+' pts'}</span><span>${o.ts}</span><span>${origem} · ${entrou}</span></div>
       <div class="di-setup">${surfEsc(o.setup||'')}${precos}<span style="color:var(--muted)">${fonte}</span></div>
-      <div style="display:flex;gap:4px;margin-top:5px;align-items:center;">
-        <input type="text" placeholder="📝 Nota desta operação..." value="${surfEsc(o.note||'')}"
-          style="flex:1;min-width:0;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 7px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:10px;outline:none;"
-          onchange="saveOpNote('${o.id}',this.value)">
-        <button class="hres-btn win-btn" title="Corrigir para WIN (preço da corretora)" onclick="markResultAndSave('${o.id}','win')">W</button>
-        <button class="hres-btn loss-btn" title="Corrigir para LOSS (preço da corretora)" onclick="markResultAndSave('${o.id}','loss')">L</button>
-        ${o.entrou===false?`<button class="hres-btn" title="Eu entrei nesta" onclick="marcarEntrou('${o.id}')">＋</button>`:''}
+      <div style="display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap;">
+        <input type="text" placeholder="📝 Nota..." value="${surfEsc(o.note||'')}"
+          style="flex:1;min-width:90px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 7px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:10px;outline:none;"
+          onchange="saveOpNote('${o.id}',this.value)">${botoes}
       </div>
     </div>`;
   }).join('');
@@ -2061,8 +2070,8 @@ function marcarEntrou(id){
 function exportCSV(){
   if(ops.length===0){showToast('Nenhuma operação para exportar','warn-t');return;}
   const q=v=>{const t=v==null?'':String(v);return /[",;\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
-  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota']];
-  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'']);});
+  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)']];
+  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'']);});
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(rows.map(r=>r.map(q).join(',')).join('\n'));
   a.download='protrader_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
@@ -2107,7 +2116,7 @@ function registrarSinal(r,opts){
   ops.push({id,pair:par,dir:r.direction,conf:r.confidence,setup:r.setup,result:'open',hour:getBRTHour(),tf:opts.tf||tf,
     ts:new Date(agora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),_session:currentAutoSession,
     stake:sug.valor||0,payout,origem:opts.origem||'manual',entrou,
-    entrada:{t:agora,precoSinal:r.precoRef??null,tVela:r.tRef??null},expiraEm:agora+(r.clockSecs||60)*1000,bos:r.bos??null,
+    entrada:{t:agora,preco:r.precoRef??null,precoSinal:r.precoRef??null,tVela:r.tRef??null,fonte:r.fontePreco||'vela'},expiraEm:agora+(r.clockSecs||60)*1000,bos:r.bos??null,
     regime:r.regime||null,volRel:r.volRel!=null?+Number(r.volRel).toFixed(2):null,motor:r.versao||null,votos:r.votos||null});
   saveOps(); renderHistory(); updateDiary(); updateStats();
   return id;
@@ -2131,7 +2140,8 @@ async function resolverPendentes(){
   if(resolvendo) return; resolvendo=true;
   try{
     const agora=Date.now();
-    const pend=ops.filter(o=>o.result==='open'&&o.expiraEm&&o.entrada&&agora>=o.expiraEm+5000);
+    // pela vela só quando não deu para pegar o preço em tempo real na expiração (aba fechada, API sem vaga...)
+    const pend=ops.filter(o=>o.result==='open'&&o.expiraEm&&o.entrada&&agora>=o.expiraEm+5000&&(o.entrada.preco==null||o.saidaFalhou||agora>=o.expiraEm+90000));
     if(!pend.length) return;
     const porPar={}; pend.forEach(o=>{const p=o.pair.replace(' (OTC)','');(porPar[p]=porPar[p]||[]).push(o);});
     let mudou=false;
@@ -2141,12 +2151,12 @@ async function resolverPendentes(){
       if(!velas||!precoAte(velas,maxExp)) velas=await tdSerie(TD_SYMBOL_MAP[par]||par,'1min',VELAS_N,{ttl:70000,prioridade:'baixa'});
       if(!velas) continue;
       for(const o of lista){
-        const ent=precoAte(velas,o.entrada.t), sai=precoAte(velas,o.expiraEm);
+        const ent=o.entrada.preco!=null?{preco:o.entrada.preco}:precoAte(velas,o.entrada.t), sai=precoAte(velas,o.expiraEm);
         if(!ent||!sai){
           if(agora-o.expiraEm>4*3600000){ o.result='sem-dado'; o.resolvidoPor='api'; mudou=true; }
           continue;
         }
-        o.entrada.preco=ent.preco; o.saida={preco:sai.preco,t:sai.fim};
+        o.entrada.preco=ent.preco; o.saida={preco:sai.preco,t:sai.fim,fonte:'vela'};
         const dif=sai.preco-ent.preco;
         o.result=dif===0?'empate':((dif>0)===(o.dir==='CALL')?'win':'loss');
         o.resolvidoPor='api';
@@ -2162,11 +2172,11 @@ async function resolverPendentes(){
 // Efeitos de um resultado novo: aprendizado (uma vez) e aviso no Telegram
 function posResultado(o){
   if(!o) return;
-  if(fechada(o)&&!o.mlAprendido&&o.origem!=='noticia'&&o.votos){ updateMLAfterResult(o.result,o.id); o.mlAprendido=true; }
+  if(fechada(o)&&!o.mlAprendido&&o.origem!=='noticia'&&o.votos){ updateMLAfterResult(o.result,o.id); o.mlAprendido=true; delete o.votos; }
   if(o.tg&&o.resolvidoPor==='api'&&!o.tgResultado&&typeof tgEnabled!=='undefined'&&tgEnabled){
     o.tgResultado=true;
     const r=o.result==='win'?'✅ *WIN*':o.result==='loss'?'❌ *LOSS*':'➖ *EMPATE* (valor devolvido)';
-    sendTelegram(`${r} — ${o.dir} ${o.pair}\nEntrada ${fmtPreco(o.pair,o.entrada.preco)} → saída ${fmtPreco(o.pair,o.saida&&o.saida.preco)}\n_Preço da Twelve Data. Se a corretora mostrou outro resultado, responda W ou L para corrigir._`);
+    sendTelegram(`${r} — ${o.dir} ${o.pair}\nEntrada ${fmtPreco(o.pair,o.entrada.preco)} → saída ${fmtPreco(o.pair,o.saida&&o.saida.preco)}\n_Preço em tempo real da Twelve Data. Responda W ou L com o resultado da Valyn para confirmar._`);
   }
 }
 function atualizarPaineisResultado(){
@@ -2182,35 +2192,36 @@ function renderCalibracao(){
   const el=document.getElementById('calibPanel'); if(!el) return;
   const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
   const sinais=ops.filter(o=>o.resolvidoPor&&o.origem!=='noticia'&&o.motor);
-  const linha=(rotulo,arr)=>{
+  const linha=(rotulo,arr,dica)=>{
     const f=arr.filter(fechada), w=f.filter(o=>o.result==='win').length, n=f.length, emp=arr.filter(o=>o.result==='empate').length;
     if(!n) return `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">${rotulo}</span><span style="color:var(--dim);">sem dados</span></div>`;
     const ic=wilsonIC(w,n), cor=ic.lo>be?'var(--green)':ic.hi<be?'var(--red)':'var(--gold)';
-    return `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;">
+    return `<div title="${dica||''}" style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;">
       <span style="color:var(--muted);">${rotulo} <span style="color:var(--dim);">(${n}${emp?` · ${emp} emp.`:''})</span></span>
       <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${Math.round(w/n*100)}% <span style="font-weight:400;color:var(--muted);">${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}%</span></span></div>`;
   };
+  const tr=sinais.filter(o=>o.saida&&o.saida.fonte==='tempo-real');
+  const ent=sinais.filter(o=>o.entrou!==false&&o.entrada&&o.entrada.tVela);
+  const atraso=o=>(o.entrada.t-o.entrada.tVela)/1000;
+  // concordância: só operações que você CONFIRMOU (igual/diferente) — não conta silêncio como acordo
+  const conf=ops.filter(o=>o.corretora==='igual'||o.corretora==='diferente');
+  const dif=conf.filter(o=>o.corretora==='diferente').length;
+  const blocoConc=conf.length
+    ?(()=>{const pc=100-dif/conf.length*100, cor=pc>=95?'var(--green)':pc>=85?'var(--gold)':'var(--red)';
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">Concordância API × Valyn <span style="color:var(--dim);">(${conf.length} conferidas · ${dif} diferentes)</span></span><span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${pc.toFixed(0)}%</span></div>`;})()
+    :`<div style="font-size:9px;color:var(--muted);padding:3px 0;">Concordância API × Valyn: confirme no Diário (✓ igual / ≠ diferente) para medir</div>`;
   el.innerHTML=
-    linha('Todos os sinais do motor',sinais)+
+    linha('★ Confirmadas na Valyn',ops.filter(confirmadaCorretora),'O número que importa: resultado que você conferiu na corretora')+
+    blocoConc+
+    linha('Todos os sinais (preço em tempo real)',tr,'Entrada e saída pelo preço em tempo real da Twelve Data')+
+    linha('Todos os sinais (qualquer fonte)',sinais)+
     linha('Só os que você entrou',sinais.filter(o=>o.entrou!==false))+
-    linha('Pontuação 100',sinais.filter(o=>o.conf>=100))+
-    linha('Pontuação 90–99',sinais.filter(o=>o.conf>=90&&o.conf<100))+
-    linha('Pontuação abaixo de 90',sinais.filter(o=>o.conf<90))+
     linha('Com BOS a favor',sinais.filter(o=>o.bos===true))+
     linha('Sem BOS',sinais.filter(o=>o.bos===false))+
-    (()=>{ // atraso entre o fechamento da vela e o seu clique (só operações que você entrou)
-      const ent=sinais.filter(o=>o.entrou!==false&&o.entrada&&o.entrada.tVela);
-      const a=o=>(o.entrada.t-o.entrada.tVela)/1000;
-      return linha('Entrou até 10 s após a vela',ent.filter(o=>a(o)<=10))+linha('Entrou entre 10 e 20 s',ent.filter(o=>a(o)>10&&a(o)<=20))+linha('Entrou depois de 20 s',ent.filter(o=>a(o)>20));
-    })()+
-    (()=>{ // quanto o preço da API bate com o da corretora (vale se você corrigir sempre que a Valyn mostrar outro resultado)
-      const base=ops.filter(o=>o.entrou!==false&&(o.resolvidoPor==='api'||o.corrigido));
-      const corr=base.filter(o=>o.corrigido).length;
-      if(!base.length) return `<div style="font-size:9px;color:var(--muted);padding:3px 0;">Concordância API × corretora: sem entradas conferidas ainda</div>`;
-      const pc=100-corr/base.length*100, cor=pc>=95?'var(--green)':pc>=85?'var(--gold)':'var(--red)';
-      return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">Concordância API × corretora <span style="color:var(--dim);">(${corr} correções em ${base.length})</span></span><span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${pc.toFixed(0)}%</span></div>`;
-    })()+
-    `<div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Verde = faixa inteira acima do empate (${(be*100).toFixed(1)}% com payout ${Math.round(payout*100)}%). Âmbar = ainda não dá para separar do acaso. Vermelho = abaixo do empate. Corrija o W/L sempre que a Valyn mostrar outro resultado: é isso que mede se a vantagem existe na corretora.</div>`;
+    linha('Entrou até 10 s após a vela',ent.filter(o=>atraso(o)<=10))+
+    linha('Entrou entre 10 e 20 s',ent.filter(o=>atraso(o)>10&&atraso(o)<=20))+
+    linha('Entrou depois de 20 s',ent.filter(o=>atraso(o)>20))+
+    `<div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Verde = faixa inteira acima do empate (${(be*100).toFixed(1)}% com payout ${Math.round(payout*100)}%). Âmbar = ainda não dá para separar do acaso. Vermelho = abaixo do empate. Só "Confirmadas na Valyn" mede o seu dinheiro; o resto é preço da Twelve Data.</div>`;
 }
 
 // ═══ ANÁLISE — usa o MOTOR ÚNICO (o mesmo do Auto, do Scanner e do Backtest) ═══
@@ -2233,9 +2244,10 @@ function montarResultado(m,par,tfSel){
   const aFavor=m.votos.filter(v=>v.dir===m.direcao), contra=m.votos.filter(v=>v.dir&&v.dir!==m.direcao), sem=m.votos.filter(v=>!v.dir);
   const lista=a=>a.map(v=>v.nome).join(', ')||'—';
   const padrao=I.padrao&&I.padrao.name&&!/Sem padrão/.test(I.padrao.name)?I.padrao.name:(isCall?'Continuação de alta':'Continuação de baixa');
-  const stars=m.pontuacao>=100?5:m.pontuacao>=90?4:m.pontuacao>=80?3:2;
+  const forca=Math.round(aFavor.length/Math.max(1,m.comLeitura)*10);
+  const stars=Math.max(1,Math.round(forca/2));
   return{
-    direction:m.direcao, confidence:m.pontuacao, stars, force_score:Math.round(m.pontuacao/10),
+    direction:m.direcao, confidence:m.pontuacao, stars, force_score:forca, fontePreco:m.sintetica?'tempo-real':'vela',
     expiry, clockSecs, market_structure:textoRegime(m),
     setup:`${m.regime==='tendencia'?'Tendência':'Reversão'} ${isCall?'de alta':'de baixa'}`,
     pa_pattern:padrao,
@@ -2279,7 +2291,9 @@ async function runAnalysis(){
   try{
     const tfDados=TF_DO_INTERVALO[currentInterval]||'M1';
     if(tfDados!=='M1') showToast(`ℹ️ Motor calibrado em velas de 1 min. Em ${tfDados} a pontuação não foi validada.`,'scan-t');
-    const m=motorSinal(realCandles,{par:pair,tf:tfDados,agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
+    // M1: a vela que acabou de fechar ainda não foi publicada pela API — monta com o preço em tempo real
+    const velas=tfDados==='M1'?(await velasAoVivo(pair,{garantir:true})||realCandles):realCandles;
+    const m=motorSinal(velas,{par:pair,tf:tfDados,agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
     ultimaLeituraMotor=m;
     if(!m.ok){ showToast('⛔ '+m.motivo,'warn-t'); mostrarEsperaMotor(m); return; }
     // Janela de entrada: nos dados, a vantagem existe só logo após o fechamento da vela (1 min de atraso → ~50%)
@@ -2287,7 +2301,7 @@ async function runAnalysis(){
     if(tfDados==='M1'&&atrasoSeg>MOTOR_CFG.janelaEntradaSeg){
       window._analisarNaVirada=true;
       const falta=Math.ceil((60000-(Date.now()%60000)+4000)/1000);
-      const espera={ok:false,fase:'janela',motivo:`Havia sinal ${m.direcao} ${m.pontuacao}/100, mas a vela fechou há ${Math.round(atrasoSeg)} s — fora da janela de ${MOTOR_CFG.janelaEntradaSeg} s. Analiso de novo sozinho na virada do minuto (~${falta} s).`};
+      const espera={ok:false,fase:'janela',motivo:`Havia sinal ${m.direcao}${m.bos?' (BOS ✓)':''}, mas a vela fechou há ${Math.round(atrasoSeg)} s — fora da janela de ${MOTOR_CFG.janelaEntradaSeg} s. Analiso de novo sozinho na virada do minuto (~${falta} s).`};
       ultimaLeituraMotor=espera; mostrarEsperaMotor(espera);
       showToast(`⏳ Sinal fora da janela (vela fechou há ${Math.round(atrasoSeg)} s). Nova análise automática em ~${falta} s.`,'warn-t');
       return;
@@ -2354,6 +2368,134 @@ async function atualizarCorrelacao(){
   renderCorrelationPanel();
 }
 
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  AO VIVO 2026.10.05c — vela de fechamento pelo preço em tempo real ║
+// ║  Medido ao vivo: a Twelve Data publica a vela de 1 min 10–40 s     ║
+// ║  depois que ela fecha. Esperar por ela atrasa o sinal ~1 vela, e   ║
+// ║  nos dados isso derruba o acerto para ~50%. Então, 1 s depois da   ║
+// ║  virada, o app pega o preço em tempo real e monta a vela que       ║
+// ║  acabou de fechar (abertura = fechamento anterior). Simulado em 3  ║
+// ║  semanas: 65,9% contra 66,1% com a vela oficial na hora.           ║
+// ╚══════════════════════════════════════════════════════════════════╝
+const fechamentosAoVivo={};   // `${par}|${inícioDoMinuto}` → preço capturado logo após o fechamento
+let cicloTimer=null, buscaPausada=false;
+
+async function tdPreco(symbol,opts){
+  opts=opts||{};
+  const d=await tdGet('price',{symbol},{ttl:opts.ttl||900,prioridade:opts.prioridade||'alta',espera:opts.espera||4000});
+  const p=d&&parseFloat(d.price);
+  return (p&&isFinite(p))?p:null;
+}
+function inicioMinuto(ms){ return Math.floor(ms/60000)*60000; }
+
+// Janela de velas para o motor: velas oficiais + a(s) vela(s) que fecharam e ainda não foram publicadas,
+// montadas com o preço capturado no fechamento. garantir=true busca o preço se ainda estiver na janela de entrada.
+async function velasAoVivo(par,opts){
+  opts=opts||{};
+  const sym=TD_SYMBOL_MAP[par]||par;
+  let base=(par===pair&&currentInterval==='1min'&&realCandles.length)?realCandles:null;
+  if(!base) base=await tdSerie(sym,'1min',VELAS_N,{ttl:50000,prioridade:'alta'});
+  if(!base||!base.length) return null;
+  const agora=Date.now(), minAtual=inicioMinuto(agora), ultimoFechado=minAtual-60000;
+  const reais=base.filter(c=>{const t=msVela(c);return t!=null&&t+60000<=Math.min(agora,base.obtidoEm||agora)+1000;});
+  if(!reais.length) return null;
+  let tUlt=msVela(reais[reais.length-1]);
+  // preço do fechamento do minuto que acabou de terminar (só dentro da janela de entrada)
+  const chave=par+'|'+ultimoFechado;
+  if(opts.garantir&&tUlt<ultimoFechado&&fechamentosAoVivo[chave]==null&&(agora-minAtual)<=MOTOR_CFG.janelaEntradaSeg*1000){
+    const p=await tdPreco(sym);
+    if(p!=null) fechamentosAoVivo[chave]=p;
+  }
+  const out=reais.slice(-VELAS_N);
+  let prev=out[out.length-1];
+  for(let t=tUlt+60000;t<=ultimoFechado;t+=60000){
+    const pc=fechamentosAoVivo[par+'|'+t];
+    if(pc==null) break; // sem o preço desse fechamento não dá para montar a vela
+    const o=prev.close;
+    const v={time:null,t,open:o,high:Math.max(o,pc),low:Math.min(o,pc),close:pc,volume:null,bull:pc>=o,sintetica:true};
+    out.push(v); prev=v;
+  }
+  out.obtidoEm=agora;
+  // limpeza do mapa (guarda ~2 h)
+  for(const k of Object.keys(fechamentosAoVivo)){ if(+k.split('|')[1]<agora-7200000) delete fechamentosAoVivo[k]; }
+  return out;
+}
+
+// Ciclo do minuto: 1 s depois da virada, só quando há motivo (Auto ligado ou análise agendada)
+function agendarCiclo(){
+  clearTimeout(cicloTimer);
+  cicloTimer=setTimeout(cicloMinuto,60000-(Date.now()%60000)+1000);
+}
+async function cicloMinuto(){
+  try{
+    const pendente=!!window._analisarNaVirada;
+    if(forexAberto()&&(autoMode||pendente)){
+      await velasAoVivo(pair,{garantir:true});
+      if(autoMode) await runAutoScan();
+      if(pendente){ window._analisarNaVirada=false; runAnalysis(); }
+    }
+  }catch(e){ console.warn('ciclo do minuto:',e); }
+  finally{ agendarCiclo(); }
+}
+
+// Saída pelo preço em tempo real, no segundo da expiração
+let checandoSaidas=false;
+async function checarExpiracoes(){
+  if(checandoSaidas) return; checandoSaidas=true;
+  try{
+    const agora=Date.now();
+    const vencidas=ops.filter(o=>o.result==='open'&&o.expiraEm&&o.entrada&&o.entrada.preco!=null&&!o.saida&&!o.saidaFalhou&&agora>=o.expiraEm&&agora-o.expiraEm<60000);
+    let mudou=false;
+    for(const o of vencidas){
+      const p=await tdPreco(TD_SYMBOL_MAP[o.pair.replace(' (OTC)','')]||o.pair,{espera:3000});
+      if(p==null){ o.saidaFalhou=true; continue; } // fica para o resultado pela vela
+      o.saida={preco:p,t:Date.now(),fonte:'tempo-real'};
+      const dif=p-o.entrada.preco;
+      o.result=dif===0?'empate':((dif>0)===(o.dir==='CALL')?'win':'loss');
+      o.resolvidoPor='api'; mudou=true; posResultado(o);
+    }
+    if(mudou){ saveOps(); atualizarPaineisResultado(); }
+  }catch(e){ console.warn('saída em tempo real:',e); }
+  finally{ checandoSaidas=false; }
+}
+
+// Pausa: aba escondida e Auto desligado = sem consultas
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&buscaPausada){ buscaPausada=false; fetchTwelveData(); }
+});
+
+// ─── Resultados confirmados na corretora ───
+function confirmadaCorretora(o){ return !!o&&o.entrou!==false&&fechada(o)&&(o.corretora==='igual'||o.corretora==='diferente'||o.corretora==='manual'); }
+function historicoConfirmado(){
+  const f=ops.filter(confirmadaCorretora), w=f.filter(o=>o.result==='win').length;
+  return{total:f.length,wins:w,wr:f.length?w/f.length:0};
+}
+function textoAcertoConfirmado(){
+  const h=historicoConfirmado();
+  if(!h.total) return 'sem entradas confirmadas na Valyn ainda';
+  const ic=wilsonIC(h.wins,h.total);
+  return `${Math.round(h.wr*100)}% em ${h.total} confirmadas (faixa ${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}%)`;
+}
+function confirmarCorretora(id,igual){
+  const o=ops.find(x=>x.id===id); if(!o) return;
+  if(igual){
+    if(o.result==='empate'){ o.corretora='igual'; saveOps(); atualizarPaineisResultado(); showToast('✓ Empate confirmado na Valyn','call-t'); return; }
+    markResultAndSave(id,o.result);
+  } else {
+    if(o.result==='empate'){ showToast('Use W ou L para dizer o que a Valyn mostrou','warn-t'); return; }
+    markResultAndSave(id,o.result==='win'?'loss':'win');
+  }
+}
+
+// ─── Poda do histórico (o navegador guarda ~5 MB) ───
+const MAX_OPS=3000;
+function podarHistorico(forte){
+  if(ops.length>MAX_OPS) ops=ops.slice(-MAX_OPS);
+  const limite=forte?Math.floor(ops.length*0.8):ops.length;
+  ops.forEach((o,i)=>{ if(o.mlAprendido&&o.votos) delete o.votos; });
+  if(forte&&ops.length>200) ops=ops.slice(ops.length-limite);
+}
+
 // ═══ SHOW + FINALIZE AUTOMÁTICO (sem checklist) ═══
 function showAndFinalizeResult(r,opts){
   opts=opts||{};
@@ -2398,17 +2540,14 @@ function showAndFinalizeResult(r,opts){
     entryDet.innerHTML=`⏰ Analisou só velas fechadas (até ${hRef} BRT)${r.bos?' · BOS ✓':''}<br>🚀 Entre até <b>${validade}</b> BRT — depois o sinal não vale<br>🏁 Expira em ~${Math.ceil(secsLeft/60)} min · o resultado sai sozinho pela API`;
     entryEl.style.borderColor=secsLeft<15?'var(--red)':'rgba(0,152,255,.2)';
   }
-  renderForceMeter(r.force_score||Math.round(r.confidence/10));
-  const pct=r.confidence+'%'; document.getElementById('confPct').textContent=r.confidence+'/100';
+  renderForceMeter(r.force_score||0);
+  const pct=Math.round((r.confluences||0)/Math.max(1,r.comLeitura||1)*100)+'%'; document.getElementById('confPct').textContent=`${r.confluences||0} de ${r.comLeitura||'—'}${r.bos?' · BOS ✓':''}`;
   setTimeout(()=>document.getElementById('cfill').style.width=pct,80);
   // A pontuação não é probabilidade: mostra ao lado o empate do payout e o acerto medido
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
-    const fech=ops.filter(o=>o.result==='win'||o.result==='loss'), w=fech.filter(o=>o.result==='win').length;
-    const ic=wilsonIC(w,fech.length);
-    const med=fech.length?`${Math.round(w/fech.length*100)}% (faixa ${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}%) em ${fech.length} ops`:'sem operações ainda';
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Pontuação não é probabilidade · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}% · Acerto medido: ${med}`;
+    if(nota) nota.textContent=`Backtest com BOS: 66% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -2501,7 +2640,7 @@ function showAndFinalizeResult(r,opts){
   document.getElementById('focoDir').textContent=r.direction;
   document.getElementById('focoDir').className='foco-sig '+(isCall?'call':'put');
   document.getElementById('focoSetup').textContent=r.setup||'—';
-  document.getElementById('focoConf').textContent=r.confidence+'/100 · Força '+(r.force_score||'—')+'/10 · '+r.expiry;
+  document.getElementById('focoConf').textContent=`${r.confluences||0} de ${r.comLeitura||'—'} indicadores${r.bos?' · BOS ✓':''} · ${r.expiry}`;
   document.getElementById('focoExp').textContent=`⏰ Entre até ${r.tRef?new Date(r.tRef+MOTOR_CFG.janelaEntradaSeg*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}):'agora'} — expira em ~${Math.ceil((r.clockSecs||60)/60)}min`;
   document.getElementById('focoBtns').style.display='none';
 
@@ -2514,7 +2653,7 @@ function showAndFinalizeResult(r,opts){
   lastSignalMark=r.direction; drawCandleChart();
   setTimeout(()=>{lastSignalMark=null;drawCandleChart();},120000);
   startClock(r.clockSecs||60);
-  showToast(`${isCall?'🟢 CALL':'🔴 PUT'} · ${r.setup} · ${r.confidence}/100 · Força ${r.force_score||'—'}/10`,isCall?'call-t':'put-t');
+  showToast(`${isCall?'🟢 CALL':'🔴 PUT'} · ${r.setup}${r.bos?' · BOS ✓':''} · ${r.confluences||0} de ${r.comLeitura||'—'} indicadores`,isCall?'call-t':'put-t');
   lastSignalData=r;
   saveOps();
   runMTF(r.direction,r.confidence);
@@ -2537,7 +2676,10 @@ async function runBacktest(){
     if(c.t==null||p.t==null||c.t-p.t!==60000) continue;
     if(c.t+60000>(velas.obtidoEm||Date.now())) continue; // vela ainda em formação não serve de resultado
     if(!forexAberto(new Date(c.t))) continue;
-    const m=motorSinal(velas.slice(i-300,i),{par:pair,tf:'M1',agora:c.t+3000,pesos:null,cfg:cfgMotorUI()});
+    // como roda ao vivo: a vela que acabou de fechar é montada com o preço do fechamento (abertura = fechamento anterior)
+    const pv=velas[i-2]; if(pv.t==null||p.t-pv.t!==60000) continue;
+    const sint={t:p.t,open:pv.close,close:p.close,high:Math.max(pv.close,p.close),low:Math.min(pv.close,p.close),sintetica:true};
+    const m=motorSinal(velas.slice(i-300,i-1).concat([sint]),{par:pair,tf:'M1',agora:c.t+2000,pesos:null,cfg:cfgMotorUI()});
     const mov=Math.sign(c.close-p.close);
     const conta=(S,d)=>{ if(mov===0) S.e++; else if(mov===d) S.w++; else S.l++; };
     if(m.ok) conta(M,m.direcao==='CALL'?1:-1);
@@ -2558,7 +2700,7 @@ async function runBacktest(){
   const d1=new Date(velas[velas.length-1].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   el.style.color='var(--text)';
   el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgMotorUI().exigirBOS?'exigido':'livre'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
-    ${bloco('Motor (o mesmo da tela)',M)}
+    ${bloco('Motor como roda ao vivo (última vela pelo preço do fechamento)',M)}
     ${bloco('Referência: repetir a cor da última vela',B)}
     <div style="font-size:8px;color:var(--muted);line-height:1.4;">Preço da Twelve Data, entrada sem atraso. A corretora usa o próprio preço e há segundos entre o sinal e o clique — o resultado real tende a ser pior que este.</div>`;
 }
@@ -2626,9 +2768,10 @@ function toggleAuto(){
     showToast(`🤖 Auto ATIVADO só em ${pair} — troque o par na lista para o Auto acompanhar`,'scan-t');
     playSignalSound(true);
     if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
-    showToast(`ℹ️ Num par só, o Auto usa a mesma consulta da tela (1 por minuto) — uso hoje: ${tdUsoHoje()}/${TD_POR_DIA}.`,'scan-t');
+    showToast(`ℹ️ Auto usa ~2 consultas/min (vela + preço em tempo real): a cota grátis (800/dia) dura ~6h com o Auto ligado — uso hoje: ${tdUsoHoje()}/${TD_POR_DIA}.`,'scan-t');
     runAutoScan();
-    const tick=()=>{ if(!autoMode) return; resetDailyCounters(); runAutoScan(); autoInterval=setTimeout(tick,proximaVirada()); };
+    // o ciclo do minuto (1 s após a virada) roda o Auto; aqui só o reinício diário
+    const tick=()=>{ if(!autoMode) return; resetDailyCounters(); autoInterval=setTimeout(tick,proximaVirada()); };
     autoInterval=setTimeout(tick,proximaVirada());
   } else {
     stopAuto();
@@ -2660,8 +2803,8 @@ async function runAutoScan(){
     if(!getMarketQuality(par).active) return;
     if(runNewsAnalysis(par).blocked||checkHighImpactEvent(par).blocked) return; // notícia da moeda do par
     // usa as velas da tela quando são de 1 min e acabaram de chegar; senão busca (mesmo cache)
-    let velas=(currentInterval==='1min'&&realCandles.length&&realCandles.obtidoEm&&Date.now()-realCandles.obtidoEm<45000)?realCandles:null;
-    if(!velas) velas=await tdSerie(TD_SYMBOL_MAP[par]||par,'1min',VELAS_N,{ttl:20000,prioridade:'alta'});
+    // velas oficiais + a vela que acabou de fechar, montada com o preço em tempo real (a API publica 10–40 s depois)
+    const velas=await velasAoVivo(par,{garantir:true});
     if(!velas||par!==pair) return;
     const fim=fimUltimaFechada(velas);
     if(fim&&ultimaVelaAuto[par]===fim) return; // esta vela já foi avaliada
@@ -2694,7 +2837,7 @@ function showAutoAlert(m){
   document.getElementById('aaPair').textContent=m.pair+' @ '+fmtPreco(m.pair,m.precoRef);
   const aaDir=document.getElementById('aaDir');
   aaDir.textContent=m.direcao; aaDir.className='aa-dir '+(isCall?'call':'put');
-  document.getElementById('aaMeta').textContent=`${m.pontuacao}/100 · ${m.alinhados} de ${m.comLeitura} indicadores${m.bos?' · BOS ✓':''}`;
+  document.getElementById('aaMeta').textContent=`${m.bos?'BOS ✓ · ':''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
   const exp=document.getElementById('aaExp');
   const contar=()=>{ const s=Math.max(0,Math.ceil((validoAte-Date.now())/1000)); exp.textContent=`Exp: 1 minuto · entre em até ${s}s (até ${hhmmss(validoAte)}) · entradas hoje: ${dailyOpsCount}/5`; if(s<=0){ clearInterval(autoContagem); autoContagem=null; if(autoResult&&autoResult.id===id&&alert.classList.contains('show')){ skipAutoSignal(); showToast('⌛ Sinal expirou — passou da janela de entrada (nos dados, entrar atrasado derruba o acerto para ~50%)','warn-t'); } } };
   clearInterval(autoContagem); contar(); autoContagem=setInterval(contar,1000);
@@ -2704,11 +2847,11 @@ function showAutoAlert(m){
     sendTelegramSignal({id,dir:m.direcao,pair:m.pair,price:fmtPreco(m.pair,m.precoRef),conf:m.pontuacao,alinhados:m.alinhados,comLeitura:m.comLeitura,regime:m.regime,exp:'1 minuto',bos:m.bos,validoAte});
   }
   if('Notification' in window && Notification.permission==='granted'){
-    try{ new Notification(`🤖 ${m.direcao} — ${m.pair}`,{body:`Entre até ${hhmmss(validoAte)} · ${m.pontuacao}/100 · exp 1 min`}); }catch(e){ /* sem notificação */ }
+    try{ new Notification(`🤖 ${m.direcao} — ${m.pair}`,{body:`Entre até ${hhmmss(validoAte)} · ${m.alinhados} de ${m.comLeitura} indicadores · exp 1 min`}); }catch(e){ /* sem notificação */ }
   }
 }
 
-function enterAutoSignal(){
+async function enterAutoSignal(){
   document.getElementById('autoAlert').classList.remove('show');
   clearInterval(autoContagem); autoContagem=null;
   if(!autoResult) return;
@@ -2716,11 +2859,12 @@ function enterAutoSignal(){
   if(Date.now()>a.validoAte){ showToast('⌛ Passou da janela de entrada — este sinal não vale mais','warn-t'); return; }
   const op=ops.find(o=>o.id===a.id);
   if(op){
-    // a sua operação vale a partir do clique: entrada e expiração são refeitas agora
+    // a sua operação vale a partir do clique: entrada e expiração refeitas agora, com o preço em tempo real
     const agora=Date.now();
     op.entrou=true; op.entrada.t=agora; op.expiraEm=agora+60000;
     op.stake=(typeof sugerirEntrada==='function'?sugerirEntrada(op.conf).valor:0)||0;
     saveOps();
+    tdPreco(TD_SYMBOL_MAP[a.pair]||a.pair,{espera:2000}).then(p=>{ if(p!=null&&op.result==='open'){ op.entrada.preco=p; op.entrada.fonte='tempo-real'; saveOps(); } });
   }
   dailyOpsCount++;
   showAndFinalizeResult(a.res,{registrar:false,opId:a.id});
@@ -2768,7 +2912,16 @@ function playAutoAlert(isCall){
 function typeIn(id,text){const el=document.getElementById(id);el.textContent='';let i=0;const t=setInterval(()=>{if(i<text.length)el.textContent=text.slice(0,++i);else clearInterval(t);},9);}
 
 // ═══ PERSISTENT STORAGE ═══
-function saveOps(){try{localStorage.setItem('protrader_ops',JSON.stringify(ops));}catch(e){}}
+function saveOps(){
+  podarHistorico(false);
+  try{ localStorage.setItem('protrader_ops',JSON.stringify(ops)); }
+  catch(e){
+    // armazenamento cheio: tira os votos já aprendidos e as operações mais antigas e tenta de novo
+    podarHistorico(true);
+    try{ localStorage.setItem('protrader_ops',JSON.stringify(ops)); showToast('⚠️ Histórico grande — as operações mais antigas foram removidas. Exporte o CSV de vez em quando.','warn-t'); }
+    catch(e2){ showToast('⛔ Não consegui salvar o histórico (navegador sem espaço). Exporte o CSV.','warn-t'); }
+  }
+}
 function loadOps(){try{const d=localStorage.getItem('protrader_ops');if(d){ops=JSON.parse(d);renderHistory();updateDiary();updateStats();updateSeqBadge();}}catch(e){}}
 
 // ═══ THEME ═══
@@ -3123,7 +3276,7 @@ function motorSinal(velas,ctx){
   }
   const ult=fechadas[fechadas.length-1];
   return{ok:true,fase:'sinal',direcao:P.direcao,pontuacao:P.pontuacao,regime:L.regime,votos,placar:P,leitura:L,
-    volRel:L.volRel,atrPct:L.atrPct,precoRef:ult.close,tRef:msVela(ult)+passo,
+    volRel:L.volRel,atrPct:L.atrPct,precoRef:ult.close,tRef:msVela(ult)+passo,sintetica:!!ult.sintetica,
     bos:votos.some(v=>v.nome==='BOS'&&v.dir===P.direcao),
     alinhados:votos.filter(v=>v.dir===P.direcao).length,contra:votos.filter(v=>v.dir&&v.dir!==P.direcao).length,comLeitura:P.nV,total:votos.length,
     versao:cfg.versao};
@@ -4291,6 +4444,8 @@ async function fetchTwelveData(){
   const decimals = isCrypto ? 2 : isJPY ? 3 : 5;
 
   if(!apiKey){ startSimFeed(); return; }
+  // aba escondida e Auto desligado: não gasta cota (volta sozinho ao reabrir a aba)
+  if(document.hidden&&!autoMode){ buscaPausada=true; setApiStatus('connecting','⏸ Pausado — aba em segundo plano'); return; }
 
   if(!apiConnected) setApiStatus('connecting', 'Conectando...');
 
@@ -4312,7 +4467,8 @@ async function fetchTwelveData(){
       const ultMs = msDoCandle(realCandles[realCandles.length-1].time);
       const passo = TD_MS_INTERVALO[currentInterval] || 60000;
       // fresco = a vela mais nova começou há no máximo 2 velas (antes aceitava 5 min de atraso no M1)
-      dadosFrescos = !!ultMs && (Date.now() - ultMs) <= 2*passo + 15000;
+      // a vela mais nova publicada pode ter até ~2 min (atraso de publicação da API)
+      dadosFrescos = !!ultMs && (Date.now() - ultMs) <= 3*passo + 15000;
       const uso = `${tdUsoHoje()}/${TD_POR_DIA} consultas hoje`;
       if(dadosFrescos) setApiStatus('connected', `✓ DADOS REAIS — ${realCandles.length} candles ${currentInterval} · ${uso}`);
       else setApiStatus('connecting', `⏸ Candles parados desde ${String(realCandles[realCandles.length-1].time).slice(11,16)} BRT — mercado fechado? · ${uso}`);
@@ -4351,8 +4507,6 @@ async function fetchTwelveData(){
       agendarBusca();   // próxima busca logo após a virada do minuto (1 consulta/min)
       resolverPendentes();
       atualizarVariacaoPar(pair, realCandles);
-      if(autoMode) runAutoScan();
-      if(window._analisarNaVirada){ window._analisarNaVirada=false; if(dadosFrescos) runAnalysis(); }
       return;
 
     }catch(e){ continue; }
@@ -5108,14 +5262,15 @@ function sugerirEntrada(confianca){
   else if(perdasSeguidas===1){ mult*=0.75; motivos.push('perda anterior — reduz 25%'); }
 
   // 2. Histórico real vs ponto de equilíbrio
-  const hist=calcRealPnL('total');
+  // tamanho da entrada só reage a resultado CONFIRMADO na Valyn (o da API pode ser otimista)
+  const hist=historicoConfirmado();
   if(hist.total>=20){
     if(hist.wr < st.breakEven){
       mult*=0.6;
-      motivos.push(`acerto ${(hist.wr*100).toFixed(0)}% abaixo do equilíbrio (${(st.breakEven*100).toFixed(1)}%)`);
+      motivos.push(`acerto confirmado ${(hist.wr*100).toFixed(0)}% abaixo do equilíbrio (${(st.breakEven*100).toFixed(1)}%)`);
     } else if(hist.wr > st.breakEven+0.08){
       mult*=1.15;   // teto baixo de propósito
-      motivos.push('histórico consistente acima do equilíbrio');
+      motivos.push('acerto confirmado na Valyn acima do equilíbrio');
     }
   }
 
@@ -5855,7 +6010,7 @@ async function sendTelegramSignal(r){
   const msg=`${isCall?'🟢':'🔴'} *${r.dir} — ${r.pair}*
 
 💰 Preço: \`${r.price}\`
-🎯 Pontuação: *${r.conf}/100* (${r.alinhados} de ${r.comLeitura} indicadores)
+🎯 Indicadores a favor: *${r.alinhados} de ${r.comLeitura}*
 📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral'}
 ⏰ Expiração: ${r.exp}${r.bos?'\n🧱 BOS: rompimento a favor ✓':''}
 ⏱ *Entre até ${r.validoAte?new Date(r.validoAte).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}):'—'} BRT* — depois disso o sinal não vale
@@ -5863,7 +6018,7 @@ async function sendTelegramSignal(r){
 
 [📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)
 
-_O resultado sai sozinho em ~1 min. Responda_ *W* _ou_ *L* _só para corrigir pelo preço da corretora._
+_O resultado sai sozinho em ~1 min. Depois, responda_ *W* _ou_ *L* _com o que a Valyn mostrou — é isso que mede se o sinal vale na corretora._
 ⚡ _ProTrader AI_`;
   await sendTelegramMsg(msg);
   if(r.id) pendingTgSignalId=r.id;
@@ -5912,14 +6067,14 @@ function startTelegramPolling(){
           {const _o=ops.find(o=>o.id===pendingTgSignalId); if(_o&&_o.entrou===false){_o.entrou=true;}}
           markResultAndSave(pendingTgSignalId,'win');
           pendingTgSignalId=null;
-          await sendTelegramMsg('✅ *WIN registrado* (pelo preço da corretora).');
+          await sendTelegramMsg('✅ *WIN* registrado conforme a Valyn.');
           showToast('✅ WIN registrado pelo Telegram!','call-t');
           updateSessionCounter();
         } else if(text==='L'||text==='LOSS'){
           {const _o=ops.find(o=>o.id===pendingTgSignalId); if(_o&&_o.entrou===false){_o.entrou=true;}}
           markResultAndSave(pendingTgSignalId,'loss');
           pendingTgSignalId=null;
-          await sendTelegramMsg('❌ *LOSS registrado* (pelo preço da corretora).');
+          await sendTelegramMsg('❌ *LOSS* registrado conforme a Valyn.');
           showToast('❌ LOSS registrado pelo Telegram!','put-t');
           updateSessionCounter();
         }
@@ -6131,6 +6286,8 @@ setTimeout(updateSeqVisual, 800);
 setTimeout(renderMLPanel, 900);
 bankStopTriggered=false;
 startPriceFeed();
+agendarCiclo();                        // 1 s após cada virada: vela pelo preço em tempo real (Auto / análise agendada)
+setInterval(checarExpiracoes,1000);    // saída pelo preço em tempo real no segundo da expiração
 fetchNews();
 startUpdateCounter();
 checkAutoTheme();
@@ -6242,6 +6399,13 @@ setTimeout(showDaySummary, 3000);
 // ║    próxima); painel com BOS, atraso de entrada e concordância API ║
 // ║    × corretora; % dos pares reais (antes eram números fixos);     ║
 // ║    correlação só sob demanda.                                     ║
+// ║ 2026.10.05c — Medido ao vivo: a API publica a vela 10–40 s depois ║
+// ║    de fechar (a versão b esperava e o sinal saía 1 vela tarde).   ║
+// ║    Agora 1 s após a virada o preço em tempo real monta a vela    ║
+// ║    (simulado: 65,9%). Entrada e saída pelo preço em tempo real;   ║
+// ║    confirmação ✓igual/≠diferente na Valyn; mão só sobe com        ║
+// ║    resultado confirmado; acerto no lugar de "100/100"; pausa com  ║
+// ║    a aba escondida; histórico podado (3.000 ops).                 ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
