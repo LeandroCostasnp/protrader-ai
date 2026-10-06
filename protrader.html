@@ -6,7 +6,6 @@
   <link rel="shortcut icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProTrader AI — Valyn Trade</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 /* NEWS BANNER */
@@ -127,11 +126,6 @@ body.light-theme{color-scheme:light;--bg:#F0F4F8;--s1:#FFFFFF;--s2:#F5F8FC;--s3:
 body.night-mode{--bg:#02050A;--s1:#060B13;--s2:#09111C;--s3:#0D1725;--br:#15202E;--accent:#00B894;--blue:#2E8BD8;--red:#E04558;--green:#00B894;--gold:#E0A030;--purple:#7C5CE0;--text:#C2D4E8;--muted:#4E6A88;--dim:#121C2A;color-scheme:dark;}
 :root{--dimtxt:#4F6886;} body.night-mode{--dimtxt:#4F6886;} body.light-theme{--dimtxt:#8AA0B8;}
 [style*="color:var(--dim)"]{color:var(--dimtxt)!important;}
-body.presentation-mode #tbPrice,body.presentation-mode #tbDelta,body.presentation-mode #hWin,body.presentation-mode #hLoss,body.presentation-mode #hWR,body.presentation-mode .stat-val,body.presentation-mode #bancaEntrada,body.presentation-mode #bancaStop,body.presentation-mode #bancaMeta,body.presentation-mode #bancaSaldo,body.presentation-mode .di-pair{filter:blur(5px);user-select:none;transition:filter .2s;}
-body.presentation-mode #tbPrice:hover,body.presentation-mode .stat-val:hover{filter:blur(0);}
-.pres-badge{display:none;padding:2px 8px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:4px;font-size:9px;font-weight:700;color:var(--gold);}
-body.presentation-mode .pres-badge{display:inline-block;}
-body.night-mode{--bg:#02050A;--s1:#060B13;--s2:#09111C;--s3:#0D1725;--br:#15202E;--accent:#00B894;--blue:#2E8BD8;--red:#E04558;--green:#00B894;--gold:#E0A030;--purple:#7C5CE0;--text:#C2D4E8;--muted:#4E6A88;--dim:#121C2A;color-scheme:dark;}
 body.presentation-mode #tbPrice,body.presentation-mode #tbDelta,body.presentation-mode #hWin,body.presentation-mode #hLoss,body.presentation-mode #hWR,body.presentation-mode .stat-val,body.presentation-mode #bancaEntrada,body.presentation-mode #bancaStop,body.presentation-mode #bancaMeta,body.presentation-mode #bancaSaldo,body.presentation-mode .di-pair{filter:blur(5px);user-select:none;transition:filter .2s;}
 body.presentation-mode #tbPrice:hover,body.presentation-mode .stat-val:hover{filter:blur(0);}
 .pres-badge{display:none;padding:2px 8px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:4px;font-size:9px;font-weight:700;color:var(--gold);}
@@ -1363,7 +1357,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06f (3 chaves da Twelve Data com troca automática, tema escuro noturno; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.06g (auditoria: calendário blindado, avisos sem sumir, limpeza; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -1823,7 +1817,9 @@ function playAlert(){[880,660,880,660].forEach((f,i)=>beep(f,getAC().currentTime
 function showToast(msg,cls){
   const t=document.getElementById('toast'); t.className='toast '+cls+' show';
   document.getElementById('toastMsg').textContent=msg;
-  setTimeout(()=>t.classList.remove('show'),3500);
+  clearTimeout(showToast._tm); // um só temporizador: o aviso novo não some pelo relógio do anterior
+  const ms=Math.min(9000,Math.max(3500,String(msg||'').length*45));
+  showToast._tm=setTimeout(()=>t.classList.remove('show'),ms);
 }
 
 // ═══ RESET ═══
@@ -3948,8 +3944,8 @@ function detectBOSCHOCH(candles,highs,lows){
   const bosBear=price<sl1.val&&prevPrice>=sl1.val;
   const choch=(bearStr&&bosBull)||(bullStr&&bosBear);
   let bos='none',signal='neutro',msg='';
-  if(bosBull&&!choch){bos='bull';signal='CALL';msg='🔴 BOS Bullish confirmado';}
-  else if(bosBear&&!choch){bos='bear';signal='PUT';msg='🔴 BOS Bearish confirmado';}
+  if(bosBull&&!choch){bos='bull';signal='CALL';msg='🟢 BOS de alta confirmado';}
+  else if(bosBear&&!choch){bos='bear';signal='PUT';msg='🔴 BOS de baixa confirmado';}
   else if(choch&&bosBull){bos='choch_bull';signal='CALL';msg='⚡ CHOCH Bullish — reversão!';}
   else if(choch&&bosBear){bos='choch_bear';signal='PUT';msg='⚡ CHOCH Bearish — reversão!';}
   return{bos,choch,structure:bullStr?'ALTA (HH+HL)':bearStr?'BAIXA (LH+LL)':'Indefinida',
@@ -5026,34 +5022,11 @@ function renderTrend(candles){
 
 // ─── SIM FEED (quando sem API) ───
 function startSimFeed(){
-  // Antes: inventava preços com Math.random quando não havia chave.
-  // Agora: só avisa — preço inventado na tela parece real.
+  // Sem chave: só avisa — preço inventado na tela parece real (a simulação antiga com Math.random foi apagada)
   clearInterval(priceInterval); priceInterval=null;
   dadosFrescos=false;
   setApiStatus('connecting','⛔ Sem chave da API — sem dados reais, sem sinais');
   const tagEl=document.getElementById('priceTag'); if(tagEl){tagEl.textContent='SEM DADOS';tagEl.style.color='var(--red)';}
-  return;
-  // (código antigo de simulação mantido abaixo só como referência; não executa)
-  const isJPY=pair.includes('JPY');
-  const isCrypto=pair.includes('BTC')||pair.includes('ETH');
-  const vol=isCrypto?0.003:isJPY?0.002:0.0003;
-  lastFetchedPrice=parseFloat(price)||1.08432;
-  priceInterval=setInterval(()=>{
-    const prev=lastFetchedPrice;
-    const move=(Math.random()-.48)*prev*vol;
-    const newP=Math.max(prev+move,.0001);
-    const dec=isCrypto?2:isJPY?3:5;
-    price=newP.toFixed(dec);
-    lastFetchedPrice=newP;
-    const pct=(move/prev*100);
-    chg=(pct>=0?'+':'')+pct.toFixed(2)+'%';
-    const priceEl=document.getElementById('tbPrice');
-    priceEl.textContent=price;
-    priceEl.className='tb-price'+(move>0?' price-up':' price-down');
-    const dEl=document.getElementById('tbDelta');
-    dEl.textContent=(pct>=0?'+':'')+pct.toFixed(3)+'%';
-    dEl.className='tb-delta'+(pct<0?' neg':'');
-  },5000);
 }
 
 function startPriceFeed(){
@@ -5104,12 +5077,14 @@ async function fetchNews(){
   calOrigem=origem; calSalvoEm=salvo&&origem.startsWith('salvo')?salvo.t:Date.now();
   if(raw){
     const agora=Date.now();
-    newsData=raw.filter(e=>e.impact==='High'||e.impact==='Medium').map(e=>{
+    const limpo=(x,max)=>String(x==null?'':x).replace(/[<>`"\\]/g,'').replace(/'/g,'’').slice(0,max||80);
+    newsData=raw.filter(e=>e&&(e.impact==='High'||e.impact==='Medium')).map(e=>{
       const ts=Date.parse(e.date); if(isNaN(ts)) return null;
+      const titulo=limpo(e.title,90);
       return{
         time:new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}),
-        name:e.title, title:e.title, currency:e.country, impact:e.impact==='High'?'high':'medium',
-        ts, minutes_away:Math.round((ts-agora)/60000), forecast:e.forecast||'', previous:e.previous||''
+        name:titulo, title:titulo, currency:limpo(e.country,4), impact:e.impact==='High'?'high':'medium',
+        ts, minutes_away:Math.round((ts-agora)/60000), forecast:limpo(e.forecast,16), previous:limpo(e.previous,16)
       };
     }).filter(n=>n&&n.minutes_away>=-120&&n.minutes_away<=24*60).sort((a,b)=>a.ts-b.ts);
     renderNews(); checkNewsAlert(); if(typeof surfTick==='function') surfTick();
@@ -5392,6 +5367,7 @@ async function exportPDF(){
   showToast('📄 Gerando PDF...','scan-t');
 
   try{
+    if(!window.jspdf) await new Promise((ok,falhou)=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.crossOrigin='anonymous'; sc.onload=ok; sc.onerror=()=>falhou(new Error('não consegui baixar o gerador de PDF')); document.head.appendChild(sc); });
     const{jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const w=doc.internal.pageSize.getWidth();
@@ -6687,7 +6663,6 @@ startUpdateCounter();
 checkAutoTheme();
 setTimeout(startLivePatternDetection, 3000);
 setTimeout(renderCorrelationPanel,4000);
-setInterval(checkAutoTheme, 300000);
 setInterval(checkWeeklyReport, 300000);
 setInterval(checkDailyReport, 60000);
 setTimeout(()=>{loadTVScript('1');setTimeout(initChartCrosshair,600);checkMobileLayout();},800);
@@ -6840,6 +6815,11 @@ setTimeout(showDaySummary, 3000);
 // ║    6h); paleta noturna sem filtro, texto secundário legível.     ║
 // ║    Telegram enxuto: sinal sem BOS/vela/prazo/rodapé; resultado   ║
 // ║    só "✅ WIN — CALL par" e já conta no placar (WIN e LOSS).     ║
+// ║ 2026.10.06g — Auditoria: estruturas (BOS/CHOCH/SWEEP) sem olhar ║
+// ║    o futuro (3.713 momentos, 0 diferenças); calendário limpo     ║
+// ║    antes de ir para a tela (vinha de proxy público direto para   ║
+// ║    innerHTML); aviso novo não some pelo relógio do anterior;     ║
+// ║    código morto e CSS repetido removidos; BOS de alta em verde.  ║
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
