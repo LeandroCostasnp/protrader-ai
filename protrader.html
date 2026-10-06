@@ -48,6 +48,7 @@
   --br:#182232;--accent:#00D4AA;--blue:#0098FF;
   --red:#FF3B55;--green:#00D4AA;--gold:#F5A623;--purple:#8B5CF6;
   --text:#D8E8F8;--muted:#3A5878;--dim:#182030;
+  color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
@@ -122,13 +123,15 @@ header{height:46px;min-height:46px;background:var(--s1);border-bottom:1px solid 
 /* THEME toggle */
 .btn-theme{padding:4px 8px;background:var(--s2);border:1px solid var(--br);border-radius:5px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;}
 .btn-theme:hover{color:var(--text);}
-body.light-theme{--bg:#F0F4F8;--s1:#FFFFFF;--s2:#F5F8FC;--s3:#EBF0F7;--br:#D0DCE8;--text:#1A2C40;--muted:#6A8AAA;--dim:#D8E4F0;}
-body.night-mode{--bg:#020408;--s1:#060C14;--s2:#0A1220;--s3:#0E1828;--br:#141E2A;--accent:#00B894;--red:#CC2E44;--green:#00B894;--text:#B8D0E8;--muted:#2A4060;filter:brightness(0.88) saturate(0.85);}
+body.light-theme{color-scheme:light;--bg:#F0F4F8;--s1:#FFFFFF;--s2:#F5F8FC;--s3:#EBF0F7;--br:#D0DCE8;--text:#1A2C40;--muted:#6A8AAA;--dim:#D8E4F0;}
+body.night-mode{--bg:#02050A;--s1:#060B13;--s2:#09111C;--s3:#0D1725;--br:#15202E;--accent:#00B894;--blue:#2E8BD8;--red:#E04558;--green:#00B894;--gold:#E0A030;--purple:#7C5CE0;--text:#C2D4E8;--muted:#4E6A88;--dim:#121C2A;color-scheme:dark;}
+:root{--dimtxt:#4F6886;} body.night-mode{--dimtxt:#4F6886;} body.light-theme{--dimtxt:#8AA0B8;}
+[style*="color:var(--dim)"]{color:var(--dimtxt)!important;}
 body.presentation-mode #tbPrice,body.presentation-mode #tbDelta,body.presentation-mode #hWin,body.presentation-mode #hLoss,body.presentation-mode #hWR,body.presentation-mode .stat-val,body.presentation-mode #bancaEntrada,body.presentation-mode #bancaStop,body.presentation-mode #bancaMeta,body.presentation-mode #bancaSaldo,body.presentation-mode .di-pair{filter:blur(5px);user-select:none;transition:filter .2s;}
 body.presentation-mode #tbPrice:hover,body.presentation-mode .stat-val:hover{filter:blur(0);}
 .pres-badge{display:none;padding:2px 8px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:4px;font-size:9px;font-weight:700;color:var(--gold);}
 body.presentation-mode .pres-badge{display:inline-block;}
-body.night-mode{--bg:#020408;--s1:#060C14;--s2:#0A1220;--s3:#0E1828;--br:#141E2A;--accent:#00B894;--red:#CC2E44;--green:#00B894;--text:#B8D0E8;--muted:#2A4060;filter:brightness(0.88) saturate(0.85);}
+body.night-mode{--bg:#02050A;--s1:#060B13;--s2:#09111C;--s3:#0D1725;--br:#15202E;--accent:#00B894;--blue:#2E8BD8;--red:#E04558;--green:#00B894;--gold:#E0A030;--purple:#7C5CE0;--text:#C2D4E8;--muted:#4E6A88;--dim:#121C2A;color-scheme:dark;}
 body.presentation-mode #tbPrice,body.presentation-mode #tbDelta,body.presentation-mode #hWin,body.presentation-mode #hLoss,body.presentation-mode #hWR,body.presentation-mode .stat-val,body.presentation-mode #bancaEntrada,body.presentation-mode #bancaStop,body.presentation-mode #bancaMeta,body.presentation-mode #bancaSaldo,body.presentation-mode .di-pair{filter:blur(5px);user-select:none;transition:filter .2s;}
 body.presentation-mode #tbPrice:hover,body.presentation-mode .stat-val:hover{filter:blur(0);}
 .pres-badge{display:none;padding:2px 8px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:4px;font-size:9px;font-weight:700;color:var(--gold);}
@@ -678,7 +681,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 #at2{white-space:pre-line;}
 </style>
 </head>
-<body>
+<body class="night-mode">
 <div id="splashScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0E1A;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .8s ease;">
   <img src="data:image/jpeg;base64,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" alt="ProTrader Bot" style="width:180px;height:180px;border-radius:50%;object-fit:cover;border:3px solid #00D4AA;box-shadow:0 0 40px rgba(0,212,170,.4);animation:splashPulse 2s ease-in-out infinite;">
   <div style="margin-top:20px;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;color:#E8F4FF;letter-spacing:2px;">PROTRADER <span style="color:#00D4AA;">BOT</span></div>
@@ -718,8 +721,8 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
     <div class="hdr-stat wr">📊 <span id="hWR">—</span></div>
     <div class="seq-badge" id="seqBadge"></div>
     <div class="hdr-stat sess" id="hSess">🕐 —</div>
-    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
-    <button class="btn-theme" id="btnNight" onclick="toggleNightMode()" title="Modo Noturno">🌃</button>
+    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Tema claro/escuro (padrão: escuro noturno)">🌙</button>
+    <button class="btn-theme" id="btnNight" onclick="toggleNightMode()" title="Escuro noturno liga/desliga">☀️</button>
     <button class="btn-theme" id="btnPres" onclick="togglePresMode()" title="Modo Apresentação">👁️</button>
     <button class="btn-theme" id="btnCompact" onclick="toggleCompactMode()" title="Modo Compacto">⊟</button>
     <span class="pres-badge">APRESENTAÇÃO</span>
@@ -1138,6 +1141,27 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <input type="checkbox" id="evitarFechamentoNY" checked autocomplete="off" onchange="salvarCfgMotor();updateSession();" style="margin-top:2px;">
         <span><b style="color:var(--text);">Evitar fechamento de NY</b> (17h–20h em Nova York)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 54,9% · 51,1% nesse horário (o empate) × ~73% no resto do dia</span></span>
       </label>
+      <div style="margin:2px 0 8px;padding:7px;border:1px solid var(--br);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.4;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="horarioAutoOn" autocomplete="off" onchange="salvarHorarioAuto()">
+          <b style="color:var(--text);">Horário do Auto</b> <span style="font-size:9px;">(relógio do aparelho)</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
+          das <input type="time" id="horarioAutoIni" value="04:00" autocomplete="off" onchange="salvarHorarioAuto()" style="background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:11px;padding:2px 4px;">
+          às <input type="time" id="horarioAutoFim" value="12:00" autocomplete="off" onchange="salvarHorarioAuto()" style="background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:11px;padding:2px 4px;">
+        </div>
+        <div id="horarioAutoInfo" style="font-size:9px;margin-top:4px;"></div>
+        <div style="font-size:9px;margin-top:3px;color:var(--dim);">Com 3 chaves (2.400/dia) o Auto aguenta o dia todo. A cota zera às 20h MT (21h de Brasília). Nos dados: Londres + overlap (04h–12h MT) 73–76% · Ásia (20h–03h MT) 74%.</div>
+      </div>
+      <div style="margin:0 0 8px;padding:7px;border:1px solid var(--br);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.4;">
+        <b style="color:var(--text);">Chaves da Twelve Data</b> <span id="chaveAtualInfo" style="font-size:9px;"></span>
+        <div id="chavesLista" style="margin-top:4px;"></div>
+        <div style="display:flex;gap:4px;margin-top:5px;">
+          <input id="chaveNova" type="text" placeholder="cole uma chave extra (opcional)" autocomplete="off" style="flex:1;min-width:0;background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:10px;padding:3px 5px;font-family:'JetBrains Mono',monospace;">
+          <button onclick="salvarChaveTD()" style="padding:3px 8px;background:rgba(0,152,255,.12);border:1px solid rgba(0,152,255,.3);border-radius:4px;color:var(--blue);font-size:10px;font-weight:700;cursor:pointer;">Usar</button>
+        </div>
+        <div style="font-size:9px;margin-top:3px;color:var(--dim);">Usa uma por vez; quando a cota do dia (800) de uma acaba, passa sozinho para a próxima. Chave colada aqui fica só neste aparelho e entra na frente. Campo vazio + Usar = só as chaves do código.</div>
+      </div>
       <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
       <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
     </div>
@@ -1339,7 +1363,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06d (horário pelos dados, indicadores ao vivo, calendário com cópia salva; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.06f (3 chaves da Twelve Data com troca automática, tema escuro noturno; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -1453,13 +1477,15 @@ const TD_POR_MIN=7, TD_POR_DIA=800;
 const TD_CACHE=new Map(), TD_EM_VOO=new Map(), TD_SIMBOLO_RUIM=new Set();
 let tdJanela=[], tdBloqueadoAte=0, tdMotivoBloqueio='';
 function tdHojeUTC(){return new Date().toISOString().slice(0,10);}
-function tdUsoHoje(){
-  try{const o=JSON.parse(localStorage.getItem('protrader_td_uso')||'{}');return o.d===tdHojeUTC()?(o.n||0):0;}catch(e){return 0;}
-}
-function tdContar(){
-  const n=tdUsoHoje()+1;
-  try{localStorage.setItem('protrader_td_uso',JSON.stringify({d:tdHojeUTC(),n}));}catch(e){ /* sem storage */ }
-  if(n===Math.round(TD_POR_DIA*0.8)) showToast(`⚠️ API: ${n}/${TD_POR_DIA} consultas hoje — a cota do plano gratuito está acabando`,'warn-t');
+function tdUsoHoje(){ return tdUsoDe(apiKey); }
+function tdContar(k){
+  k=k||apiKey;
+  const n=tdSomarUso(k);
+  if(n===Math.round(TD_POR_DIA*0.8)){
+    const resto=tdChaves().filter(x=>x!==k&&!tdEsgotada(x)).length;
+    showToast(`⚠️ API: chave …${String(k).slice(-4)} em ${n}/${TD_POR_DIA} hoje — ${resto?`depois dela ainda há ${resto} chave${resto>1?'s':''} (troca sozinha)`:'é a última chave com cota'}`,'warn-t');
+  }
+  try{ mostrarChaveAtual(); }catch(e){}
   return n;
 }
 function tdProxMeiaNoiteUTC(){const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1);}
@@ -1499,24 +1525,34 @@ async function tdGet(endpoint,params,opts){
   const cache=TD_CACHE.get(chave);
   if(cache&&Date.now()-cache.t<ttl) return cache.d;
   if(params.symbol&&TD_SIMBOLO_RUIM.has(params.symbol)) return cache?cache.d:null;
-  if(TD_EM_VOO.has(chave)) return TD_EM_VOO.get(chave);
+  if(TD_EM_VOO.has(chave)){ const r=await TD_EM_VOO.get(chave); return r&&r.__trocouChave?tdGet(endpoint,params,opts):r; }
   if(Date.now()<tdBloqueadoAte) return cache?cache.d:null;
-  if(tdUsoHoje()>=TD_POR_DIA){
+  if(tdEsgotada(apiKey)&&!tdProximaChave('cota do dia acabou')){
     tdBloqueadoAte=tdProxMeiaNoiteUTC(); tdMotivoBloqueio='cota do dia esgotada'; avisarCotaEsgotada();
     return cache?cache.d:null;
   }
   const temVaga=prioridade==='alta'?await tdEsperarVaga(opts.espera||20000):tdVagaAgora();
   if(!temVaga) return cache?cache.d:null;
-  const url=`https://api.twelvedata.com/${endpoint}?`+new URLSearchParams({...params,apikey:apiKey,format:'JSON'}).toString();
+  if(TD_EM_VOO.has(chave)){ const r=await TD_EM_VOO.get(chave); return r&&r.__trocouChave?tdGet(endpoint,params,opts):r; } // outra chamada igual saiu enquanto esperava vaga
+  const chaveUsada=apiKey;
+  const url=`https://api.twelvedata.com/${endpoint}?`+new URLSearchParams({...params,apikey:chaveUsada,format:'JSON'}).toString();
   const tarefa=(async()=>{
-    tdJanela.push(Date.now()); tdContar();
+    tdJanela.push(Date.now()); tdContar(chaveUsada);
     const d=await tdBaixar(url,endpoint==='price');
     if(!d) return cache?cache.d:null;
     if(d.status==='error'||(d.code&&d.code!==200)){
       const msg=String(d.message||'');
       if(d.code===429){
-        if(/day|daily/i.test(msg)){tdBloqueadoAte=tdProxMeiaNoiteUTC();tdMotivoBloqueio='cota do dia esgotada';avisarCotaEsgotada();}
+        if(/day|daily/i.test(msg)){
+          tdMarcarEsgotada(chaveUsada);
+          if(apiKey!==chaveUsada||tdProximaChave('cota do dia acabou')) return {__trocouChave:true}; // repete a consulta com a próxima chave
+          tdBloqueadoAte=tdProxMeiaNoiteUTC();tdMotivoBloqueio='cota do dia esgotada';avisarCotaEsgotada();
+        }
         else {tdBloqueadoAte=Date.now()+60000;tdMotivoBloqueio='limite por minuto';}
+      } else if(d.code===401||d.code===403){
+        tdMarcarEsgotada(chaveUsada); // chave recusada (inválida/bloqueada): fora até amanhã
+        if(apiKey!==chaveUsada||tdProximaChave('recusada pela API')) return {__trocouChave:true};
+        tdBloqueadoAte=tdProxMeiaNoiteUTC();tdMotivoBloqueio='chaves recusadas';avisarCotaEsgotada();
       } else if((d.code===400||d.code===404)&&params.symbol&&endpoint==='time_series'){
         TD_SIMBOLO_RUIM.add(params.symbol);
       }
@@ -1527,7 +1563,9 @@ async function tdGet(endpoint,params,opts){
     return d;
   })();
   TD_EM_VOO.set(chave,tarefa);
-  try{return await tarefa;}finally{TD_EM_VOO.delete(chave);}
+  let r;
+  try{ r=await tarefa; }finally{ TD_EM_VOO.delete(chave); }
+  return r&&r.__trocouChave?tdGet(endpoint,params,opts):r; // cada troca marca 1 chave como gasta: no máximo N repetições
 }
 // Série de candles já em ordem cronológica e com horário de Brasília
 const VELAS_N=300; // mesma quantidade em todas as buscas de 1 min: 1 consulta serve tela, Auto, scanner, correlação e resultado (cache)
@@ -1556,7 +1594,9 @@ function agendarBusca(){
   let espera=(seg<38000?40000-seg:100000-seg);
   if(Math.floor((agora+espera)/60000)%2===1) espera+=60000;
   if(!forexAberto()) espera=10*60000;
-  priceInterval=setTimeout(()=>{priceInterval=null;fetchTwelveData();},espera);
+  priceInterval=setTimeout(()=>{priceInterval=null;
+    if(!dentroHorarioAuto()){ setApiStatus('connecting',`⏸ Fora do horário do Auto (${textoHorarioAuto()}) — sem consultas`); agendarBusca(); return; }
+    fetchTwelveData();},espera);
 }
 
 
@@ -2155,8 +2195,11 @@ function posResultado(o){
   if(fechada(o)&&!o.mlAprendido&&o.origem!=='noticia'&&o.votos){ updateMLAfterResult(o.result,o.id); o.mlAprendido=true; delete o.votos; }
   if(o.tg&&o.resolvidoPor==='api'&&!o.tgResultado&&typeof tgEnabled!=='undefined'&&tgEnabled){
     o.tgResultado=true;
+    // sinal que foi para o Telegram conta sozinho no placar (WIN e LOSS: contar só WIN desligaria o stop de 2 losses)
+    if(fechada(o)&&o.entrou===false){ o.entrou=true; o.entrouAuto=true; }
     const r=o.result==='win'?'✅ *WIN*':o.result==='loss'?'❌ *LOSS*':'➖ *EMPATE* (valor devolvido)';
-    sendTelegram(`${r} — ${o.dir} ${o.pair}\nEntrada ${fmtPreco(o.pair,o.entrada.preco)} → saída ${fmtPreco(o.pair,o.saida&&o.saida.preco)}\n_Preço em tempo real da Twelve Data. Responda W ou L com o resultado da Valyn para confirmar._`);
+    sendTelegram(`${r} — ${o.dir} ${o.pair}`);
+    if(fechada(o)) showToast(`${o.result==='win'?'✅ WIN':'❌ LOSS'} — ${o.dir} ${o.pair} · contado no placar`,o.result==='win'?'call-t':'put-t');
   }
 }
 function atualizarPaineisResultado(){
@@ -2472,8 +2515,9 @@ function rotuloFuso(){
     const m={'America/Cuiaba':'MT','America/Campo_Grande':'MS','America/Manaus':'AM','America/Porto_Velho':'RO','America/Boa_Vista':'RR','America/Rio_Branco':'AC','America/Noronha':'Noronha'};
     return m[tz]||tz.split('/').pop().replace(/_/g,' ')||'local'; }catch(e){ return 'local'; }
 }
-function horaDupla(ms){
-  const l=horaLocal(ms,true), b=new Date(ms).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'});
+function horaDupla(ms,seg){
+  seg=seg!==false;
+  const l=horaLocal(ms,seg), b=new Date(ms).toLocaleTimeString('pt-BR',seg?{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}:{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
   return l===b?`${b} (Brasília)`:`${l} (${rotuloFuso()}) · ${b} (Brasília)`;
 }
 
@@ -2528,9 +2572,11 @@ function agendarCiclo(){
 async function cicloMinuto(){
   try{
     const pendente=!!window._analisarNaVirada;
-    if(forexAberto()&&(autoMode||pendente)){
+    const autoAgora=autoMode&&dentroHorarioAuto(); // fora do horário do Auto: sem consulta
+    avisarForaHorario();
+    if(forexAberto()&&(autoAgora||pendente)){
       await velasAoVivo(pair,{garantir:true});
-      if(autoMode) await runAutoScan();
+      if(autoAgora) await runAutoScan();
       if(pendente){ window._analisarNaVirada=false; runAnalysis(); }
     }
   }catch(e){ console.warn('ciclo do minuto:',e); }
@@ -2601,9 +2647,9 @@ function podarHistorico(forte){
 let avisoCotaDia='';
 function avisarCotaEsgotada(){
   const hoje=tdHojeUTC(); if(avisoCotaDia===hoje) return; avisoCotaDia=hoje;
-  const volta=horaLocal(tdProxMeiaNoiteUTC());
-  showToast(`⛔ Cota diária da Twelve Data esgotada — sem dados novos até ${volta} (seu horário). O Auto não gera sinais até lá.`,'warn-t');
-  if(typeof autoMode!=='undefined'&&autoMode&&typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegram(`⛔ *Cota diária da API esgotada* — o Auto fica sem dados até ${horaDupla(tdProxMeiaNoiteUTC())}.`);
+  const volta=horaLocal(tdProxMeiaNoiteUTC()), n=tdChaves().length;
+  showToast(`⛔ As ${n} chaves da Twelve Data estão sem cota hoje — sem dados novos até ${volta} (seu horário). O Auto não gera sinais até lá.`,'warn-t');
+  if(typeof autoMode!=='undefined'&&autoMode&&typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegram(`⛔ *As ${n} chaves da API estão sem cota hoje* — o Auto fica sem dados até ${horaDupla(tdProxMeiaNoiteUTC(),false)}. Se acontecer de novo, ligue o *Horário do Auto* em Configurações.`);
 }
 let ocultoDesde=null;
 document.addEventListener('visibilitychange',()=>{
@@ -2637,6 +2683,113 @@ function soltarTravaAuto(){ if(_soltarWebLock){ const r=_soltarWebLock; _soltarW
 setInterval(renovarTravaAuto,15000);
 window.addEventListener('beforeunload',soltarTravaAuto);
 window.addEventListener('pagehide',soltarTravaAuto); // iOS não dispara beforeunload
+
+// ─── Horário do Auto (economia de cota) ───
+// A cota grátis (800/dia) zera às 00h UTC (20h MT · 21h Brasília) e dá ~8 h de Auto. Fora da janela escolhida,
+// o app não consulta a API sozinho: nem o Auto, nem a busca de velas de fundo. Ações manuais continuam funcionando.
+const HORARIO_KEY='protrader_horario_auto';
+function horarioAuto(){
+  let c=null; try{ c=JSON.parse(localStorage.getItem(HORARIO_KEY)||'null'); }catch(e){}
+  return c&&typeof c.ini==='string'&&typeof c.fim==='string'?c:{on:false,ini:'04:00',fim:'12:00'}; // 3 chaves: cota cobre o dia todo
+}
+function minHHMM(x){ const p=String(x||'').split(':'); const h=parseInt(p[0],10), m=parseInt(p[1],10); return (isFinite(h)?h:0)*60+(isFinite(m)?m:0); }
+function dentroHorarioAuto(d){
+  const c=horarioAuto(); if(c.on===false) return true;
+  d=d||new Date();
+  const agora=d.getHours()*60+d.getMinutes(), i=minHHMM(c.ini), f=minHHMM(c.fim); // relógio do aparelho
+  if(i===f) return true;
+  return i<f?(agora>=i&&agora<f):(agora>=i||agora<f); // aceita janela que passa da meia-noite
+}
+function minutosJanelaAuto(){ const c=horarioAuto(); if(c.on===false) return 1440; const i=minHHMM(c.ini), f=minHHMM(c.fim); return i===f?1440:((f-i)+1440)%1440; }
+function textoHorarioAuto(){ const c=horarioAuto(); return c.on===false?'o dia todo':`${c.ini}–${c.fim}`; }
+function atualizarInfoHorario(){
+  const el=document.getElementById('horarioAutoInfo'); if(!el) return;
+  const min=minutosJanelaAuto(), est=Math.round(min*1.5), nCh=tdChaves().length, cap=TD_POR_DIA*nCh, lim=Math.round(cap*0.95);
+  el.style.color=est>lim?'var(--red)':est>cap*0.8?'var(--gold)':'var(--dim)';
+  el.textContent=`≈ ${est.toLocaleString('pt-BR')} consultas/dia com o Auto ligado ${horarioAuto().on===false?'o dia todo':'a janela toda'} (cota: ${cap.toLocaleString('pt-BR')} = ${nCh} chave${nCh>1?'s':''} × 800).${est>lim?' Passa da cota: encurte a janela.':''} Fora da janela o app não consulta a API sozinho; o gráfico TradingView continua ao vivo.`;
+}
+function salvarHorarioAuto(){
+  const on=document.getElementById('horarioAutoOn'), i=document.getElementById('horarioAutoIni'), f=document.getElementById('horarioAutoFim');
+  const c={on:on?on.checked:true,ini:(i&&i.value)||'04:00',fim:(f&&f.value)||'12:00'};
+  try{ localStorage.setItem(HORARIO_KEY,JSON.stringify(c)); }catch(e){ /* sem storage */ }
+  atualizarInfoHorario(); _foraHorarioAvisado=null;
+  showToast(c.on?`🕐 Horário do Auto: ${c.ini}–${c.fim} (relógio do aparelho)`:`🕐 Horário do Auto desligado — Auto pode rodar o dia todo (cota: ${tdChaves().length} chaves × 800/dia)`,c.on?'call-t':'warn-t');
+  if(typeof atualizarStatusIA==='function') try{ atualizarStatusIA(); }catch(e){}
+}
+function carregarHorarioAuto(){
+  const c=horarioAuto();
+  const on=document.getElementById('horarioAutoOn'), i=document.getElementById('horarioAutoIni'), f=document.getElementById('horarioAutoFim');
+  if(on) on.checked=c.on!==false; if(i) i.value=c.ini; if(f) f.value=c.fim;
+  atualizarInfoHorario();
+}
+let _foraHorarioAvisado=null;
+function avisarForaHorario(){
+  // avisa uma vez ao entrar e ao sair da pausa (com o Auto ligado)
+  if(!autoMode){ _foraHorarioAvisado=null; return; }
+  const fora=!dentroHorarioAuto();
+  if(_foraHorarioAvisado===fora) return;
+  const primeira=_foraHorarioAvisado===null; _foraHorarioAvisado=fora;
+  if(fora) showToast(`🌙 Auto em pausa fora do horário (${textoHorarioAuto()}) — sem consultas à API até ${horarioAuto().ini}.`,'warn-t');
+  else if(!primeira) showToast(`☀️ Horário do Auto começou (${textoHorarioAuto()}) — Auto voltou a analisar.`,'call-t');
+}
+
+// ─── Chave da Twelve Data trocável na tela (fica só neste aparelho) ───
+const TD_CHAVE_KEY='protrader_td_chave';
+function chaveTDSalva(){ try{ return (localStorage.getItem(TD_CHAVE_KEY)||'').trim(); }catch(e){ return ''; } }
+function mostrarChaveAtual(){
+  const el=document.getElementById('chaveAtualInfo');
+  if(el) el.textContent=apiKey?`em uso: …${String(apiKey).slice(-4)} (${tdChaves().indexOf(apiKey)+1} de ${tdChaves().length})`:'';
+  const lista=document.getElementById('chavesLista');
+  if(lista) lista.innerHTML=tdChaves().map((k,i)=>{
+    const u=tdUsoDe(k), esg=tdEsgotada(k), atual=k===apiKey;
+    return `<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 0;color:${atual?'var(--text)':esg?'var(--red)':'var(--muted)'};"><span>${atual?'▶ ':''}${i+1}. …${k.slice(-4)}${chaveTDSalva()===k?' (deste aparelho)':''}</span><span>${esg?'esgotada hoje':u+'/800'}</span></div>`;
+  }).join('');
+}
+function salvarChaveTD(){
+  const inp=document.getElementById('chaveNova'); const v=((inp&&inp.value)||'').trim();
+  if(v&&!/^[A-Za-z0-9]{20,64}$/.test(v)){ showToast('Isso não parece uma chave da Twelve Data (só letras e números, sem espaços).','warn-t'); return; }
+  try{ if(v) localStorage.setItem(TD_CHAVE_KEY,v); else localStorage.removeItem(TD_CHAVE_KEY); }catch(e){ /* sem storage */ }
+  apiKey=v||tdChaves().find(k=>!tdEsgotada(k))||tdChaves()[0];
+  // outra conta: zera o bloqueio de cota/minuto e o cache da chave anterior
+  tdBloqueadoAte=0; tdMotivoBloqueio=''; avisoCotaDia=''; try{ TD_CACHE.clear(); }catch(e){}
+  if(inp) inp.value='';
+  mostrarChaveAtual();
+  showToast(v?`🔑 Chave …${v.slice(-4)} em uso neste aparelho (vem antes das chaves do código)`:'🔑 Voltou para as chaves do código','call-t');
+  fetchTwelveData();
+}
+
+// ─── Várias chaves da Twelve Data: usa uma por vez e passa para a próxima quando a cota do dia dela acaba ───
+// (o limite por minuto continua um só para todas: 7 consultas/min no total)
+const TD_CHAVES_CODIGO=['394eedc2e82245d0931d4fa37d12f75b','b5245df389b045209f58294b5640bfaf','c3126137d16c4d0b9f3528ea7a39aefe'];
+function tdChaves(){ const s=chaveTDSalva(); return [...new Set([...(s?[s]:[]),...TD_CHAVES_CODIGO])]; }
+const kk=k=>String(k||'').slice(-6);
+function tdUsoMapa(){
+  try{ const o=JSON.parse(localStorage.getItem('protrader_td_uso2')||'null'); if(o&&o.d===tdHojeUTC()&&o.n&&o.esg) return o; }catch(e){}
+  const m={d:tdHojeUTC(),n:{},esg:{}};
+  // herda o contador de hoje da versão de 1 chave (06e), para não gastar de novo a chave que já acabou
+  try{ const v=JSON.parse(localStorage.getItem('protrader_td_uso')||'null'); if(v&&v.d===m.d&&v.n){ const k=v.k||kk(TD_CHAVES_CODIGO[0]); m.n[k]=v.n; } }catch(e){}
+  return m;
+}
+let _tdUsoMem=null; // se o navegador não salvar, conta em memória
+function tdUsoLer(){ const m=tdUsoMapa(); if(_tdUsoMem&&_tdUsoMem.d===m.d){ for(const k in _tdUsoMem.n) m.n[k]=Math.max(m.n[k]||0,_tdUsoMem.n[k]); for(const k in _tdUsoMem.esg) m.esg[k]=1; } return m; }
+function tdUsoGravar(m){ _tdUsoMem=m; try{ localStorage.setItem('protrader_td_uso2',JSON.stringify(m)); }catch(e){ /* sem storage */ } }
+function tdUsoDe(k){ return tdUsoLer().n[kk(k)]||0; }
+function tdEsgotada(k){ const m=tdUsoLer(); return !!m.esg[kk(k)]||(m.n[kk(k)]||0)>=TD_POR_DIA; }
+function tdMarcarEsgotada(k){ const m=tdUsoLer(); m.esg[kk(k)]=1; tdUsoGravar(m); }
+function tdSomarUso(k){ const m=tdUsoLer(); m.n[kk(k)]=(m.n[kk(k)]||0)+1; tdUsoGravar(m); return m.n[kk(k)]; }
+// troca para a próxima chave com cota; devolve false se todas acabaram
+function tdProximaChave(motivo){
+  const livre=tdChaves().find(k=>!tdEsgotada(k));
+  if(!livre) return false;
+  if(livre!==apiKey){
+    const ant=apiKey; apiKey=livre; tdBloqueadoAte=0; tdMotivoBloqueio='';
+    const pos=tdChaves().indexOf(livre)+1, tot=tdChaves().length;
+    const msg=`🔑 Chave …${String(ant).slice(-4)}: ${motivo||'cota do dia acabou'} — passei para a …${livre.slice(-4)} (${pos} de ${tot}). O Auto segue normal.`;
+    showToast(msg,'warn-t');
+    mostrarChaveAtual(); atualizarInfoHorario();
+  }
+  return true;
+}
 
 // ═══ SHOW + FINALIZE AUTOMÁTICO (sem checklist) ═══
 function showAndFinalizeResult(r,opts){
@@ -2938,7 +3091,7 @@ function alternarAuto(){
     playSignalSound(true);
     if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
     renovarTravaAuto();
-    showToast(`ℹ️ Auto usa ~1,5 consulta/min (preço em tempo real + velas a cada 2 min): a cota grátis (800/dia) dura ~8h — uso hoje: ${tdUsoHoje()}/${TD_POR_DIA}. Deixe a aba visível.`,'scan-t');
+    showToast(`ℹ️ Auto usa ~1,5 consulta/min (preço em tempo real + velas a cada 2 min): ${tdChaves().length} chaves × 800/dia ≈ ${Math.round(tdChaves().length*800/90)}h de Auto — chave em uso: ${tdUsoHoje()}/${TD_POR_DIA} hoje. Horário do Auto: ${textoHorarioAuto()}. Deixe a aba visível.`,'scan-t');
     runAutoScan();
     // o ciclo do minuto (1 s após a virada) roda o Auto; aqui só o reinício diário
     const tick=()=>{ if(!autoMode) return; resetDailyCounters(); autoInterval=setTimeout(tick,proximaVirada()); };
@@ -2968,6 +3121,7 @@ async function runAutoScan(){
     // outra aba pegou a trava (esta ficou em segundo plano e o navegador atrasou a renovação): esta para
     if(!temTravaAuto()&&!(await pegarTravaAuto())){ stopAuto(); showToast('⛔ O Auto passou para outra aba deste navegador — desliguei aqui para não alertar em dobro.','warn-t'); return; }
     renovarTravaAuto();
+    if(!dentroHorarioAuto()) return; // fora do horário do Auto: nenhuma consulta
     if(!forexAberto()){ showToast('⛔ Forex fechado (fim de semana) — o Auto aguarda a reabertura.','warn-t'); return; }
     if(pausedUntil && new Date()<pausedUntil){
       showToast(`⏸ Auto pausado — retoma em ${Math.ceil((pausedUntil-new Date())/60000)}min`,'warn-t'); return;
@@ -3101,10 +3255,12 @@ function loadOps(){try{const d=localStorage.getItem('protrader_ops');if(d){ops=J
 
 // ═══ THEME ═══
 function toggleTheme(){
-  document.body.classList.toggle('light-theme');
-  const btn=document.getElementById('btnTheme');
-  btn.textContent=document.body.classList.contains('light-theme')?'🌑':'🌙';
-  try{localStorage.setItem('protrader_theme',document.body.classList.contains('light-theme')?'light':'dark');}catch(e){}
+  const claro=document.body.classList.toggle('light-theme');
+  const btn=document.getElementById('btnTheme'); if(btn) btn.textContent=claro?'🌑':'🌙';
+  // escuro = escuro noturno (padrão); claro desliga o noturno
+  document.body.classList.toggle('night-mode',!claro);
+  const b=document.getElementById('btnNight'); if(b) b.textContent=claro?'🌃':'☀️';
+  try{ localStorage.setItem('protrader_theme',claro?'light':'dark'); localStorage.setItem('protrader_night',claro?'0':'1'); localStorage.setItem('protrader_theme_manual','1'); }catch(e){}
 }
 function loadTheme(){try{if(localStorage.getItem('protrader_theme')==='light'){document.body.classList.add('light-theme');document.getElementById('btnTheme').textContent='🌑';}}catch(e){}}
 
@@ -4177,7 +4333,7 @@ function updateWaitingState(){
   // Auto ligado — está varrendo
   if(typeof autoMode!=='undefined'&&autoMode){
     const q=typeof getMarketQuality==='function'?getMarketQuality(pair):null;
-    t.textContent='Auto em '+pair+' — esperando a vela fechar';
+    t.textContent=dentroHorarioAuto()?'Auto em '+pair+' — esperando a vela fechar':'Auto em '+pair+' — em pausa até '+horarioAuto().ini+' (horário do Auto)';
     s.innerHTML=(q&&q.label?q.label+'<br>':'')+'Nenhum setup atingiu os critérios ainda.';
     return;
   }
@@ -4901,11 +5057,12 @@ function startSimFeed(){
 }
 
 function startPriceFeed(){
-  const TD_KEY = '394eedc2e82245d0931d4fa37d12f75b';
-  apiKey = TD_KEY;
-  try{ localStorage.setItem('td_api_key', TD_KEY); }catch(e){}
+  // 3 chaves no código (TD_CHAVES_CODIGO); a colada em Configurações (deste aparelho) vem primeiro
+  apiKey = tdChaves().find(k=>!tdEsgotada(k)) || tdChaves()[0];
+  try{ localStorage.setItem('td_api_key', apiKey); }catch(e){}
   const inp=document.getElementById('apiKeyInput');
-  if(inp) inp.value = TD_KEY;
+  if(inp) inp.value = apiKey;
+  mostrarChaveAtual();
   setApiStatus('connecting', 'Conectando à Twelve Data...');
   fetchTwelveData();
   // As próximas buscas são agendadas pelo próprio fetchTwelveData (1 por minuto)
@@ -5692,22 +5849,7 @@ function startUpdateCounter(){
 }
 
 // ═══ MELHORIA 3 — TEMA AUTOMÁTICO POR HORÁRIO ═══
-function checkAutoTheme(){
-  const h=new Date().getHours();
-  const shouldBeLight=h>=6&&h<18;
-  const isLight=document.body.classList.contains('light-theme');
-  // Só muda se o usuário não tiver escolhido manualmente
-  const manual=localStorage.getItem('protrader_theme_manual');
-  if(!manual){
-    if(shouldBeLight&&!isLight){
-      document.body.classList.add('light-theme');
-      document.getElementById('btnTheme').textContent='🌑';
-    } else if(!shouldBeLight&&isLight){
-      document.body.classList.remove('light-theme');
-      document.getElementById('btnTheme').textContent='🌙';
-    }
-  }
-}
+function checkAutoTheme(){ /* 06f: o app fica no escuro noturno o dia todo; tema claro só pelo botão 🌙 */ }
 // Override toggleTheme para marcar como manual
 const _origToggleTheme=toggleTheme;
 // ═══ MELHORIA 4 — RESUMO DO DIA AO FECHAR ═══
@@ -5821,12 +5963,25 @@ function toggleNightMode(){
   const on=document.body.classList.toggle('night-mode');
   const b=document.getElementById('btnNight');
   if(b) b.textContent=on?'☀️':'🌃';
-  if(on){document.body.classList.remove('light-theme');showToast('🌃 Modo Noturno — brilho reduzido','warn-t');}
-  else showToast('☀️ Modo Noturno desativado','warn-t');
-  try{localStorage.setItem('protrader_night',on?'1':'0');}catch(e){}
+  if(on){ document.body.classList.remove('light-theme'); const t=document.getElementById('btnTheme'); if(t) t.textContent='🌙'; showToast('🌃 Escuro noturno','warn-t'); }
+  else showToast('Escuro padrão (noturno desligado)','warn-t');
+  try{ localStorage.setItem('protrader_night',on?'1':'0'); if(on) localStorage.setItem('protrader_theme','dark'); }catch(e){}
 }
 function loadNightMode(){
-  try{if(localStorage.getItem('protrader_night')==='1'){document.body.classList.add('night-mode');const b=document.getElementById('btnNight');if(b)b.textContent='☀️';}}catch(e){}
+  try{
+    // 06f: todo mundo começa no escuro noturno uma vez (antes o app clareava sozinho das 6h às 18h)
+    if(localStorage.getItem('protrader_tema_06f')!=='1'){
+      localStorage.setItem('protrader_tema_06f','1'); localStorage.removeItem('protrader_theme_manual');
+      localStorage.setItem('protrader_theme','dark'); localStorage.setItem('protrader_night','1');
+    }
+  }catch(e){ /* sem storage: fica no padrão */ }
+  let noite=true, claro=false;
+  try{ noite=localStorage.getItem('protrader_night')!=='0'; claro=localStorage.getItem('protrader_theme')==='light'; }catch(e){}
+  if(claro) noite=false;
+  document.body.classList.toggle('light-theme',claro);
+  document.body.classList.toggle('night-mode',noite);
+  const b=document.getElementById('btnNight'); if(b) b.textContent=noite?'☀️':'🌃';
+  const t=document.getElementById('btnTheme'); if(t) t.textContent=claro?'🌑':'🌙';
 }
 
 // ═══ MODO APRESENTAÇÃO ═══
@@ -6250,13 +6405,9 @@ async function sendTelegramSignal(r){
 💰 Preço: \`${r.price}\`
 🎯 Indicadores a favor: *${r.alinhados} de ${r.comLeitura}*
 📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral (só rompimento com vela forte)'}
-⏰ Expiração: ${r.exp}${r.estrutura==='CHOCH'?'\n🧱 CHOCH: virada de estrutura a favor ✓':r.bos?'\n🧱 BOS: rompimento a favor ✓':''}${r.forca!=null?`\n🕯️ Vela do sinal: ${fmtForcaDir(r.forca)}${r.forca>=0?' a favor':''}`:''}
-⏱ *Entre até ${r.validoAte?horaDupla(r.validoAte):'—'}* — depois disso o sinal não vale${r.wr!=null?`\n📊 Acerto medido no par: ${r.wr}%`:''}
+⏰ Expiração: ${r.exp}${r.wr!=null?`\n📊 Acerto medido no par: ${r.wr}%`:''}
 
-[📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)
-
-_O resultado sai sozinho em ~1 min. Depois, responda_ *W* _ou_ *L* _com o que a Valyn mostrou — é isso que mede se o sinal vale na corretora._
-⚡ _ProTrader AI_`;
+[📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)`;
   await sendTelegramMsg(msg);
   if(r.id) pendingTgSignalId=r.id;
   startTelegramPolling();
@@ -6516,6 +6667,7 @@ loadNightMode();
 loadCompactMode();
 loadBanca();
 carregarCfgMotor();
+carregarHorarioAuto();
 try{const _dc=document.getElementById('donoChk');if(_dc)_dc.checked=ehDono();}catch(e){ /* sem painel */ }
 try{const _sl=document.getElementById('surfLigado');if(_sl)_sl.checked=SURF.ligado;const _se=document.getElementById('surfExp');if(_se)_se.value=String(SURF.expMin);}catch(e){ /* sem painel */ }
 setTimeout(surfTick,4000);
@@ -6676,6 +6828,18 @@ setTimeout(showDaySummary, 3000);
 // ║    dados). Sistema 73,6% em 1.736 sinais. Indicadores da lateral ║
 // ║    com a leitura real a cada minuto. Calendário com cópia salva, ║
 // ║    tempo-limite, 4 caminhos e motivo da falha na tela.           ║
+// ║ 2026.10.06e — Horário do Auto (padrão 04h–12h do aparelho): fora ║
+// ║    dele o app não consulta a API sozinho (a cota acabava de      ║
+// ║    madrugada). Chave da Twelve Data trocável em Configurações;   ║
+// ║    contador do dia por chave; aviso de cota sem segundos.        ║
+// ║ 2026.10.06f — 3 chaves da Twelve Data no código (2.400/dia):    ║
+// ║    usa uma por vez e troca sozinho quando a cota do dia de uma   ║
+// ║    acaba (429) ou ela é recusada (401/403), repetindo a mesma    ║
+// ║    consulta. Uso por chave em Configurações. Horário do Auto     ║
+// ║    vem desligado. Tema escuro noturno fixo (não clareia mais às  ║
+// ║    6h); paleta noturna sem filtro, texto secundário legível.     ║
+// ║    Telegram enxuto: sinal sem BOS/vela/prazo/rodapé; resultado   ║
+// ║    só "✅ WIN — CALL par" e já conta no placar (WIN e LOSS).     ║
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
