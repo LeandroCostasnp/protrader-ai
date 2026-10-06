@@ -837,7 +837,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
     </div>
   </div>
   <div>
-    <div class="sec">Indicadores</div>
+    <div class="sec">Indicadores <span id="indAtualizado" style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.7;"></span></div>
     <div class="ind-list">
       <div class="ind-group-lbl" style="color:var(--green);opacity:1;" title="Cada indicador sozinho prevendo a vela seguinte: ~90 mil velas, 6 pares, preço da Twelve Data">✓ Têm força nos dados · ~62% sozinhos</div>
       <div class="irow"><div><div class="iname">BOS · rompimento</div><div class="ival neut" id="v-bos">—</div></div><div class="iev" style="color:var(--green);">62%</div></div>
@@ -1132,7 +1132,11 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
       </label>
       <label style="display:flex;align-items:flex-start;gap:6px;margin:-4px 0 8px;font-size:10px;color:var(--muted);cursor:pointer;line-height:1.35;">
         <input type="checkbox" id="operarLateral" checked autocomplete="off" onchange="salvarCfgMotor()" style="margin-top:2px;">
-        <span><b style="color:var(--text);">Rompimento no lateral</b> (CHOCH/BOS + vela forte)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 75,3% (14–25/09) · 74,7% (28/09–02/10) · 70,0% em 05/10, dia novo</span></span>
+        <span><b style="color:var(--text);">Rompimento no lateral</b> (CHOCH/BOS + vela forte)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 75,9% (14–25/09) · 76,4% (28/09–02/10) · 67,9% em 05/10, dia novo</span></span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:6px;margin:-4px 0 8px;font-size:10px;color:var(--muted);cursor:pointer;line-height:1.35;">
+        <input type="checkbox" id="evitarFechamentoNY" checked autocomplete="off" onchange="salvarCfgMotor();updateSession();" style="margin-top:2px;">
+        <span><b style="color:var(--text);">Evitar fechamento de NY</b> (17h–20h em Nova York)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 54,9% · 51,1% nesse horário (o empate) × ~73% no resto do dia</span></span>
       </label>
       <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
       <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
@@ -1295,7 +1299,8 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
           • esperando a API publicar a vela (10–40 s, medido ao vivo): 49,9% — por isso o app não espera<br>
           • sem BOS: ~53% · expiração de 2 a 5 min: 45–47%<br>
           <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera.<br>
-          <b>2026.10.06c</b>: + rompimento no lateral (CHOCH/BOS + vela forte): 75,3% · 74,7% · 70,0% em 05/10. <b>Sistema completo: 72,5% em 1.832 sinais</b> (72,4% · 72,7% · 72,0%), 46% mais sinais. Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
+          <b>2026.10.06c</b>: + rompimento no lateral (CHOCH/BOS + vela forte): 75,3% · 74,7% · 70,0% em 05/10. Sistema completo: 72,5% em 1.832 sinais.<br>
+          <b>2026.10.06d</b>: sem sinal no fechamento de NY (17h–20h em NY: 54,9% · 51,1%). <b>Sistema completo: 73,6% em 1.736 sinais</b> (73,5% · 73,8% · 72,6% em 05/10). Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
           Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na Valyn" (Stats).
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
@@ -1334,7 +1339,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06c (indicadores com selo de evidência; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.06d (horário pelos dados, indicadores ao vivo, calendário com cópia salva; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -1615,62 +1620,18 @@ function showTab(i){
 
 // ═══ SESSION + REGRAS DE TRADING ═══
 function isGoodHour(){
-  // Há liquidez quando alguma praça está aberta (Ásia, Londres ou NY) em dia de forex
-  const s=estadoSessoes();
-  return s.aberto&&(s.asia||s.londres||s.ny);
+  // horário bom = mercado aberto e fora do fechamento de NY (o único horário que ficou no empate nos dados)
+  return !janelaDados().evitar;
 }
 
 // Qualidade do mercado por par e horário — mesma escala de antes (0 a 5),
 // agora calculada pelo relógio real de cada praça
 function getMarketQuality(pairName,d){
+  // Mesma régua para todos os pares, pelo que os dados mostraram (antes: tabela de "fama" por par, que punha a Ásia como ruim)
   d=d||new Date();
-  const h=((d.getUTCHours()-3)+24)%24;
-  const s=estadoSessoes(d);
-  const p=(pairName||'').replace(' (OTC)','');
-  if(!s.aberto) return{q:0,label:'Forex fechado (fim de semana)',h,active:false};
-  const tkCedo=s.toquio&&s.toquioMin<12*60; // primeira metade de Tóquio
-  const R=(q,label)=>({q,label,h,active:true});
-  switch(p){
-    case 'GBP/USD':
-      if(s.overlap) return R(5,'⭐ Overlap Londres+NY — MELHOR');
-      if(s.londres) return R(3,'Londres ativo');
-      if(s.ny) return R(2,'NY tardio');
-      if(s.asia) return R(1,'Ásia — evite');
-      break;
-    case 'USD/JPY':
-      if(s.overlap) return R(4,'⭐ NY ativo');
-      if(s.ny) return R(2,'NY tardio');
-      if(s.londres) return R(2,'Transição');
-      if(s.toquio) return R(tkCedo?4:3,tkCedo?'⭐ Tóquio ativo':'Ásia moderado');
-      if(s.asia) return R(3,'Ásia moderado');
-      break;
-    case 'AUD/USD':
-      if(s.overlap) return R(3,'NY aberto');
-      if(s.ny) return R(1,'NY tardio — evite');
-      if(s.londres) return R(2,'Transição');
-      if(s.sydney&&s.toquio) return R(4,'⭐ Sydney + Tóquio');
-      if(s.asia) return R(3,'Ásia — uma praça aberta');
-      break;
-    case 'USD/CAD':
-      if(s.overlap) return R(5,'⭐ NY+Toronto — MELHOR');
-      if(s.ny) return R(3,'NY dominante');
-      if(s.londres) return R(2,'Pré-abertura');
-      if(s.asia) return R(1,'Canadá dormindo — evite');
-      break;
-    case 'GBP/JPY':
-      if(s.overlap) return R(5,'⭐ Overlap — MELHOR');
-      if(s.ny) return R(2,'NY tardio');
-      if(s.londres) return R(4,'⭐ Londres ativo');
-      if(s.toquio) return R(tkCedo?3:2,tkCedo?'Tóquio ativo':'Ásia moderado');
-      if(s.asia) return R(2,'Ásia moderado');
-      break;
-    default: // EUR/USD e demais
-      if(s.overlap) return R(5,'⭐ Overlap Londres+NY — MELHOR');
-      if(s.londres) return R(3,'Londres ativo');
-      if(s.ny) return R(3,'NY dominante');
-      if(s.asia) return R(1,'Ásia — liquidez baixa');
-  }
-  return R(1,'Entre sessões — liquidez baixa');
+  const h=((d.getUTCHours()-3)+24)%24, J=janelaDados(d);
+  if(J.chave==='fechado') return{q:0,label:J.label,h,active:false};
+  return{q:J.q,label:`${J.label} — ${J.pct}% nos dados`,h,active:true};
 }
 
 function updateSession(){
@@ -1686,15 +1647,15 @@ function updateSession(){
   st('st-ny',faixaBRT('ny')+' BRT');
   const abreLd=paraBRT(TZ_MERCADO.londres,8*60), abreNy=paraBRT(TZ_MERCADO.ny,8*60);
   let quality,cls,msg='';
-  if(!s.aberto){quality='FOREX FECHADO — fim de semana';cls='ruim';
-    msg='🕐 FOREX FECHADO — reabre domingo às '+paraBRT(TZ_MERCADO.ny,17*60)+' BRT. A API só tem candles de sexta.';}
-  else if(london&&ny){quality='EXCELENTE — Overlap Londres/NY';cls='excelente';}
-  else if(london){quality='BOM — Sessão Londres';cls='bom';}
-  else if(ny){quality='BOM — Sessão Nova York';cls='bom';}
-  else if(asia){quality='EVITAR — Baixa liquidez';cls='evitar';
-    msg=`🕐 HORÁRIO RUIM — Aguarde Londres (${abreLd}) ou Nova York (${abreNy} BRT). Liquidez baixa = sinais falsos.`;}
-  else{quality='ENTRE SESSÕES';cls='ruim';
-    msg=`🕐 ENTRE SESSÕES — liquidez mínima. Próxima janela: Londres às ${abreLd} BRT.`;}
+  // pelo que os dados mostraram (sistema completo, 1.832 sinais), não pela "fama" de cada sessão
+  const J=janelaDados();
+  const fNY1=paraBRT(TZ_MERCADO.ny,17*60), fNY2=paraBRT(TZ_MERCADO.ny,20*60);
+  if(J.chave==='fechado'){quality='FOREX FECHADO — fim de semana';cls='ruim';
+    msg='🕐 FOREX FECHADO — reabre domingo às '+fNY1+' BRT. O motor espera 60 min de mercado aberto antes do primeiro sinal.';}
+  else if(J.chave==='fechamentoNY'){quality=`EVITAR — ${J.label} (${J.pct}%)`;cls='evitar';
+    const filtro=(()=>{try{return cfgMotorUI().evitarFechamentoNY;}catch(e){return true;}})();
+    msg=`⛔ FECHAMENTO DE NOVA YORK (${fNY1}–${fNY2} BRT) — nos dados o acerto cai para ~53%, o empate. ${filtro?`O motor não sinaliza até ${fNY2}.`:'O filtro está desligado em Configurações.'}`;}
+  else{quality=`${J.q>=5?'EXCELENTE':J.q>=4?'BOM':'MODERADO'} — ${J.label} (${J.pct}% nos dados)`;cls=J.cls;}
   const el=document.getElementById('sessQuality');
   el.textContent=quality; el.className='sess-quality '+cls;
   document.getElementById('hSess').textContent='🕐 '+String(hBRT).padStart(2,'0')+'h BRT';
@@ -2301,7 +2262,7 @@ async function runAnalysis(){
   const parar=(msg)=>{ if(msg) showToast(msg,'warn-t'); };
   const mktQ=getMarketQuality(pair);
   if(!mktQ.active){ parar(`⛔ ${mktQ.label} — aguarde a reabertura.`); return; }
-  if(mktQ.q<=1) showToast(`⚠️ ${pair}: ${mktQ.label} (${mktQ.h}h BRT) — liquidez baixa.`,'warn-t');
+  if(mktQ.q<=1) showToast(`⚠️ ${pair}: ${mktQ.label} (${mktQ.h}h BRT) — horário fraco.`,'warn-t');
   // Notícias: só as da moeda do par (o calendário já informa a moeda)
   const hiEv=checkHighImpactEvent(pair); if(hiEv.blocked){ parar(hiEv.msg); return; }
   const newsCheck=checkNewsSmarter(); if(newsCheck.blocked){ parar(`📰 BLOQUEADO — ${newsCheck.reason}`); return; }
@@ -2318,6 +2279,7 @@ async function runAnalysis(){
     // M1: a vela que acabou de fechar ainda não foi publicada pela API — monta com o preço em tempo real
     const velas=tfDados==='M1'?(await velasAoVivo(pair,{garantir:true})||realCandles):realCandles;
     const m=motorSinal(velas,{par:pair,tf:tfDados,agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
+    atualizarLeituraLateral(m);
     ultimaLeituraMotor=m;
     if(!m.ok){ showToast('⛔ '+m.motivo,'warn-t'); mostrarEsperaMotor(m); return; }
     // Janela de entrada: nos dados, a vantagem existe só logo após o fechamento da vela (1 min de atraso → ~50%)
@@ -2347,7 +2309,7 @@ let ultimaLeituraMotor=null;
 function mostrarEsperaMotor(m){
   const t=document.getElementById('sigWaitTitle'), s=document.getElementById('sigWaitSub');
   if(!t||!s) return;
-  const titulos={parado:'Mercado parado',lateral:'Mercado lateral',fraco:'Indicadores divididos',poucos:'Poucos indicadores com leitura',empate:'Indicadores empatados',fechado:'Forex fechado',poucas:'Poucas velas','sem-bos':'Sem rompimento (BOS)','vela-fraca':'Vela do sinal fraca',janela:'Esperando a próxima vela'};
+  const titulos={parado:'Mercado parado',lateral:'Mercado lateral',fraco:'Indicadores divididos',poucos:'Poucos indicadores com leitura',empate:'Indicadores empatados',fechado:'Forex fechado',poucas:'Poucas velas','sem-bos':'Sem rompimento (BOS)','vela-fraca':'Vela do sinal fraca',horario:'Fechamento de Nova York',janela:'Esperando a próxima vela'};
   t.textContent=titulos[m.fase]||'Sem sinal agora';
   s.innerHTML=surfEsc(m.motivo)+(m.placar?`<br><span style="font-size:9px;">CALL ${m.placar.wC.toFixed(0)} × PUT ${m.placar.wP.toFixed(0)} · regime ${m.regime||'—'}</span>`:'');
 }
@@ -2356,11 +2318,11 @@ function mostrarEsperaMotor(m){
 function cfgMotorUI(){
   const b=document.getElementById('exigirBOS'), f=document.getElementById('exigirForca'), l=document.getElementById('operarLateral');
   const forca=f?f.checked:true;
-  return{minPontuacao:getMinScore(),exigirBOS:b?b.checked:MOTOR_CFG.exigirBOS,minForcaVela:forca?limiarForcaIA():0,lateralEstrutura:l?l.checked:MOTOR_CFG.lateralEstrutura};
+  return{minPontuacao:getMinScore(),exigirBOS:b?b.checked:MOTOR_CFG.exigirBOS,minForcaVela:forca?limiarForcaIA():0,lateralEstrutura:l?l.checked:MOTOR_CFG.lateralEstrutura,evitarFechamentoNY:(()=>{const x=document.getElementById('evitarFechamentoNY');return x?x.checked:MOTOR_CFG.evitarFechamentoNY;})()};
 }
 function salvarCfgMotor(){
   const c=cfgMotorUI();
-  try{ localStorage.setItem('protrader_cfg_motor',JSON.stringify({exigirBOS:c.exigirBOS,exigirForca:c.minForcaVela>0,operarLateral:c.lateralEstrutura,minScore:getMinScore()})); }catch(e){ /* sem storage */ }
+  try{ localStorage.setItem('protrader_cfg_motor',JSON.stringify({exigirBOS:c.exigirBOS,exigirForca:c.minForcaVela>0,operarLateral:c.lateralEstrutura,evitarFechamentoNY:c.evitarFechamentoNY,minScore:getMinScore()})); }catch(e){ /* sem storage */ }
   if(!c.exigirBOS) showToast('⚠️ BOS livre — nos dados, sem BOS o acerto ficou em ~53% (abaixo do empate)','warn-t');
   else if(!(c.minForcaVela>0)) showToast('⚠️ Vela forte desligada — nos dados, vela fraca deu ~50% mesmo com BOS','warn-t');
   else showToast(`✓ BOS + vela forte (≥ ${String(c.minForcaVela).replace('.',',')}σ) — filtros validados nos dados`,'call-t');
@@ -2372,6 +2334,7 @@ function carregarCfgMotor(){
     const b=document.getElementById('exigirBOS'); if(b) b.checked=c.exigirBOS!==false;
     const f=document.getElementById('exigirForca'); if(f) f.checked=c.exigirForca!==false;
     const l=document.getElementById('operarLateral'); if(l) l.checked=c.operarLateral!==false;
+    const ny=document.getElementById('evitarFechamentoNY'); if(ny) ny.checked=c.evitarFechamentoNY!==false;
     const sl=document.getElementById('minScoreSlider'); if(sl&&c.minScore){ sl.value=c.minScore; document.getElementById('minScoreVal').textContent=c.minScore+'/100'; }
   }catch(e){ /* sem storage: padrão */ }
 }
@@ -2427,6 +2390,58 @@ function rotuloEstrutura(x){
   if(!x) return '';
   const e=x.estrutura||(x.bos?'BOS':null);
   return e?`${e} ✓${x.regime==='lateral'?' (lateral)':''}`:'';
+}
+
+// ─── Horário pelo que os dados mostraram (sistema completo, por hora de Nova York — segue o horário de verão) ───
+// fechamento de NY 17h–20h: 53% · Ásia 20h–03h: 74% · Londres 03h–08h: 73% · overlap 08h–12h: 76% · NY à tarde 12h–17h: 66%
+function janelaDados(d){
+  d=d||new Date();
+  if(!forexAberto(d)) return{chave:'fechado',label:'Forex fechado (fim de semana)',pct:null,q:0,cls:'ruim',evitar:true};
+  const h=relogioEm(TZ_MERCADO.ny,d).h;
+  if(h>=17&&h<20) return{chave:'fechamentoNY',label:'Fechamento de Nova York',pct:53,q:1,cls:'evitar',evitar:true};
+  if(h>=8&&h<12) return{chave:'overlap',label:'Overlap Londres + NY',pct:76,q:5,cls:'excelente',evitar:false};
+  if(h>=3&&h<8) return{chave:'londres',label:'Londres',pct:73,q:4,cls:'bom',evitar:false};
+  if(h>=20||h<3) return{chave:'asia',label:'Ásia / Tóquio',pct:74,q:4,cls:'bom',evitar:false};
+  return{chave:'nyTarde',label:'NY à tarde',pct:66,q:3,cls:'bom',evitar:false};
+}
+
+// ─── Lista "Indicadores" da lateral com a leitura real do par (atualiza com o Auto e a cada busca, mesmo sem sinal) ───
+function atualizarLeituraLateral(m){
+  try{
+    const set=(id,txt,s)=>{ const el=document.getElementById(id); if(!el) return; el.textContent=txt; el.className='ival '+(s==='ALTA'?'bull':s==='BAIXA'?'bear':'neut'); };
+    const ids=['v-bos','v-choch','v-sweep','v-forca','v-ema','v-macd','v-pa','v-rsi','v-sto','v-bb'];
+    const L=m&&m.leitura;
+    const carimbo=document.getElementById('indAtualizado');
+    if(!L){ ids.forEach(id=>set(id,'—','NEUTRO')); if(carimbo) carimbo.textContent=m&&m.fase==='fechado'?'· mercado fechado':''; return; }
+    const I=L.ind||{}, dir=m.direcao||null;
+    const lado=d=>d==='CALL'?'Alta ↑':'Baixa ↓', S=d=>d==='CALL'?'ALTA':d==='PUT'?'BAIXA':'NEUTRO';
+    const ctx=d=>dir&&d?(d===dir?' · a favor ✓':' · contra'):'';
+    const b=(I.smc&&I.smc.bos)||{}, sw=(I.smc&&I.smc.sweep)||{};
+    const dB=b.bos==='bull'?'CALL':b.bos==='bear'?'PUT':null;
+    const dC=b.choch?(b.signal==='CALL'?'CALL':'PUT'):null;
+    const dS=sw.signal==='CALL'||sw.signal==='PUT'?sw.signal:null;
+    set('v-bos',dB?lado(dB)+ctx(dB):'Sem rompimento',S(dB));
+    set('v-choch',dC?lado(dC)+ctx(dC):'Sem virada',S(dC));
+    set('v-sweep',dS?lado(dS)+ctx(dS):'Sem varrida',S(dS));
+    const z=m.forcaUlt, dZ=z==null||z===0?null:(z>0?'CALL':'PUT'), forte=z!=null&&Math.abs(z)>=0.75;
+    set('v-forca',z==null?'—':`${fmtForca(Math.abs(z))} ${z>0?'↑':z<0?'↓':''} · ${forte?'forte':'fraca'}`,forte?S(dZ):'NEUTRO');
+    if(I.e9!=null&&I.e21!=null) set('v-ema',I.e9>I.e21?'Alta ↑':'Baixa ↓',I.e9>I.e21?'ALTA':'BAIXA'); else set('v-ema','—','NEUTRO');
+    set('v-macd',I.mac?(I.mac.histogram>0?'Histograma ↑':'Histograma ↓'):'—',I.mac?(I.mac.histogram>0?'ALTA':'BAIXA'):'NEUTRO');
+    set('v-pa',I.padrao&&I.padrao.name&&!/Sem padrão/.test(I.padrao.name)?I.padrao.name:(I.pressao?`pressão ${I.pressao.pressure}% de alta`:'—'),'NEUTRO');
+    const cont=' (neste feed: tende a continuar)';
+    set('v-rsi',I.rsi==null?'—':`${I.rsi.toFixed(1)} · ${I.rsi>=70?'Sobrecomprado'+cont:I.rsi<=30?'Sobrevendido'+cont:'Neutro'}`,'NEUTRO');
+    set('v-sto',I.stoK==null?'—':`%K ${I.stoK.toFixed(1)} · ${I.stoK>=80?'Sobrecomprado'+cont:I.stoK<=20?'Sobrevendido'+cont:'Neutro'}`,'NEUTRO');
+    set('v-bb',I.bb?(L.last>=I.bb.upper?'Acima da banda'+cont:L.last<=I.bb.lower?'Abaixo da banda'+cont:'Dentro das bandas'):'—','NEUTRO');
+    if(carimbo) carimbo.textContent='· '+horaLocal(Date.now());
+  }catch(e){ console.warn('leitura da lateral:',e); }
+}
+// Sem Auto: lê o par a cada busca de velas (a cada 2 min), sem gastar consulta extra
+function leituraSemSinal(){
+  try{
+    if(currentInterval!=='1min'||!realCandles||realCandles.length<60) return;
+    const m=motorSinal(realCandles,{par:pair,tf:'M1',agora:Date.now(),pesos:null,cfg:cfgMotorUI()});
+    atualizarLeituraLateral(m);
+  }catch(e){ console.warn('leitura sem sinal:',e); }
 }
 
 // ╔══════════════════════════════════════════════════════════════════╗
@@ -2674,7 +2689,7 @@ function showAndFinalizeResult(r,opts){
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Backtest (tendência + rompimento no lateral): 72,5% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
+    if(nota) nota.textContent=`Backtest (sistema completo): 73,6% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -2970,6 +2985,7 @@ async function runAutoScan(){
     if(fim) ultimaVelaAuto[par]=fim;
     if(fim&&(Date.now()-fim)/1000>MOTOR_CFG.janelaEntradaSeg) return; // a vela fechou há muito: o sinal já não vale
     const m=motorSinal(velas,{par,tf:'M1',agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
+    if(par===pair) atualizarLeituraLateral(m);
     ultimaLeituraMotor=m;
     if(!m.ok) return;
     if(Date.now()-(ultimoAlertaAuto[par]||0)<AUTO_INTERVALO_ALERTA) return;
@@ -3284,7 +3300,7 @@ function calcMACD(closes){
 // ║  Sem volume (forex não tem na Twelve Data), sem COT simulado.     ║
 // ╚══════════════════════════════════════════════════════════════════╝
 const MOTOR_CFG={
-  versao:'2026.10.06c',
+  versao:'2026.10.06d',
   janela:300,          // velas fechadas usadas na leitura
   minVelas:60,         // abaixo disso não há leitura confiável
   filtroVol:1.0,       // volatilidade recente ÷ média da janela (calibrado)
@@ -3292,6 +3308,7 @@ const MOTOR_CFG={
   minVotos:4,          // indicadores com leitura, no mínimo
   adxTendencia:20,     // ADX ≥ isto = regime de tendência
   usarReversao:false,  // regime lateral não gera sinal de REVERSÃO: nos dados, a reversão nunca passou do empate
+  evitarFechamentoNY:true, // 17h–20h em Nova York (rollover/reabertura): 54,9% · 51,1% nos dados — o empate; o resto do dia ~73%
   lateralEstrutura:true, // no lateral, só rompimento (CHOCH, senão BOS) com vela forte a favor: 75,1% · 74,9% · 70,5% (auditoria 06/10)
   exigirBOS:true,      // só sinaliza com rompimento de estrutura (BOS) a favor — 66% contra 53% sem BOS (3 semanas, 6 pares)
   minForcaVela:0.75,   // vela do sinal tem de andar ≥ 0,75 desvio-padrão a favor (auditoria 06/10: 71,4% com vela forte × ~50% com vela fraca; 19 de 19 dias, 6 de 6 pares)
@@ -3450,7 +3467,12 @@ function motorSinal(velas,ctx){
   fechadas=fechadas.slice(-cfg.janela);
   if(fechadas.length<cfg.minVelas) return R('poucas',tirouFechado?`Mercado reabriu há pouco: só ${fechadas.length} velas de mercado aberto — preciso de ${cfg.minVelas}`:`Só ${fechadas.length} velas fechadas — preciso de ${cfg.minVelas}`);
   const L=motorLeitura(fechadas,par);
-  const base={leitura:L,regime:L.regime,volRel:L.volRel,atrPct:L.atrPct};
+  // força da última vela (com sinal: + subiu, − caiu) — a tela mostra mesmo sem sinal
+  const base={leitura:L,regime:L.regime,volRel:L.volRel,atrPct:L.atrPct,forcaUlt:forcaUltimaVela(fechadas,passo)};
+  if(cfg.evitarFechamentoNY){
+    const ny=relogioEm(TZ_MERCADO.ny,new Date(agora));
+    if(ny.min>=17*60&&ny.min<20*60) return R('horario','Fechamento de Nova York (17h–20h em NY): nos dados o acerto cai para ~53%, o empate. O motor volta às 20h de NY.',base);
+  }
   if(!(L.volRel>=cfg.filtroVol)) return R('parado',`Mercado parado — volatilidade ${L.volRel.toFixed(2)}× a média (mínimo ${cfg.filtroVol}×)`,base);
   if(L.regime==='lateral'&&!cfg.usarReversao){
     if(!cfg.lateralEstrutura) return R('lateral',`Regime lateral (ADX ${L.adx.adx}) — o motor só opera tendência`,base);
@@ -3460,7 +3482,7 @@ function motorSinal(velas,ctx){
     const dC=b&&b.choch?(b.signal==='CALL'?'CALL':'PUT'):null, dB=b&&b.bos==='bull'?'CALL':b&&b.bos==='bear'?'PUT':null;
     const dirL=dC||dB, estrutura=dC?'CHOCH':'BOS';
     if(!dirL) return R('lateral',`Regime lateral (ADX ${L.adx.adx}) — sem rompimento de estrutura (BOS/CHOCH) na última vela`,base);
-    const zL=forcaUltimaVela(fechadas,passo), forcaL=zL==null?null:+(zL*(dirL==='CALL'?1:-1)).toFixed(2);
+    const zL=base.forcaUlt, forcaL=zL==null?null:+(zL*(dirL==='CALL'?1:-1)).toFixed(2);
     const minL=Math.max(0.75,cfg.minForcaVela||0); // a regra do lateral foi validada com vela ≥ 0,75σ
     if(!(forcaL!=null&&forcaL>=minL)) return R('vela-fraca',`Lateral com ${estrutura} ${dirL}, mas a vela do sinal ${forcaL==null?'não tem medida (buraco nos dados)':`andou ${forcaL.toFixed(2).replace('.',',')}σ a favor`} (mínimo ${String(minL).replace('.',',')}σ)`,{...base,direcao:dirL,forcaVela:forcaL});
     const vt=L.tendencia; let wF=0,wX=0,nV=0;
@@ -3483,7 +3505,7 @@ function motorSinal(velas,ctx){
     const b=votos.find(v=>v.nome==='BOS');
     if(!b||b.dir!==P.direcao) return R('sem-bos',`${P.direcao} ${P.pontuacao}/100, mas sem rompimento de estrutura (BOS) na última vela — o filtro validado exige BOS`,{...ext,direcao:P.direcao,pontuacao:P.pontuacao});
   }
-  const zU=forcaUltimaVela(fechadas,passo), forcaVela=zU==null?null:+(zU*(P.direcao==='CALL'?1:-1)).toFixed(2);
+  const zU=base.forcaUlt, forcaVela=zU==null?null:+(zU*(P.direcao==='CALL'?1:-1)).toFixed(2);
   if(cfg.minForcaVela>0&&!(forcaVela!=null&&forcaVela>=cfg.minForcaVela)) // decide pelo mesmo valor que é registrado e mostrado
     return R('vela-fraca',`${P.direcao} ${P.pontuacao}/100${cfg.exigirBOS?' com BOS':''}, mas a vela do sinal ${forcaVela==null?'não tem medida (buraco nos dados)':`andou ${forcaVela.toFixed(2).replace('.',',')}σ a favor`} (mínimo ${String(cfg.minForcaVela).replace('.',',')}σ) — nos dados, vela fraca deu ~50%`,{...ext,direcao:P.direcao,pontuacao:P.pontuacao,forcaVela});
   const ult=fechadas[fechadas.length-1];
@@ -3501,34 +3523,10 @@ function motorSinal(velas,ctx){
 
 // ═══ MELHORIA B — FILTRO HORÁRIO PRECISO POR PAR ═══
 function getPreciseSessionWindow(pairName){
-  // Antes: as janelas guardavam a qualidade em "q" e a função lia "quality"
-  // (inexistente) — dentro da janela dava erro e o botão Analisar travava.
-  // Agora cada janela está no horário local da praça.
-  const base=(pairName||'').replace(' (OTC)','');
-  const L=TZ_MERCADO.londres, N=TZ_MERCADO.ny, T=TZ_MERCADO.toquio;
-  const windows={
-    'EUR/USD':[{tz:L,s:480,e:540,q:'bom',desc:'Abertura Londres'},{tz:N,s:480,e:600,q:'ideal',desc:'Overlap Londres/NY'},{tz:N,s:600,e:690,q:'excelente',desc:'Pico NY'}],
-    'GBP/USD':[{tz:L,s:480,e:540,q:'bom',desc:'Abertura Londres'},{tz:N,s:480,e:600,q:'ideal',desc:'Overlap Londres/NY'},{tz:N,s:570,e:660,q:'excelente',desc:'Dados EUA'}],
-    'USD/JPY':[{tz:T,s:600,e:720,q:'excelente',desc:'Tóquio ativo'},{tz:N,s:480,e:600,q:'bom',desc:'Overlap NY/Londres'}],
-    'AUD/USD':[{tz:T,s:540,e:720,q:'bom',desc:'Sydney/Tóquio'},{tz:N,s:480,e:660,q:'bom',desc:'Overlap NY'}],
-    'USD/CAD':[{tz:N,s:510,e:570,q:'ideal',desc:'Abertura NY+Toronto'},{tz:N,s:570,e:660,q:'excelente',desc:'Pico liquidez CAD'},{tz:N,s:660,e:780,q:'bom',desc:'NY tarde'}],
-    'GBP/JPY':[{tz:L,s:480,e:600,q:'bom',desc:'Abertura Londres'},{tz:N,s:480,e:600,q:'excelente',desc:'Overlap — volatilidade alta'}],
-  };
-  const wins=windows[base]||[{tz:L,s:480,e:1020,q:'bom',desc:'Horário padrão'},{tz:N,s:480,e:1020,q:'bom',desc:'Horário padrão'}];
-  if(!forexAberto()) return{active:false,quality:'ruim',desc:'Forex fechado',msg:`${base} — forex fechado (fim de semana)`};
-  for(const w of wins){
-    const r=relogioEm(w.tz);
-    if(r.min>=w.s&&r.min<w.e){
-      return{active:true,quality:w.q,desc:w.desc,nextWindow:null,msg:`${base} — ${w.desc} (${w.q.toUpperCase()})`};
-    }
-  }
-  let prox=null;
-  for(const w of wins){
-    let falta=w.s-relogioEm(w.tz).min; if(falta<=0) falta+=1440;
-    if(!prox||falta<prox.falta) prox={falta,w};
-  }
-  const nextMsg=prox?`próx. janela às ${paraBRT(prox.w.tz,prox.w.s)} BRT (${prox.w.desc})`:'amanhã';
-  return{active:false,quality:'ruim',desc:'Fora da janela ideal',msg:`${base} — baixa liquidez agora · ${nextMsg}`};
+  const base=(pairName||'').replace(' (OTC)',''), J=janelaDados();
+  if(J.chave==='fechado') return{active:false,quality:'ruim',desc:J.label,msg:`${base} — forex fechado (fim de semana)`};
+  if(J.evitar) return{active:false,quality:'ruim',desc:J.label,msg:`${base} — ${J.label} (${J.pct}% nos dados) · volta às ${paraBRT(TZ_MERCADO.ny,20*60)} BRT`};
+  return{active:true,quality:J.cls,desc:J.label,nextWindow:null,msg:`${base} — ${J.label} (${J.pct}% nos dados)`};
 }
 
 // ═══ MELHORIA C — STOP AUTOMÁTICO DE BANCA ═══
@@ -4674,6 +4672,7 @@ async function fetchTwelveData(){
       if(pair !== parPedido) return; // o par mudou enquanto a API respondia
 
       realCandles = velas;
+      if(!autoMode) leituraSemSinal(); // com o Auto ligado, quem atualiza é o ciclo do minuto
 
       apiConnected = true;
       const ultMs = msDoCandle(realCandles[realCandles.length-1].time);
@@ -4916,38 +4915,54 @@ function startPriceFeed(){
 let realData=null;
 
 // ═══ ECONOMIC NEWS — LOCAL ═══
-let newsData=[], newsInterval=null;
+let newsData=[], newsInterval=null, calDiag='', calOrigem='', calSalvoEm=0;
 async function fetchNews(){
-  // Calendário real da Forex Factory (título, moeda, horário, impacto, consenso, anterior)
-  const url='https://nfs.faireconomy.media/ff_calendar_thisweek.json';
-  const caminhos=[
-    ()=>fetch(url),
-    ()=>fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`),
-    ()=>fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`),
-  ];
-  for(const c of caminhos){
-    try{
-      const res=await c(); if(!res.ok) continue;
-      const raw=await res.json(); if(!Array.isArray(raw)) continue;
-      const agora=Date.now();
-      newsData=raw.filter(e=>e.impact==='High'||e.impact==='Medium').map(e=>{
-        const ts=Date.parse(e.date); if(isNaN(ts)) return null;
-        return{
-          time:new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}),
-          name:e.title, title:e.title, currency:e.country, impact:e.impact==='High'?'high':'medium',
-          ts, minutes_away:Math.round((ts-agora)/60000), forecast:e.forecast||'', previous:e.previous||''
-        };
-      }).filter(n=>n&&n.minutes_away>=-120&&n.minutes_away<=24*60).sort((a,b)=>a.ts-b.ts);
-      renderNews(); checkNewsAlert(); if(typeof surfTick==='function') surfTick();
-      return;
-    }catch(e){ /* tenta o próximo caminho */ }
+  // Calendário real da Forex Factory (título, moeda, horário, impacto, consenso, anterior).
+  // Vale a semana inteira: guarda uma cópia e busca de novo no máximo 1× por hora (a fonte limita requisições).
+  const url='https://nfs.faireconomy.media/ff_calendar_thisweek.json', CAL_KEY='protrader_calendario_v1';
+  const comTempo=async(u,ms)=>{ const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),ms); try{ return await fetch(u,{signal:ac.signal,cache:'no-store'}); } finally{ clearTimeout(t); } };
+  let salvo=null; try{ salvo=JSON.parse(localStorage.getItem(CAL_KEY)||'null'); }catch(e){}
+  let raw=null, origem='';
+  if(salvo&&Array.isArray(salvo.raw)&&Date.now()-salvo.t<3600000){ raw=salvo.raw; origem='salvo'; }
+  else{
+    const caminhos=[
+      ['direto',()=>comTempo(url,8000)],
+      ['allorigins',()=>comTempo('https://api.allorigins.win/raw?url='+encodeURIComponent(url),12000)],
+      ['codetabs',()=>comTempo('https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(url),12000)],
+      ['corsproxy',()=>comTempo('https://corsproxy.io/?url='+encodeURIComponent(url),12000)],
+    ];
+    const falhas=[];
+    for(const [nome,c] of caminhos){
+      try{
+        const res=await c(); if(!res.ok){ falhas.push(`${nome} ${res.status}`); continue; }
+        const j=await res.json(); if(!Array.isArray(j)){ falhas.push(`${nome} formato`); continue; }
+        raw=j; origem=nome;
+        try{ localStorage.setItem(CAL_KEY,JSON.stringify({t:Date.now(),raw:j})); }catch(e){ /* sem storage */ }
+        break;
+      }catch(e){ falhas.push(`${nome} ${e&&e.name==='AbortError'?'sem resposta':'bloqueado'}`); }
+    }
+    calDiag=raw?'':falhas.join(' · ');
+    if(!raw&&salvo&&Array.isArray(salvo.raw)&&Date.now()-salvo.t<7*86400000){ raw=salvo.raw; origem='salvo-antigo'; }
   }
-  // Antes: sem o calendário real, mostrava um calendário FIXO inventado (IPC às 10h, NY às 14h30...)
-  // que também bloqueava a análise em horários sem notícia nenhuma.
+  calOrigem=origem; calSalvoEm=salvo&&origem.startsWith('salvo')?salvo.t:Date.now();
+  if(raw){
+    const agora=Date.now();
+    newsData=raw.filter(e=>e.impact==='High'||e.impact==='Medium').map(e=>{
+      const ts=Date.parse(e.date); if(isNaN(ts)) return null;
+      return{
+        time:new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}),
+        name:e.title, title:e.title, currency:e.country, impact:e.impact==='High'?'high':'medium',
+        ts, minutes_away:Math.round((ts-agora)/60000), forecast:e.forecast||'', previous:e.previous||''
+      };
+    }).filter(n=>n&&n.minutes_away>=-120&&n.minutes_away<=24*60).sort((a,b)=>a.ts-b.ts);
+    renderNews(); checkNewsAlert(); if(typeof surfTick==='function') surfTick();
+    return;
+  }
+  // Sem calendário: nada inventado (antes havia um calendário FIXO que bloqueava horários sem notícia)
   newsData=[];
   const list=document.getElementById('newsList');
-  if(list) list.innerHTML='<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px;">⚠️ Calendário indisponível agora — nenhuma notícia inventada. Nova tentativa em 10 min.</div>';
-  checkNewsAlert();
+  if(list) list.innerHTML=`<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px;">⚠️ Calendário indisponível agora — nenhuma notícia inventada. Nova tentativa em 10 min.${calDiag?`<br><span style="font-size:8px;">${calDiag}</span>`:''}</div>`;
+  checkNewsAlert(); if(typeof surfTick==='function') surfTick();
 }
 
 // Recalcula "minutos para a notícia" a partir do horário real (antes ficava congelado entre buscas)
@@ -5146,7 +5161,7 @@ function surfRender(ev,info){
   const el=document.getElementById('surfPainel'); if(!el) return;
   const linha=(txt,cor)=>`<div style="margin-top:4px;color:${cor||'var(--text)'};">${txt}</div>`;
   if(info.fase==='desligado'){el.innerHTML=linha('Modo desligado.','var(--muted)');return;}
-  if(!ev){el.innerHTML=linha(newsData&&newsData.length?'Nenhuma notícia de alto impacto com consenso nas próximas horas (USD, EUR, GBP, JPY, AUD, CAD).':'Calendário econômico indisponível agora.','var(--muted)');return;}
+  if(!ev){el.innerHTML=linha(newsData&&newsData.length?'Nenhuma notícia de alto impacto com consenso nas próximas horas (USD, EUR, GBP, JPY, AUD, CAD).':'Calendário econômico indisponível agora.'+(calDiag?' ('+calDiag+')':''),'var(--muted)');return;}
   const nome=surfEsc(ev.title||ev.name);
   const quando=new Date(ev.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
   const st=SURF.estado[surfId(ev)]||{};
@@ -6656,6 +6671,11 @@ setTimeout(showDaySummary, 3000);
 // ║    lateral — 75,3% · 74,7% · 70,0% em 05/10; sistema 72,5% em    ║
 // ║    1.832 sinais. Bollinger/RSI invertidos e CHOCH na tendência   ║
 // ║    não entraram (pioraram no dia novo 05/10).                    ║
+// ║ 2026.10.06d — Horário pelos dados: sem sinal no fechamento de NY ║
+// ║    (17h–20h NY: 53%); aviso de Ásia 'ruim' removido (74% nos     ║
+// ║    dados). Sistema 73,6% em 1.736 sinais. Indicadores da lateral ║
+// ║    com a leitura real a cada minuto. Calendário com cópia salva, ║
+// ║    tempo-limite, 4 caminhos e motivo da falha na tela.           ║
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
