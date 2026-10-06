@@ -463,6 +463,10 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 .imc-n{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
 .imc-v{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;margin-top:2px;line-height:1.3;}
 .imc-s{font-size:8px;margin-top:1px;font-weight:700;}
+.imc-e{font-size:7.5px;margin-top:3px;font-weight:800;letter-spacing:.3px;}
+.imc.forte{border-color:rgba(0,212,170,.45);}
+.imc.contra{border-color:rgba(245,166,35,.35);}
+.iev{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:800;color:var(--muted);flex-shrink:0;}
 .empty{text-align:center;padding:20px 10px;color:var(--muted);font-size:11px;line-height:1.6;}
 .empty-icon{font-size:24px;margin-bottom:7px;}
 
@@ -835,19 +839,22 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
   <div>
     <div class="sec">Indicadores</div>
     <div class="ind-list">
-      <div class="ind-group-lbl">Para onde o preço vai</div>
-      <div class="irow"><div><div class="iname">EMA 9/21</div><div class="ival bull" id="v-ema">Alta ↑</div></div><div class="tog on" id="t-ema"></div></div>
-      <div class="irow"><div><div class="iname">MACD 12/26</div><div class="ival bull" id="v-macd">Histograma ↑</div></div><div class="tog on" id="t-macd"></div></div>
-      <div class="ind-group-lbl">Está esticado</div>
-      <div class="irow"><div><div class="iname">RSI 14</div><div class="ival neut" id="v-rsi">58.3 · Neutro</div></div><div class="tog on" id="t-rsi"></div></div>
-      <div class="irow"><div><div class="iname">Estocástico</div><div class="ival bear" id="v-sto">Sobrecomprado</div></div><div class="tog on" id="t-sto"></div></div>
-      <div class="irow"><div><div class="iname">Bollinger 20</div><div class="ival neut" id="v-bb">Banda Média</div></div><div class="tog on" id="t-bb"></div></div>
-      <div class="ind-group-lbl">Tem convicção</div>
-      <div class="irow"><div><div class="iname">Volume Index</div><div class="ival neut" id="v-vol">Médio</div></div><div class="tog on" id="t-vol"></div></div>
-      <div class="irow"><div><div class="iname">Price Action</div><div class="ival neut" id="v-pa">—</div></div><div class="tog on" id="t-pa"></div></div>
+      <div class="ind-group-lbl" style="color:var(--green);opacity:1;" title="Cada indicador sozinho prevendo a vela seguinte: ~90 mil velas, 6 pares, preço da Twelve Data">✓ Têm força nos dados · ~62% sozinhos</div>
+      <div class="irow"><div><div class="iname">BOS · rompimento</div><div class="ival neut" id="v-bos">—</div></div><div class="iev" style="color:var(--green);">62%</div></div>
+      <div class="irow"><div><div class="iname">CHOCH · virada de estrutura</div><div class="ival neut" id="v-choch">—</div></div><div class="iev" style="color:var(--green);">62%</div></div>
+      <div class="irow"><div><div class="iname">SWEEP · varrida de liquidez</div><div class="ival neut" id="v-sweep">—</div></div><div class="iev" style="color:var(--green);">60%</div></div>
+      <div class="irow"><div><div class="iname">Força da vela (≥ 0,75σ)</div><div class="ival neut" id="v-forca">—</div></div><div class="iev" style="color:var(--green);">62%</div></div>
+      <div class="ind-group-lbl" title="Acertam perto de 50%: mostram a tendência, mas sozinhos não preveem a próxima vela">≈ Cara ou coroa · ~50%</div>
+      <div class="irow"><div><div class="iname">EMA 9/21</div><div class="ival neut" id="v-ema">—</div></div><div class="iev">50%</div></div>
+      <div class="irow"><div><div class="iname">MACD 12/26</div><div class="ival neut" id="v-macd">—</div></div><div class="iev">51%</div></div>
+      <div class="irow"><div><div class="iname">Price Action</div><div class="ival neut" id="v-pa">—</div></div><div class="iev">52%</div></div>
+      <div class="ind-group-lbl" style="color:var(--gold);opacity:1;" title="Mandam vender quando o preço esticou, mas neste feed o preço que estica continua mais uma vela">↔ Ao contrário neste feed · 39–47%</div>
+      <div class="irow"><div><div class="iname">RSI 14</div><div class="ival neut" id="v-rsi">—</div></div><div class="iev" style="color:var(--gold);">44%</div></div>
+      <div class="irow"><div><div class="iname">Estocástico</div><div class="ival neut" id="v-sto">—</div></div><div class="iev" style="color:var(--gold);">47%</div></div>
+      <div class="irow"><div><div class="iname">Bollinger 20</div><div class="ival neut" id="v-bb">—</div></div><div class="iev" style="color:var(--gold);">39%</div></div>
     </div>
   </div>
-  <div>
+  <div style="display:none"><!-- forex sem volume na Twelve Data -->
     <div class="sec">Índice de Volume</div>
     <div class="vol-mini">
       <div class="vbars" id="vBars"></div>
@@ -1123,6 +1130,10 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <input type="checkbox" id="exigirForca" checked autocomplete="off" onchange="salvarCfgMotor()" style="margin-top:2px;">
         <span><b style="color:var(--text);">Exigir vela forte</b> (≥ 0,75σ a favor)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 71,6% com vela forte × ~50% com vela fraca (18 de 18 dias, 6 de 6 pares)</span></span>
       </label>
+      <label style="display:flex;align-items:flex-start;gap:6px;margin:-4px 0 8px;font-size:10px;color:var(--muted);cursor:pointer;line-height:1.35;">
+        <input type="checkbox" id="operarLateral" checked autocomplete="off" onchange="salvarCfgMotor()" style="margin-top:2px;">
+        <span><b style="color:var(--text);">Rompimento no lateral</b> (CHOCH/BOS + vela forte)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 75,3% (14–25/09) · 74,7% (28/09–02/10) · 70,0% em 05/10, dia novo</span></span>
+      </label>
       <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
       <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
     </div>
@@ -1283,7 +1294,8 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
           • vela oficial disponível na hora: 66,1% · <b>como o app roda ao vivo (vela montada pelo preço do fechamento): 65,9%</b> · com a série a cada 2 min (1 ou 2 velas montadas, como roda agora): 65,9%<br>
           • esperando a API publicar a vela (10–40 s, medido ao vivo): 49,9% — por isso o app não espera<br>
           • sem BOS: ~53% · expiração de 2 a 5 min: 45–47%<br>
-          <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera. Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
+          <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera.<br>
+          <b>2026.10.06c</b>: + rompimento no lateral (CHOCH/BOS + vela forte): 75,3% · 74,7% · 70,0% em 05/10. <b>Sistema completo: 72,5% em 1.832 sinais</b> (72,4% · 72,7% · 72,0%), 46% mais sinais. Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
           Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na Valyn" (Stats).
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
@@ -1322,7 +1334,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06b (filtro de vela forte + IA Guardiã; revisão de casos de borda; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.06c (indicadores com selo de evidência; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -1825,7 +1837,7 @@ function resetPanel(){
   // quebrava ali, ANTES de registrar a operação (por isso o histórico ficava 0W·0L)
   document.getElementById('at4').innerHTML='<div class="ind-mini-grid" id="indGrid"></div>';
   document.getElementById('cfill').style.width='0%';
-  document.getElementById('confPct').textContent='0/100';
+  document.getElementById('confPct').textContent='—';
   {const _n=document.getElementById('confNota'); if(_n) _n.textContent='';}
   document.getElementById('tbStruct').classList.remove('show');
   document.getElementById('divBanner').classList.remove('show');
@@ -2056,7 +2068,7 @@ function updateDiary(){
     if(o.entrou===false) botoes+=bt('＋ entrei','Eu entrei nesta',`marcarEntrou('${o.id}')`,'var(--blue)');
     return `<div class="diary-item" style="${o.entrou===false?'opacity:.7':''}">
       <div class="di-top"><div class="di-pair">${o.pair}</div><div class="di-dir ${o.dir.toLowerCase()}">${o.dir}</div><div class="di-result ${o.result}">${rot[o.result]||o.result}</div></div>
-      <div class="di-meta"><span>${o.tf}</span><span>${o.bos?'BOS ✓':o.conf+' pts'}</span><span>${o.ts}</span><span>${origem} · ${entrou}</span></div>
+      <div class="di-meta"><span>${o.tf}</span><span>${rotuloEstrutura(o)||o.conf+' pts'}</span><span>${o.ts}</span><span>${origem} · ${entrou}</span></div>
       <div class="di-setup">${surfEsc(o.setup||'')}${precos}<span style="color:var(--muted)">${fonte}</span></div>
       <div style="display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap;">
         <input type="text" placeholder="📝 Nota..." value="${surfEsc(o.note||'')}"
@@ -2123,7 +2135,7 @@ function registrarSinal(r,opts){
   ops.push({id,pair:par,dir:r.direction,conf:r.confidence,setup:r.setup,result:'open',hour:getBRTHour(),tf:opts.tf||tf,
     ts:new Date(agora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),_session:currentAutoSession,
     stake:sug.valor||0,payout,origem:opts.origem||'manual',entrou,
-    entrada:{t:agora,preco:r.precoRef??null,precoSinal:r.precoRef??null,tVela:r.tRef??null,fonte:r.fontePreco||'vela'},expiraEm:agora+(r.clockSecs||60)*1000,bos:r.bos??null,forca:r.forcaVela??null,
+    entrada:{t:agora,preco:r.precoRef??null,precoSinal:r.precoRef??null,tVela:r.tRef??null,fonte:r.fontePreco||'vela'},expiraEm:agora+(r.clockSecs||60)*1000,bos:r.bos??null,estrutura:r.estrutura??null,forca:r.forcaVela??null,
     regime:r.regime||null,volRel:r.volRel!=null?+Number(r.volRel).toFixed(2):null,motor:r.versao||null,votos:r.votos||null});
   saveOps(); renderHistory(); updateDiary(); updateStats();
   return id;
@@ -2225,6 +2237,8 @@ function renderCalibracao(){
     linha('Só os que você entrou',sinais.filter(o=>o.entrou!==false))+
     linha('Com BOS a favor',sinais.filter(o=>o.bos===true))+
     linha('Sem BOS',sinais.filter(o=>o.bos===false))+
+    linha('Tendência',sinais.filter(o=>o.regime==='tendencia'))+
+    linha('Lateral (rompimento)',sinais.filter(o=>o.regime==='lateral'),'Novo em 2026.10.06c: CHOCH/BOS + vela forte no regime lateral')+
     (sinais.some(o=>o.forca!=null&&o.forca<0.75)?linha('Vela < 0,75σ (filtro desligado)',sinais.filter(o=>o.forca!=null&&o.forca<0.75),'Nos dados: ~50%'):'')+
     linha('Vela 0,75–1,5σ',sinais.filter(naFaixaMedia),'Força da vela do sinal (desvios-padrão a favor)')+
     linha('Vela ≥ 1,5σ',sinais.filter(naFaixaForte),'Nos dados: quanto mais forte a vela, maior o acerto')+
@@ -2237,7 +2251,7 @@ function renderCalibracao(){
 // ═══ ANÁLISE — usa o MOTOR ÚNICO (o mesmo do Auto, do Scanner e do Backtest) ═══
 const TF_DO_INTERVALO={'1min':'M1','5min':'M5','15min':'M15','30min':'M30','1h':'H1'};
 function fmtPreco(par,v){ return (v==null||isNaN(v))?'—':Number(v).toFixed(String(par).includes('JPY')?3:5); }
-function textoRegime(m){ return m.regime==='tendencia'?(m.direcao==='CALL'?'TENDÊNCIA DE ALTA':'TENDÊNCIA DE BAIXA'):'LATERAL'; }
+function textoRegime(m){ return m.regime==='tendencia'?(m.direcao==='CALL'?'TENDÊNCIA DE ALTA':'TENDÊNCIA DE BAIXA'):(m.direcao?`LATERAL · ROMPIMENTO ${m.direcao==='CALL'?'DE ALTA':'DE BAIXA'}${m.estrutura?' ('+m.estrutura+')':''}`:'LATERAL'); }
 
 // Converte a saída do motor no formato que a tela já sabe mostrar
 function montarResultado(m,par,tfSel){
@@ -2259,7 +2273,7 @@ function montarResultado(m,par,tfSel){
   return{
     direction:m.direcao, confidence:m.pontuacao, stars, force_score:forca, fontePreco:m.sintetica?'tempo-real':'vela',
     expiry, clockSecs, market_structure:textoRegime(m),
-    setup:`${m.regime==='tendencia'?'Tendência':'Reversão'} ${isCall?'de alta':'de baixa'}`,
+    setup:`${m.regime==='tendencia'?'Tendência':'Rompimento no lateral'} ${isCall?'de alta':'de baixa'}`,
     pa_pattern:padrao,
     entry_reason:`${isCall?'Compra':'Venda'}: ${aFavor.length} de ${m.comLeitura} indicadores com leitura concordam (${lista(aFavor)}). Contra: ${lista(contra)}. Regime ${m.regime} (ADX ${L.adx.adx}). Volatilidade ${L.volRel.toFixed(2)}× a média.`,
     support:L.suporte.toFixed(dec), resistance:L.resistencia.toFixed(dec),
@@ -2278,7 +2292,7 @@ function montarResultado(m,par,tfSel){
     p_volume:`A Twelve Data não fornece volume para forex. Volume, VWAP, OBV, POC, RVOL e clímax ficaram fora do cálculo (antes eram calculados sobre um número fixo). Pressão por velas: ${I.pressao.pressure}% de alta (5 velas ${I.pressao.p5}% · 20 velas ${I.pressao.p20}%).`,
     p_confluence:m.votos.map(v=>`${v.dir===m.direcao?'✓':v.dir?'✗':'·'} ${v.nome} — ${v.leitura}`).join('\n'),
     p_setup:`Motor ${m.versao} · só velas fechadas · pontuação = concordância ponderada dos indicadores do regime (${m.pontuacao}/100; mínimo ${getMinScore()}). A favor: ${lista(aFavor)}. Contra: ${lista(contra)}. Sem leitura: ${sem.length}. Invalida em ${isCall?L.suporte.toFixed(dec):L.resistencia.toFixed(dec)}. Exp: ${expiry}.`,
-    smc:I.smc, precoRef:m.precoRef, tRef:m.tRef, bos:!!m.bos, forcaVela:m.forcaVela??null, votos:m.votos.map(v=>({nome:v.nome,dir:v.dir})), regime:m.regime, volRel:m.volRel, versao:m.versao
+    smc:I.smc, precoRef:m.precoRef, tRef:m.tRef, bos:!!m.bos, estrutura:m.estrutura??null, forcaVela:m.forcaVela??null, votos:m.votos.map(v=>({nome:v.nome,dir:v.dir})), regime:m.regime, volRel:m.volRel, versao:m.versao
   };
 }
 
@@ -2311,7 +2325,7 @@ async function runAnalysis(){
     if(tfDados==='M1'&&atrasoSeg>MOTOR_CFG.janelaEntradaSeg){
       window._analisarNaVirada=true;
       const falta=Math.ceil((60000-(Date.now()%60000)+4000)/1000);
-      const espera={ok:false,fase:'janela',motivo:`Havia sinal ${m.direcao}${m.bos?' (BOS ✓)':''}, mas a vela fechou há ${Math.round(atrasoSeg)} s — fora da janela de ${MOTOR_CFG.janelaEntradaSeg} s. Analiso de novo sozinho na virada do minuto (~${falta} s).`};
+      const espera={ok:false,fase:'janela',motivo:`Havia sinal ${m.direcao}${rotuloEstrutura(m)?' ('+rotuloEstrutura(m)+')':''}, mas a vela fechou há ${Math.round(atrasoSeg)} s — fora da janela de ${MOTOR_CFG.janelaEntradaSeg} s. Analiso de novo sozinho na virada do minuto (~${falta} s).`};
       ultimaLeituraMotor=espera; mostrarEsperaMotor(espera);
       showToast(`⏳ Sinal fora da janela (vela fechou há ${Math.round(atrasoSeg)} s). Nova análise automática em ~${falta} s.`,'warn-t');
       return;
@@ -2340,13 +2354,13 @@ function mostrarEsperaMotor(m){
 
 // Configuração do motor escolhida na tela (pontuação mínima e filtro BOS)
 function cfgMotorUI(){
-  const b=document.getElementById('exigirBOS'), f=document.getElementById('exigirForca');
+  const b=document.getElementById('exigirBOS'), f=document.getElementById('exigirForca'), l=document.getElementById('operarLateral');
   const forca=f?f.checked:true;
-  return{minPontuacao:getMinScore(),exigirBOS:b?b.checked:MOTOR_CFG.exigirBOS,minForcaVela:forca?limiarForcaIA():0};
+  return{minPontuacao:getMinScore(),exigirBOS:b?b.checked:MOTOR_CFG.exigirBOS,minForcaVela:forca?limiarForcaIA():0,lateralEstrutura:l?l.checked:MOTOR_CFG.lateralEstrutura};
 }
 function salvarCfgMotor(){
   const c=cfgMotorUI();
-  try{ localStorage.setItem('protrader_cfg_motor',JSON.stringify({exigirBOS:c.exigirBOS,exigirForca:c.minForcaVela>0,minScore:getMinScore()})); }catch(e){ /* sem storage */ }
+  try{ localStorage.setItem('protrader_cfg_motor',JSON.stringify({exigirBOS:c.exigirBOS,exigirForca:c.minForcaVela>0,operarLateral:c.lateralEstrutura,minScore:getMinScore()})); }catch(e){ /* sem storage */ }
   if(!c.exigirBOS) showToast('⚠️ BOS livre — nos dados, sem BOS o acerto ficou em ~53% (abaixo do empate)','warn-t');
   else if(!(c.minForcaVela>0)) showToast('⚠️ Vela forte desligada — nos dados, vela fraca deu ~50% mesmo com BOS','warn-t');
   else showToast(`✓ BOS + vela forte (≥ ${String(c.minForcaVela).replace('.',',')}σ) — filtros validados nos dados`,'call-t');
@@ -2357,6 +2371,7 @@ function carregarCfgMotor(){
     // sempre aplica o que está salvo (ou o padrão): o navegador pode restaurar um estado velho do formulário
     const b=document.getElementById('exigirBOS'); if(b) b.checked=c.exigirBOS!==false;
     const f=document.getElementById('exigirForca'); if(f) f.checked=c.exigirForca!==false;
+    const l=document.getElementById('operarLateral'); if(l) l.checked=c.operarLateral!==false;
     const sl=document.getElementById('minScoreSlider'); if(sl&&c.minScore){ sl.value=c.minScore; document.getElementById('minScoreVal').textContent=c.minScore+'/100'; }
   }catch(e){ /* sem storage: padrão */ }
 }
@@ -2386,6 +2401,33 @@ async function atualizarCorrelacao(){
 
 // voltar para a página pelo histórico (bfcache) também reaplica a configuração salva
 window.addEventListener('pageshow',()=>{ try{ carregarCfgMotor(); }catch(e){} });
+
+// ─── Indicadores com força nos dados (estrutura + força da vela), lidos em relação ao sinal ───
+// Auditoria 06/10 (cada indicador sozinho, ~90 mil velas, 6 pares, Twelve Data): BOS/CHOCH ~62%, SWEEP ~60%,
+// vela forte ~62%; EMA/MACD ~50%; RSI 44%, Bollinger 39%, Estocástico 47% — "esticado" tende a CONTINUAR neste feed.
+function leituraEstrutura(r){
+  const smc=(r&&r.smc)||{}, b=smc.bos||{}, sw=smc.sweep||{}, dir=r&&r.direction;
+  const lado=d=>d==='CALL'?'Alta ↑':'Baixa ↓';
+  const item=(d,vazio)=>!d?{txt:vazio,s:'NEUTRO'}:{txt:`${lado(d)}${dir?(d===dir?' · a favor ✓':' · contra o sinal'):''}`,s:d==='CALL'?'ALTA':'BAIXA'};
+  const dB=b.bos==='bull'?'CALL':b.bos==='bear'?'PUT':null;
+  const dC=b.choch?(b.signal==='CALL'?'CALL':'PUT'):null;
+  const dS=sw.signal==='CALL'||sw.signal==='PUT'?sw.signal:null;
+  const z=r?r.forcaVela:null;
+  const forca=z==null?{txt:'—',s:'NEUTRO'}:{txt:`${fmtForcaDir(z)} · ${z>=0.75?'forte ✓':'fraca'}`,s:z>=0.75?(dir==='CALL'?'ALTA':dir==='PUT'?'BAIXA':'NEUTRO'):'NEUTRO'};
+  const cont=' (neste feed: tende a continuar)';
+  return{bos:item(dB,'Sem rompimento'),choch:item(dC,'Sem virada'),sweep:item(dS,'Sem varrida'),forca,
+    esticado:s=>s==='SOBRECOMPRADO'?'SOBRECOMPRADO → CONTINUA':s==='SOBREVENDIDO'?'SOBREVENDIDO → CONTINUA':'NEUTRO',
+    esticadoTxt:s=>s==='SOBRECOMPRADO'?'Sobrecomprado'+cont:s==='SOBREVENDIDO'?'Sobrevendido'+cont:'Neutro',
+    esticadoBB:s=>s==='BAIXA'?'ACIMA DA BANDA → CONTINUA':s==='ALTA'?'ABAIXO DA BANDA → CONTINUA':'DENTRO',
+    esticadoBBTxt:s=>s==='BAIXA'?'Acima da banda'+cont:s==='ALTA'?'Abaixo da banda'+cont:'Dentro das bandas'};
+}
+
+// Rótulo da estrutura que gerou o sinal: "BOS ✓" (tendência) ou "CHOCH ✓ (lateral)" / "BOS ✓ (lateral)"
+function rotuloEstrutura(x){
+  if(!x) return '';
+  const e=x.estrutura||(x.bos?'BOS':null);
+  return e?`${e} ✓${x.regime==='lateral'?' (lateral)':''}`:'';
+}
 
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║  AO VIVO 2026.10.05c — vela de fechamento pelo preço em tempo real ║
@@ -2622,17 +2664,17 @@ function showAndFinalizeResult(r,opts){
     const entryNow=secsLeft<10?'ENTRE AGORA!':secsLeft<20?`Entre em ~${secsLeft}s`:`Entre nos próximos ${secsLeft}s`;
     const hRef=r.tRef?horaLocal(r.tRef):'—';
     const validade=r.tRef?horaLocal(r.tRef+MOTOR_CFG.janelaEntradaSeg*1000,true):'—';
-    entryDet.innerHTML=`⏰ Analisou só velas fechadas (até ${hRef})${r.bos?' · BOS ✓':''}${r.forcaVela!=null?' · vela '+fmtForca(r.forcaVela):''}<br>🚀 Entre até <b>${validade}</b> (seu relógio) — depois o sinal não vale<br>🏁 Expira em ~${Math.ceil(secsLeft/60)} min · o resultado sai sozinho pela API`;
+    entryDet.innerHTML=`⏰ Analisou só velas fechadas (até ${hRef})${rotuloEstrutura(r)?' · '+rotuloEstrutura(r):''}${r.forcaVela!=null?' · vela '+fmtForca(r.forcaVela):''}<br>🚀 Entre até <b>${validade}</b> (seu relógio) — depois o sinal não vale<br>🏁 Expira em ~${Math.ceil(secsLeft/60)} min · o resultado sai sozinho pela API`;
     entryEl.style.borderColor=secsLeft<15?'var(--red)':'rgba(0,152,255,.2)';
   }
   renderForceMeter(r.force_score||0);
-  const pct=Math.round((r.confluences||0)/Math.max(1,r.comLeitura||1)*100)+'%'; document.getElementById('confPct').textContent=`${r.confluences||0} de ${r.comLeitura||'—'}${r.bos?' · BOS ✓':''}`;
+  const pct=Math.round((r.confluences||0)/Math.max(1,r.comLeitura||1)*100)+'%'; document.getElementById('confPct').textContent=`${rotuloEstrutura(r)?rotuloEstrutura(r)+' · ':''}${r.forcaVela!=null?'vela '+fmtForcaDir(r.forcaVela)+' · ':''}${r.confluences||0}/${r.comLeitura||'—'}`;
   setTimeout(()=>document.getElementById('cfill').style.width=pct,80);
   // A pontuação não é probabilidade: mostra ao lado o empate do payout e o acerto medido
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Backtest com BOS + vela forte: 71,6% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
+    if(nota) nota.textContent=`Backtest (tendência + rompimento no lateral): 72,5% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -2706,16 +2748,31 @@ function showAndFinalizeResult(r,opts){
 
   // — Indicadores —
   const sc=s=>s==='ALTA'||s==='SOBREVENDIDO'?'var(--green)':s==='BAIXA'||s==='SOBRECOMPRADO'?'var(--red)':'var(--gold)';
-  const cards=[{n:'EMA 9/21',v:r.ema?.value,s:r.ema?.signal},{n:'RSI 14',v:r.rsi?.value,s:r.rsi?.signal},{n:'MACD',v:r.macd?.value,s:r.macd?.signal},{n:'Bollinger',v:r.bollinger?.value,s:r.bollinger?.signal},{n:'Estocástico',v:r.estocastico?.value,s:r.estocastico?.signal},{n:'Volume',v:r.volume?.value,s:r.volume?.signal},{n:'Price Action',v:r.pa?.value,s:r.pa?.signal},{n:'Banca Sug.',v:r.bank_pct||'—',s:'NEUTRO'}];
-  document.getElementById('indGrid').innerHTML=cards.map(c=>`<div class="imc"><div class="imc-n">${c.n}</div><div class="imc-v" style="color:${sc(c.s)}">${c.v||'—'}</div><div class="imc-s" style="color:${sc(c.s)}">${c.s||'—'}</div></div>`).join('');
-  const upd=(id,v,s)=>{const el=document.getElementById(id);el.textContent=v;el.className='ival '+(s==='ALTA'||s==='SOBREVENDIDO'?'bull':s==='BAIXA'||s==='SOBRECOMPRADO'?'bear':'neut');};
+  const E_=leituraEstrutura(r);
+  const F='✓ força nos dados', N='≈ cara ou coroa', C='↔ ao contrário neste feed';
+  const cards=[
+    {n:'BOS · rompimento',v:E_.bos.txt,s:E_.bos.s,e:F+' · 62%',k:'forte'},
+    {n:'CHOCH · virada',v:E_.choch.txt,s:E_.choch.s,e:F+' · 62%',k:'forte'},
+    {n:'SWEEP · liquidez',v:E_.sweep.txt,s:E_.sweep.s,e:F+' · 60%',k:'forte'},
+    {n:'Força da vela',v:E_.forca.txt,s:E_.forca.s,e:F+' · 62%',k:'forte'},
+    {n:'EMA 9/21',v:r.ema?.value,s:r.ema?.signal,e:N+' · 50%'},
+    {n:'MACD',v:r.macd?.value,s:r.macd?.signal,e:N+' · 51%'},
+    {n:'Price Action',v:r.pa?.value,s:r.pa?.signal,e:N+' · 52%'},
+    {n:'RSI 14',v:r.rsi?.value,s:E_.esticado(r.rsi?.signal),e:C+' · 44%',k:'contra'},
+    {n:'Bollinger',v:r.bollinger?.value,s:E_.esticadoBB(r.bollinger?.signal),e:C+' · 39%',k:'contra'},
+    {n:'Estocástico',v:r.estocastico?.value,s:E_.esticado(r.estocastico?.signal),e:C+' · 47%',k:'contra'},
+    {n:'Banca Sug.',v:r.bank_pct||'—',s:'NEUTRO'}];
+  const corE=k=>k==='forte'?'var(--green)':k==='contra'?'var(--gold)':'var(--muted)';
+  document.getElementById('indGrid').innerHTML=cards.map(c=>`<div class="imc ${c.k||''}" title="Acerto do indicador sozinho prevendo a vela seguinte (~90 mil velas, 6 pares, Twelve Data)"><div class="imc-n">${c.n}</div><div class="imc-v" style="color:${sc(c.s)}">${c.v||'—'}</div><div class="imc-s" style="color:${sc(c.s)}">${c.s||'—'}</div>${c.e?`<div class="imc-e" style="color:${corE(c.k)}">${c.e}</div>`:''}</div>`).join('');
+  const upd=(id,v,s)=>{const el=document.getElementById(id); if(!el) return; el.textContent=v;el.className='ival '+(s==='ALTA'||s==='SOBREVENDIDO'?'bull':s==='BAIXA'||s==='SOBRECOMPRADO'?'bear':'neut');};
   upd('v-ema',r.ema?.signal==='ALTA'?'Alta ↑':'Baixa ↓',r.ema?.signal);
-  upd('v-rsi',(r.rsi?.value||'').slice(0,8)+' · '+(r.rsi?.signal||'—'),r.rsi?.signal);
+  upd('v-rsi',(r.rsi?.value||'').slice(0,8)+' · '+E_.esticadoTxt(r.rsi?.signal),'NEUTRO');
   upd('v-macd',r.macd?.signal==='ALTA'?'Histograma ↑':'Histograma ↓',r.macd?.signal);
-  upd('v-bb',(r.bollinger?.value||'').slice(0,14)||'—',r.bollinger?.signal);
-  upd('v-sto',(r.estocastico?.value||'').slice(0,12)||'—',r.estocastico?.signal);
+  upd('v-bb',E_.esticadoBBTxt(r.bollinger?.signal),'NEUTRO');
+  upd('v-sto',(r.estocastico?.value||'').slice(0,12)+' · '+E_.esticadoTxt(r.estocastico?.signal),'NEUTRO');
   upd('v-vol',r.volume_score==='N/D'?'N/D · forex sem volume':(r.volume_score||'—')+' · '+(r.volume_confirms?'Confirma':'Diverge'),r.volume?.signal);
   upd('v-pa',r.pa_pattern||'—',r.pa?.signal);
+  upd('v-bos',E_.bos.txt,E_.bos.s); upd('v-choch',E_.choch.txt,E_.choch.s); upd('v-sweep',E_.sweep.txt,E_.sweep.s); upd('v-forca',E_.forca.txt,E_.forca.s);
 
   // — Modo Foco — atualiza ativo, preço e sinal
   document.getElementById('focoPair').textContent=pair.replace(' (OTC)','')+(isOTC?' OTC':'');
@@ -2725,7 +2782,7 @@ function showAndFinalizeResult(r,opts){
   document.getElementById('focoDir').textContent=r.direction;
   document.getElementById('focoDir').className='foco-sig '+(isCall?'call':'put');
   document.getElementById('focoSetup').textContent=r.setup||'—';
-  document.getElementById('focoConf').textContent=`${r.confluences||0} de ${r.comLeitura||'—'} indicadores${r.bos?' · BOS ✓':''} · ${r.expiry}`;
+  document.getElementById('focoConf').textContent=`${r.confluences||0} de ${r.comLeitura||'—'} indicadores${rotuloEstrutura(r)?' · '+rotuloEstrutura(r):''} · ${r.expiry}`;
   document.getElementById('focoExp').textContent=`⏰ Entre até ${r.tRef?horaLocal(r.tRef+MOTOR_CFG.janelaEntradaSeg*1000,true):'agora'} — expira em ~${Math.ceil((r.clockSecs||60)/60)}min`;
   document.getElementById('focoBtns').style.display='none';
 
@@ -2738,7 +2795,7 @@ function showAndFinalizeResult(r,opts){
   lastSignalMark=r.direction; drawCandleChart();
   setTimeout(()=>{lastSignalMark=null;drawCandleChart();},120000);
   startClock(r.clockSecs||60);
-  showToast(`${isCall?'🟢 CALL':'🔴 PUT'} · ${r.setup}${r.bos?' · BOS ✓':''} · ${r.confluences||0} de ${r.comLeitura||'—'} indicadores`,isCall?'call-t':'put-t');
+  showToast(`${isCall?'🟢 CALL':'🔴 PUT'} · ${r.setup}${rotuloEstrutura(r)?' · '+rotuloEstrutura(r):''} · ${r.confluences||0} de ${r.comLeitura||'—'} indicadores`,isCall?'call-t':'put-t');
   lastSignalData=r;
   saveOps();
   runMTF(r.direction,r.confidence);
@@ -2785,7 +2842,7 @@ async function runBacktest(){
   const d0=new Date(velas[301].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   const d1=new Date(velas[velas.length-1].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   el.style.color='var(--text)';
-  el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgBT.exigirBOS?'exigido':'livre'} · vela forte ${cfgBT.minForcaVela>0?'≥ '+fmtForca(cfgBT.minForcaVela,2):'livre'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
+  el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgBT.exigirBOS?'exigido':'livre'} · vela forte ${cfgBT.minForcaVela>0?'≥ '+fmtForca(cfgBT.minForcaVela,2):'livre'} · lateral ${cfgBT.lateralEstrutura?'rompimento':'desligado'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
     ${bloco('Motor como roda ao vivo (última vela pelo preço do fechamento)',M)}
     ${bloco('Referência: repetir a cor da última vela',B)}
     <div style="font-size:8px;color:var(--muted);line-height:1.4;">Preço da Twelve Data, entrada sem atraso. A corretora usa o próprio preço e há segundos entre o sinal e o clique — o resultado real tende a ser pior que este.</div>`;
@@ -2939,14 +2996,14 @@ function showAutoAlert(m){
   document.getElementById('aaPair').textContent=m.pair+' @ '+fmtPreco(m.pair,m.precoRef);
   const aaDir=document.getElementById('aaDir');
   aaDir.textContent=m.direcao; aaDir.className='aa-dir '+(isCall?'call':'put');
-  document.getElementById('aaMeta').textContent=`${m.bos?'BOS ✓ · ':''}${m.forcaVela!=null?`vela ${fmtForcaDir(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
+  document.getElementById('aaMeta').textContent=`${rotuloEstrutura(m)?rotuloEstrutura(m)+' · ':''}${m.forcaVela!=null?`vela ${fmtForcaDir(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
   const exp=document.getElementById('aaExp');
   const contar=()=>{ const s=Math.max(0,Math.ceil((validoAte-Date.now())/1000)); exp.textContent=`Exp: 1 minuto · entre em até ${s}s (até ${hhmmss(validoAte)}) · entradas hoje: ${dailyOpsCount}/5`; if(s<=0){ clearInterval(autoContagem); autoContagem=null; if(autoResult&&autoResult.id===id&&alert.classList.contains('show')){ skipAutoSignal(); showToast('⌛ Sinal expirou — passou da janela de entrada (nos dados, entrar atrasado derruba o acerto para ~50%)','warn-t'); } } };
   clearInterval(autoContagem); contar(); autoContagem=setInterval(contar,1000);
   playAutoAlert(isCall);
   if(typeof tgEnabled!=='undefined'&&tgEnabled){
     const op=ops.find(o=>o.id===id); if(op){ op.tg=true; saveOps(); }
-    sendTelegramSignal({id,dir:m.direcao,pair:m.pair,price:fmtPreco(m.pair,m.precoRef),conf:m.pontuacao,alinhados:m.alinhados,comLeitura:m.comLeitura,regime:m.regime,exp:'1 minuto',bos:m.bos,forca:m.forcaVela,validoAte});
+    sendTelegramSignal({id,dir:m.direcao,pair:m.pair,price:fmtPreco(m.pair,m.precoRef),conf:m.pontuacao,alinhados:m.alinhados,comLeitura:m.comLeitura,regime:m.regime,exp:'1 minuto',bos:m.bos,estrutura:m.estrutura,forca:m.forcaVela,validoAte});
   }
   if('Notification' in window && Notification.permission==='granted'){
     try{ new Notification(`🤖 ${m.direcao} — ${m.pair}`,{body:`Entre até ${hhmmss(validoAte)} · ${m.alinhados} de ${m.comLeitura} indicadores · exp 1 min`}); }catch(e){ /* sem notificação */ }
@@ -3227,14 +3284,15 @@ function calcMACD(closes){
 // ║  Sem volume (forex não tem na Twelve Data), sem COT simulado.     ║
 // ╚══════════════════════════════════════════════════════════════════╝
 const MOTOR_CFG={
-  versao:'2026.10.06',
+  versao:'2026.10.06c',
   janela:300,          // velas fechadas usadas na leitura
   minVelas:60,         // abaixo disso não há leitura confiável
   filtroVol:1.0,       // volatilidade recente ÷ média da janela (calibrado)
   minPontuacao:80,     // concordância mínima entre os indicadores (calibrado)
   minVotos:4,          // indicadores com leitura, no mínimo
   adxTendencia:20,     // ADX ≥ isto = regime de tendência
-  usarReversao:false,  // regime lateral não gera sinal: nos dados, a reversão nunca passou do empate
+  usarReversao:false,  // regime lateral não gera sinal de REVERSÃO: nos dados, a reversão nunca passou do empate
+  lateralEstrutura:true, // no lateral, só rompimento (CHOCH, senão BOS) com vela forte a favor: 75,1% · 74,9% · 70,5% (auditoria 06/10)
   exigirBOS:true,      // só sinaliza com rompimento de estrutura (BOS) a favor — 66% contra 53% sem BOS (3 semanas, 6 pares)
   minForcaVela:0.75,   // vela do sinal tem de andar ≥ 0,75 desvio-padrão a favor (auditoria 06/10: 71,4% com vela forte × ~50% com vela fraca; 19 de 19 dias, 6 de 6 pares)
   janelaEntradaSeg:20  // o sinal só vale nos primeiros segundos depois do fechamento da vela
@@ -3394,7 +3452,27 @@ function motorSinal(velas,ctx){
   const L=motorLeitura(fechadas,par);
   const base={leitura:L,regime:L.regime,volRel:L.volRel,atrPct:L.atrPct};
   if(!(L.volRel>=cfg.filtroVol)) return R('parado',`Mercado parado — volatilidade ${L.volRel.toFixed(2)}× a média (mínimo ${cfg.filtroVol}×)`,base);
-  if(L.regime==='lateral'&&!cfg.usarReversao) return R('lateral',`Regime lateral (ADX ${L.adx.adx}) — o motor só opera tendência`,base);
+  if(L.regime==='lateral'&&!cfg.usarReversao){
+    if(!cfg.lateralEstrutura) return R('lateral',`Regime lateral (ADX ${L.adx.adx}) — o motor só opera tendência`,base);
+    // Lateral: só ROMPIMENTO de estrutura (CHOCH; se não houver, BOS) com vela forte a favor.
+    // Indicadores de tendência não decidem aqui (no lateral eles não têm direção); entram só na pontuação exibida.
+    const b=L.ind.smc&&L.ind.smc.bos;
+    const dC=b&&b.choch?(b.signal==='CALL'?'CALL':'PUT'):null, dB=b&&b.bos==='bull'?'CALL':b&&b.bos==='bear'?'PUT':null;
+    const dirL=dC||dB, estrutura=dC?'CHOCH':'BOS';
+    if(!dirL) return R('lateral',`Regime lateral (ADX ${L.adx.adx}) — sem rompimento de estrutura (BOS/CHOCH) na última vela`,base);
+    const zL=forcaUltimaVela(fechadas,passo), forcaL=zL==null?null:+(zL*(dirL==='CALL'?1:-1)).toFixed(2);
+    const minL=Math.max(0.75,cfg.minForcaVela||0); // a regra do lateral foi validada com vela ≥ 0,75σ
+    if(!(forcaL!=null&&forcaL>=minL)) return R('vela-fraca',`Lateral com ${estrutura} ${dirL}, mas a vela do sinal ${forcaL==null?'não tem medida (buraco nos dados)':`andou ${forcaL.toFixed(2).replace('.',',')}σ a favor`} (mínimo ${String(minL).replace('.',',')}σ)`,{...base,direcao:dirL,forcaVela:forcaL});
+    const vt=L.tendencia; let wF=0,wX=0,nV=0;
+    for(const v of vt){ if(!v.dir) continue; nV++; if(v.dir===dirL) wF+=v.peso; else wX+=v.peso; }
+    const ultL=fechadas[fechadas.length-1];
+    return{ok:true,fase:'sinal',direcao:dirL,pontuacao:wF+wX>0?Math.round(50+50*(wF-wX)/(wF+wX)):50,regime:'lateral',estrutura,
+      votos:vt,placar:{wC:dirL==='CALL'?wF:wX,wP:dirL==='PUT'?wF:wX,nV,direcao:dirL},leitura:L,
+      volRel:L.volRel,atrPct:L.atrPct,precoRef:ultL.close,tRef:msVela(ultL)+passo,sintetica:!!ultL.sintetica,
+      bos:dB===dirL,forcaVela:forcaL,
+      alinhados:vt.filter(v=>v.dir===dirL).length,contra:vt.filter(v=>v.dir&&v.dir!==dirL).length,comLeitura:nV,total:vt.length,
+      versao:cfg.versao};
+  }
   const votos=L.regime==='tendencia'?L.tendencia:L.reversao;
   const P=motorPlacar(votos,ctx.pesos);
   const ext={...base,votos,placar:P};
@@ -3411,7 +3489,7 @@ function motorSinal(velas,ctx){
   const ult=fechadas[fechadas.length-1];
   return{ok:true,fase:'sinal',direcao:P.direcao,pontuacao:P.pontuacao,regime:L.regime,votos,placar:P,leitura:L,
     volRel:L.volRel,atrPct:L.atrPct,precoRef:ult.close,tRef:msVela(ult)+passo,sintetica:!!ult.sintetica,
-    bos:votos.some(v=>v.nome==='BOS'&&v.dir===P.direcao),forcaVela,
+    bos:votos.some(v=>v.nome==='BOS'&&v.dir===P.direcao),estrutura:votos.some(v=>v.nome==='BOS'&&v.dir===P.direcao)?'BOS':null,forcaVela,
     alinhados:votos.filter(v=>v.dir===P.direcao).length,contra:votos.filter(v=>v.dir&&v.dir!==P.direcao).length,comLeitura:P.nV,total:votos.length,
     versao:cfg.versao};
 }
@@ -6156,8 +6234,8 @@ async function sendTelegramSignal(r){
 
 💰 Preço: \`${r.price}\`
 🎯 Indicadores a favor: *${r.alinhados} de ${r.comLeitura}*
-📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral'}
-⏰ Expiração: ${r.exp}${r.bos?'\n🧱 BOS: rompimento a favor ✓':''}${r.forca!=null?`\n🕯️ Vela do sinal: ${fmtForcaDir(r.forca)}${r.forca>=0?' a favor':''}`:''}
+📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral (só rompimento com vela forte)'}
+⏰ Expiração: ${r.exp}${r.estrutura==='CHOCH'?'\n🧱 CHOCH: virada de estrutura a favor ✓':r.bos?'\n🧱 BOS: rompimento a favor ✓':''}${r.forca!=null?`\n🕯️ Vela do sinal: ${fmtForcaDir(r.forca)}${r.forca>=0?' a favor':''}`:''}
 ⏱ *Entre até ${r.validoAte?horaDupla(r.validoAte):'—'}* — depois disso o sinal não vale${r.wr!=null?`\n📊 Acerto medido no par: ${r.wr}%`:''}
 
 [📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)
@@ -6570,6 +6648,14 @@ setTimeout(showDaySummary, 3000);
 // ║    faixas da Guardiã corretas + reavaliar do zero; backtest sem  ║
 // ║    recalcular a Guardiã por vela; trava de aba 150 s + pagehide; ║
 // ║    chaves com autocomplete=off; força no CSV; payout 50–100%.    ║
+// ║ 2026.10.06c — Indicadores agrupados pelo que os dados mostraram: ║
+// ║    BOS/CHOCH/SWEEP/força da vela ~62% sozinhos; EMA/MACD ~50%;   ║
+// ║    RSI/Bollinger/Estocástico 39–47% (ao contrário neste feed).   ║
+// ║    Bloco de volume escondido (forex sem volume na Twelve Data).  ║
+// ║    Rompimento no lateral: CHOCH (ou BOS) + vela forte no regime  ║
+// ║    lateral — 75,3% · 74,7% · 70,0% em 05/10; sistema 72,5% em    ║
+// ║    1.832 sinais. Bollinger/RSI invertidos e CHOCH na tendência   ║
+// ║    não entraram (pioraram no dia novo 05/10).                    ║
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
