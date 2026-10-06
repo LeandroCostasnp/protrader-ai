@@ -1116,12 +1116,12 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         </label>
       </div>
       <label style="display:flex;align-items:flex-start;gap:6px;margin:2px 0 8px;font-size:10px;color:var(--muted);cursor:pointer;line-height:1.35;">
-        <input type="checkbox" id="exigirBOS" checked onchange="salvarCfgMotor()" style="margin-top:2px;">
+        <input type="checkbox" id="exigirBOS" checked autocomplete="off" onchange="salvarCfgMotor()" style="margin-top:2px;">
         <span><b style="color:var(--text);">Exigir BOS</b> (rompimento de estrutura)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 66% com BOS × 53% sem (3 semanas, 6 pares)</span></span>
       </label>
       <label style="display:flex;align-items:flex-start;gap:6px;margin:-4px 0 8px;font-size:10px;color:var(--muted);cursor:pointer;line-height:1.35;">
-        <input type="checkbox" id="exigirForca" checked onchange="salvarCfgMotor()" style="margin-top:2px;">
-        <span><b style="color:var(--text);">Exigir vela forte</b> (≥ 0,75σ a favor)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 71,5% com vela forte × ~50% com vela fraca (16 de 16 dias, 6 de 6 pares)</span></span>
+        <input type="checkbox" id="exigirForca" checked autocomplete="off" onchange="salvarCfgMotor()" style="margin-top:2px;">
+        <span><b style="color:var(--text);">Exigir vela forte</b> (≥ 0,75σ a favor)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 71,6% com vela forte × ~50% com vela fraca (18 de 18 dias, 6 de 6 pares)</span></span>
       </label>
       <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
       <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
@@ -1283,7 +1283,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
           • vela oficial disponível na hora: 66,1% · <b>como o app roda ao vivo (vela montada pelo preço do fechamento): 65,9%</b> · com a série a cada 2 min (1 ou 2 velas montadas, como roda agora): 65,9%<br>
           • esperando a API publicar a vela (10–40 s, medido ao vivo): 49,9% — por isso o app não espera<br>
           • sem BOS: ~53% · expiração de 2 a 5 min: 45–47%<br>
-          <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,5%</b> em 1.230 sinais (71,1% na descoberta · 71,7% no teste · 72,3% em 05/10, dia novo). Vela fraca: ~50%. Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
+          <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera. Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
           Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na Valyn" (Stats).
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
@@ -1322,7 +1322,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06 (filtro de vela forte + IA Guardiã; ver CHANGELOG no fim do arquivo)
+// ProTrader AI — versão 2026.10.06b (filtro de vela forte + IA Guardiã; revisão de casos de borda; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2077,8 +2077,8 @@ function marcarEntrou(id){
 function exportCSV(){
   if(ops.length===0){showToast('Nenhuma operação para exportar','warn-t');return;}
   const q=v=>{const t=v==null?'':String(v);return /[",;\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
-  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)']];
-  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'']);});
+  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)','Força vela (σ)']];
+  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'',o.forca??'']);});
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(rows.map(r=>r.map(q).join(',')).join('\n'));
   a.download='protrader_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
@@ -2225,8 +2225,9 @@ function renderCalibracao(){
     linha('Só os que você entrou',sinais.filter(o=>o.entrou!==false))+
     linha('Com BOS a favor',sinais.filter(o=>o.bos===true))+
     linha('Sem BOS',sinais.filter(o=>o.bos===false))+
-    linha('Vela 0,75–1,5σ',sinais.filter(o=>o.forca!=null&&o.forca<1.5),'Força da vela do sinal (desvios-padrão a favor)')+
-    linha('Vela ≥ 1,5σ',sinais.filter(o=>o.forca!=null&&o.forca>=1.5),'Nos dados: quanto mais forte a vela, maior o acerto')+
+    (sinais.some(o=>o.forca!=null&&o.forca<0.75)?linha('Vela < 0,75σ (filtro desligado)',sinais.filter(o=>o.forca!=null&&o.forca<0.75),'Nos dados: ~50%'):'')+
+    linha('Vela 0,75–1,5σ',sinais.filter(naFaixaMedia),'Força da vela do sinal (desvios-padrão a favor)')+
+    linha('Vela ≥ 1,5σ',sinais.filter(naFaixaForte),'Nos dados: quanto mais forte a vela, maior o acerto')+
     linha('Entrou até 10 s após a vela',ent.filter(o=>atraso(o)<=10))+
     linha('Entrou entre 10 e 20 s',ent.filter(o=>atraso(o)>10&&atraso(o)<=20))+
     linha('Entrou depois de 20 s',ent.filter(o=>atraso(o)>20))+
@@ -2353,8 +2354,9 @@ function salvarCfgMotor(){
 function carregarCfgMotor(){
   try{
     const c=JSON.parse(localStorage.getItem('protrader_cfg_motor')||'{}');
-    const b=document.getElementById('exigirBOS'); if(b&&typeof c.exigirBOS==='boolean') b.checked=c.exigirBOS;
-    const f=document.getElementById('exigirForca'); if(f&&typeof c.exigirForca==='boolean') f.checked=c.exigirForca;
+    // sempre aplica o que está salvo (ou o padrão): o navegador pode restaurar um estado velho do formulário
+    const b=document.getElementById('exigirBOS'); if(b) b.checked=c.exigirBOS!==false;
+    const f=document.getElementById('exigirForca'); if(f) f.checked=c.exigirForca!==false;
     const sl=document.getElementById('minScoreSlider'); if(sl&&c.minScore){ sl.value=c.minScore; document.getElementById('minScoreVal').textContent=c.minScore+'/100'; }
   }catch(e){ /* sem storage: padrão */ }
 }
@@ -2381,6 +2383,9 @@ async function atualizarCorrelacao(){
   try{ await fetchInterPairCorrelation(); }catch(e){ /* sem dados */ }
   renderCorrelationPanel();
 }
+
+// voltar para a página pelo histórico (bfcache) também reaplica a configuração salva
+window.addEventListener('pageshow',()=>{ try{ carregarCfgMotor(); }catch(e){} });
 
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║  AO VIVO 2026.10.05c — vela de fechamento pelo preço em tempo real ║
@@ -2549,15 +2554,32 @@ document.addEventListener('visibilitychange',()=>{
   if(autoMode&&ocultoDesde&&Date.now()-ocultoDesde>60000) showToast('⚠️ Com a aba em segundo plano o navegador atrasa os relógios: sinais do Auto podem ter sido perdidos nesse tempo. Deixe a aba visível enquanto o Auto roda.','warn-t');
   ocultoDesde=null;
 });
-// Auto ligado em uma aba só (no mesmo navegador): evita alerta e Telegram em dobro
+// Auto ligado em uma aba só (no mesmo navegador): evita alerta e Telegram em dobro.
+// Web Locks: o navegador garante uma dona só e solta sozinho se a aba fechar ou travar. O localStorage
+// fica de reserva (navegador antigo): ele é sincronizado entre abas com atraso e, sozinho, deixou duas abas ligarem no teste.
 const ABA_ID=Math.random().toString(36).slice(2);
+const WEB_LOCKS=!!(typeof navigator!=='undefined'&&navigator.locks&&typeof navigator.locks.request==='function');
+let _soltarWebLock=null;
+function pegarTravaAuto(){
+  if(!WEB_LOCKS) return Promise.resolve(travaAutoLivre());
+  if(_soltarWebLock) return Promise.resolve(true);
+  return new Promise(res=>{
+    navigator.locks.request('protrader_auto',{ifAvailable:true},lock=>{
+      if(!lock){ res(false); return; }
+      res(true);
+      return new Promise(r=>{ _soltarWebLock=r; }); // segura até o Auto desligar ou a aba fechar
+    }).catch(()=>res(travaAutoLivre()));
+  });
+}
+function temTravaAuto(){ return WEB_LOCKS?!!_soltarWebLock:travaAutoLivre(); }
 function travaAutoLivre(){
-  try{ const t=JSON.parse(localStorage.getItem('protrader_auto_lock')||'null'); return !t||t.id===ABA_ID||Date.now()-t.t>45000; }catch(e){ return true; }
+  try{ const t=JSON.parse(localStorage.getItem('protrader_auto_lock')||'null'); return !t||t.id===ABA_ID||Date.now()-t.t>150000; /* 150 s: aba em segundo plano renova só ~1×/min */ }catch(e){ return true; }
 }
 function renovarTravaAuto(){ try{ if(autoMode) localStorage.setItem('protrader_auto_lock',JSON.stringify({id:ABA_ID,t:Date.now()})); }catch(e){ /* sem storage */ } }
-function soltarTravaAuto(){ try{ const t=JSON.parse(localStorage.getItem('protrader_auto_lock')||'null'); if(t&&t.id===ABA_ID) localStorage.removeItem('protrader_auto_lock'); }catch(e){ /* sem storage */ } }
+function soltarTravaAuto(){ if(_soltarWebLock){ const r=_soltarWebLock; _soltarWebLock=null; r(); } try{ const t=JSON.parse(localStorage.getItem('protrader_auto_lock')||'null'); if(t&&t.id===ABA_ID) localStorage.removeItem('protrader_auto_lock'); }catch(e){ /* sem storage */ } }
 setInterval(renovarTravaAuto,15000);
 window.addEventListener('beforeunload',soltarTravaAuto);
+window.addEventListener('pagehide',soltarTravaAuto); // iOS não dispara beforeunload
 
 // ═══ SHOW + FINALIZE AUTOMÁTICO (sem checklist) ═══
 function showAndFinalizeResult(r,opts){
@@ -2610,7 +2632,7 @@ function showAndFinalizeResult(r,opts){
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Backtest com BOS + vela forte: 71,5% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
+    if(nota) nota.textContent=`Backtest com BOS + vela forte: 71,6% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -2733,6 +2755,7 @@ async function runBacktest(){
   const velas=await tdSerie(sym,'1min',5000,{ttl:600000,prioridade:'alta',espera:60000});
   if(!velas||velas.length<400){ el.textContent='⚠️ Sem dados suficientes da API agora (limite por minuto ou cota do dia). Tente de novo em 1 minuto.'; return; }
   const minP=getMinScore(), {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const cfgBT=cfgMotorUI(); // uma vez só: a Guardiã não é recalculada a cada vela nem muda no meio do teste
   const M={w:0,l:0,e:0}, B={w:0,l:0,e:0}; let n=0;
   for(let i=301;i<velas.length;i++){
     const c=velas[i], p=velas[i-1];
@@ -2742,7 +2765,7 @@ async function runBacktest(){
     // como roda ao vivo: a vela que acabou de fechar é montada com o preço do fechamento (abertura = fechamento anterior)
     const pv=velas[i-2]; if(pv.t==null||p.t-pv.t!==60000) continue;
     const sint={t:p.t,open:pv.close,close:p.close,high:Math.max(pv.close,p.close),low:Math.min(pv.close,p.close),sintetica:true};
-    const m=motorSinal(velas.slice(i-300,i-1).concat([sint]),{par:pair,tf:'M1',agora:c.t+2000,pesos:null,cfg:cfgMotorUI()});
+    const m=motorSinal(velas.slice(i-300,i-1).concat([sint]),{par:pair,tf:'M1',agora:c.t+2000,pesos:null,cfg:cfgBT});
     const mov=Math.sign(c.close-p.close);
     const conta=(S,d)=>{ if(mov===0) S.e++; else if(mov===d) S.w++; else S.l++; };
     if(m.ok) conta(M,m.direcao==='CALL'?1:-1);
@@ -2762,7 +2785,7 @@ async function runBacktest(){
   const d0=new Date(velas[301].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   const d1=new Date(velas[velas.length-1].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   el.style.color='var(--text)';
-  el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgMotorUI().exigirBOS?'exigido':'livre'} · vela forte ${cfgMotorUI().minForcaVela>0?'≥ '+fmtForca(cfgMotorUI().minForcaVela,2):'livre'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
+  el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgBT.exigirBOS?'exigido':'livre'} · vela forte ${cfgBT.minForcaVela>0?'≥ '+fmtForca(cfgBT.minForcaVela,2):'livre'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
     ${bloco('Motor como roda ao vivo (última vela pelo preço do fechamento)',M)}
     ${bloco('Referência: repetir a cor da última vela',B)}
     <div style="font-size:8px;color:var(--muted);line-height:1.4;">Preço da Twelve Data, entrada sem atraso. A corretora usa o próprio preço e há segundos entre o sinal e o clique — o resultado real tende a ser pior que este.</div>`;
@@ -2816,7 +2839,16 @@ function atualizarRotuloAuto(){
 }
 
 function toggleAuto(){
-  if(!autoMode&&!travaAutoLivre()){ showToast('⛔ O Auto já está ligado em outra aba deste navegador — desligue lá primeiro.','warn-t'); return; }
+  if(autoMode){ alternarAuto(); return; }
+  if(_pedindoTrava) return; _pedindoTrava=true;
+  pegarTravaAuto().then(ok=>{
+    _pedindoTrava=false;
+    if(!ok){ showToast('⛔ O Auto já está ligado em outra aba deste navegador — desligue lá primeiro.','warn-t'); return; }
+    if(!autoMode) alternarAuto();
+  });
+}
+let _pedindoTrava=false;
+function alternarAuto(){
   autoMode=!autoMode;
   if(autoMode){ try{ const g=guardiao(); if(g.parar) showToast(`⛔ IA Guardiã: na Valyn o acerto confirmado está abaixo do empate (${Math.round(g.todos.wr*100)}% em ${g.todos.n}). O Auto liga, mas opere só em conta demo até revisar.`,'warn-t'); }catch(e){} }
   const btn=document.getElementById('autoBtn');
@@ -2861,6 +2893,9 @@ async function runAutoScan(){
   autoScanning=true;
   const par=pair;
   try{
+    // outra aba pegou a trava (esta ficou em segundo plano e o navegador atrasou a renovação): esta para
+    if(!temTravaAuto()&&!(await pegarTravaAuto())){ stopAuto(); showToast('⛔ O Auto passou para outra aba deste navegador — desliguei aqui para não alertar em dobro.','warn-t'); return; }
+    renovarTravaAuto();
     if(!forexAberto()){ showToast('⛔ Forex fechado (fim de semana) — o Auto aguarda a reabertura.','warn-t'); return; }
     if(pausedUntil && new Date()<pausedUntil){
       showToast(`⏸ Auto pausado — retoma em ${Math.ceil((pausedUntil-new Date())/60000)}min`,'warn-t'); return;
@@ -2904,7 +2939,7 @@ function showAutoAlert(m){
   document.getElementById('aaPair').textContent=m.pair+' @ '+fmtPreco(m.pair,m.precoRef);
   const aaDir=document.getElementById('aaDir');
   aaDir.textContent=m.direcao; aaDir.className='aa-dir '+(isCall?'call':'put');
-  document.getElementById('aaMeta').textContent=`${m.bos?'BOS ✓ · ':''}${m.forcaVela!=null?`vela ${fmtForca(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
+  document.getElementById('aaMeta').textContent=`${m.bos?'BOS ✓ · ':''}${m.forcaVela!=null?`vela ${fmtForcaDir(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
   const exp=document.getElementById('aaExp');
   const contar=()=>{ const s=Math.max(0,Math.ceil((validoAte-Date.now())/1000)); exp.textContent=`Exp: 1 minuto · entre em até ${s}s (até ${hhmmss(validoAte)}) · entradas hoje: ${dailyOpsCount}/5`; if(s<=0){ clearInterval(autoContagem); autoContagem=null; if(autoResult&&autoResult.id===id&&alert.classList.contains('show')){ skipAutoSignal(); showToast('⌛ Sinal expirou — passou da janela de entrada (nos dados, entrar atrasado derruba o acerto para ~50%)','warn-t'); } } };
   clearInterval(autoContagem); contar(); autoContagem=setInterval(contar,1000);
@@ -3201,7 +3236,7 @@ const MOTOR_CFG={
   adxTendencia:20,     // ADX ≥ isto = regime de tendência
   usarReversao:false,  // regime lateral não gera sinal: nos dados, a reversão nunca passou do empate
   exigirBOS:true,      // só sinaliza com rompimento de estrutura (BOS) a favor — 66% contra 53% sem BOS (3 semanas, 6 pares)
-  minForcaVela:0.75,   // vela do sinal tem de andar ≥ 0,75 desvio-padrão a favor (auditoria 06/10: 71,4% × 50% nas velas fracas; 16 de 16 dias)
+  minForcaVela:0.75,   // vela do sinal tem de andar ≥ 0,75 desvio-padrão a favor (auditoria 06/10: 71,4% com vela forte × ~50% com vela fraca; 19 de 19 dias, 6 de 6 pares)
   janelaEntradaSeg:20  // o sinal só vale nos primeiros segundos depois do fechamento da vela
 };
 
@@ -3209,12 +3244,22 @@ const MOTOR_CFG={
 // Força da vela do sinal: variação fechamento→fechamento da última vela, em desvios-padrão das variações de 1 vela
 // nas últimas 61 variações (inclui a própria). Nos dados, o que paga é a continuação logo depois de uma vela forte;
 // vela fraca (< 0,75σ) deu ~50% mesmo com BOS e pontuação 100.
-function forcaUltimaVela(velas){
+// Só entram variações entre velas VIZINHAS (sem buraco de dados): uma "variação" que atravessa um buraco
+// de horas parece uma vela gigante. A última variação também tem de ser entre vizinhas.
+function forcaUltimaVela(velas,passo){
+  passo=passo||60000;
   if(!velas||velas.length<21) return null;
-  const cs=velas.slice(-62).map(c=>c.close), d=[];
-  for(let i=1;i<cs.length;i++) d.push(cs[i]-cs[i-1]);
-  const m=d.reduce((a,b)=>a+b,0)/d.length;
-  const sd=Math.sqrt(d.reduce((a,b)=>a+(b-m)*(b-m),0)/(d.length-1));
+  const v=velas.slice(-62), d=[];
+  let ultimaOk=false;
+  for(let i=1;i<v.length;i++){
+    const a=v[i-1], b=v[i], ta=msVela(a), tb=msVela(b);
+    const ok=ta!=null&&tb!=null&&tb-ta===passo&&isFinite(a.close)&&isFinite(b.close);
+    if(ok) d.push(b.close-a.close);
+    if(i===v.length-1) ultimaOk=ok;
+  }
+  if(!ultimaOk||d.length<20) return null;
+  const m=d.reduce((x,y)=>x+y,0)/d.length;
+  const sd=Math.sqrt(d.reduce((x,y)=>x+(y-m)*(y-m),0)/(d.length-1));
   return sd>0?d[d.length-1]/sd:null;
 }
 function calcEMASeed(closes,p){
@@ -3337,8 +3382,15 @@ function motorSinal(velas,ctx){
     const tUlt=msVela(fechadas[fechadas.length-1]);
     if(agora-(tUlt+passo)>2*passo+5000) return R('parado',`Velas paradas desde ${new Date(tUlt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})} — sem dado novo`);
   }
+  // velas de mercado fechado (fim de semana) não entram: a API devolve cotações de sábado/domingo que não
+  // são negociáveis e distorcem volatilidade, desvio-padrão e indicadores logo depois da reabertura
+  // (o fechamento dura 48 h: janela com as duas pontas abertas e menor que 48 h não tem vela fechada no meio)
+  const totalAntes=fechadas.length, aberta=c=>forexAberto(new Date(msVela(c)));
+  if(totalAntes&&!(aberta(fechadas[0])&&aberta(fechadas[totalAntes-1])&&msVela(fechadas[totalAntes-1])-msVela(fechadas[0])<48*3600000))
+    fechadas=fechadas.filter(aberta);
+  const tirouFechado=fechadas.length<totalAntes;
   fechadas=fechadas.slice(-cfg.janela);
-  if(fechadas.length<cfg.minVelas) return R('poucas',`Só ${fechadas.length} velas fechadas — preciso de ${cfg.minVelas}`);
+  if(fechadas.length<cfg.minVelas) return R('poucas',tirouFechado?`Mercado reabriu há pouco: só ${fechadas.length} velas de mercado aberto — preciso de ${cfg.minVelas}`:`Só ${fechadas.length} velas fechadas — preciso de ${cfg.minVelas}`);
   const L=motorLeitura(fechadas,par);
   const base={leitura:L,regime:L.regime,volRel:L.volRel,atrPct:L.atrPct};
   if(!(L.volRel>=cfg.filtroVol)) return R('parado',`Mercado parado — volatilidade ${L.volRel.toFixed(2)}× a média (mínimo ${cfg.filtroVol}×)`,base);
@@ -3353,9 +3405,9 @@ function motorSinal(velas,ctx){
     const b=votos.find(v=>v.nome==='BOS');
     if(!b||b.dir!==P.direcao) return R('sem-bos',`${P.direcao} ${P.pontuacao}/100, mas sem rompimento de estrutura (BOS) na última vela — o filtro validado exige BOS`,{...ext,direcao:P.direcao,pontuacao:P.pontuacao});
   }
-  const zU=forcaUltimaVela(fechadas), zDir=zU==null?null:zU*(P.direcao==='CALL'?1:-1), forcaVela=zDir==null?null:+zDir.toFixed(2);
-  if(cfg.minForcaVela>0&&!(zDir!=null&&zDir>=cfg.minForcaVela))
-    return R('vela-fraca',`${P.direcao} ${P.pontuacao}/100${cfg.exigirBOS?' com BOS':''}, mas a vela do sinal andou só ${forcaVela==null?'—':forcaVela.toFixed(2).replace('.',',')}σ a favor (mínimo ${String(cfg.minForcaVela).replace('.',',')}σ) — nos dados, vela fraca deu ~50%`,{...ext,direcao:P.direcao,pontuacao:P.pontuacao,forcaVela});
+  const zU=forcaUltimaVela(fechadas,passo), forcaVela=zU==null?null:+(zU*(P.direcao==='CALL'?1:-1)).toFixed(2);
+  if(cfg.minForcaVela>0&&!(forcaVela!=null&&forcaVela>=cfg.minForcaVela)) // decide pelo mesmo valor que é registrado e mostrado
+    return R('vela-fraca',`${P.direcao} ${P.pontuacao}/100${cfg.exigirBOS?' com BOS':''}, mas a vela do sinal ${forcaVela==null?'não tem medida (buraco nos dados)':`andou ${forcaVela.toFixed(2).replace('.',',')}σ a favor`} (mínimo ${String(cfg.minForcaVela).replace('.',',')}σ) — nos dados, vela fraca deu ~50%`,{...ext,direcao:P.direcao,pontuacao:P.pontuacao,forcaVela});
   const ult=fechadas[fechadas.length-1];
   return{ok:true,fase:'sinal',direcao:P.direcao,pontuacao:P.pontuacao,regime:L.regime,votos,placar:P,leitura:L,
     volRel:L.volRel,atrPct:L.atrPct,precoRef:ult.close,tRef:msVela(ult)+passo,sintetica:!!ult.sintetica,
@@ -5262,7 +5314,7 @@ function getBreakEvenWR(payout){
 function getBancaConfig(){
   const saldo  = parseFloat(document.getElementById('bancaSaldo')?.value)||0;
   const risco  = parseFloat(document.getElementById('bancaRisco')?.value)||1;
-  const payout = (parseFloat(document.getElementById('bancaPayout')?.value)||85)/100;
+  const payout = Math.min(1,Math.max(0.5,(parseFloat(document.getElementById('bancaPayout')?.value)||85)/100)); // 50%–100%
   return{saldo, risco, payout};
 }
 
@@ -5946,31 +5998,49 @@ function pesosAprendidos(){ return null; }
 // Se na Valyn a faixa média ficar abaixo do empate com folga estatística (60+ confirmações),
 // o motor passa a exigir vela ≥ 1,5σ. Se o total confirmado ficar abaixo do empate (60+), ela avisa para parar.
 const GUARDIAO_MIN=60;
+let _guardiaoDesdeMem=0, _guardiaoAntMem=null;
+function guardiaoDesde(){ try{ return +(localStorage.getItem('protrader_guardiao_desde')||0)||_guardiaoDesdeMem; }catch(e){ return _guardiaoDesdeMem; } }
+const naFaixaMedia=o=>o.forca!=null&&o.forca>=0.75&&o.forca<1.5;
+const naFaixaForte=o=>o.forca!=null&&o.forca>=1.5;
 function guardiao(){
-  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
-  const conf=ops.filter(o=>confirmadaCorretora(o)&&o.origem!=='noticia'&&o.motor);
+  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout), desde=guardiaoDesde();
+  // depois de "Reavaliar do zero", só contam as confirmações feitas a partir dali
+  const conf=ops.filter(o=>confirmadaCorretora(o)&&o.origem!=='noticia'&&o.motor&&(tsOp(o)||0)>=desde);
   const est=a=>{ const w=a.filter(o=>o.result==='win').length, n=a.length, ic=n?wilsonIC(w,n):{lo:0,hi:1}; return{n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi}; };
-  const todos=est(conf), media=est(conf.filter(o=>o.forca!=null&&o.forca<1.5)), forte=est(conf.filter(o=>o.forca!=null&&o.forca>=1.5));
+  const todos=est(conf), media=est(conf.filter(naFaixaMedia)), forte=est(conf.filter(naFaixaForte));
   const apertar=media.n>=GUARDIAO_MIN&&media.hi<be;
   const parar=todos.n>=GUARDIAO_MIN&&todos.hi<be;
-  return{be,todos,media,forte,apertar,parar,limiar:apertar?1.5:MOTOR_CFG.minForcaVela};
+  return{be,todos,media,forte,apertar,parar,desde,limiar:apertar?1.5:MOTOR_CFG.minForcaVela};
 }
 function limiarForcaIA(){ try{ return guardiao().limiar; }catch(e){ return MOTOR_CFG.minForcaVela; } }
+// força com o lado: negativa = a vela andou CONTRA o sinal (só acontece com o filtro desligado)
+function fmtForcaDir(z){ return z==null?'—':(z>=0?fmtForca(z):'contra '+fmtForca(-z)); }
 function fmtForca(z,casas){ if(z==null) return '—'; const v=Number(z).toFixed(casas==null?1:casas); return (casas==null?v:String(+v)).replace('.',',')+'σ'; } // 1 casa no alerta; limiar exato (0,75σ)
 // Avisa (tela + Telegram) só quando o estado da Guardiã muda
 function avisarGuardiao(){
   try{
-    const g=guardiao(); let ant={}; try{ ant=JSON.parse(localStorage.getItem('protrader_guardiao')||'{}'); }catch(e){}
+    const g=guardiao(); let ant=_guardiaoAntMem; // em memória: se o navegador não salvar, não repete o aviso
+    if(!ant){ try{ ant=JSON.parse(localStorage.getItem('protrader_guardiao')||'{}'); }catch(e){ ant={}; } }
     const msgs=[];
     if(g.apertar&&!ant.apertar) msgs.push(`🛡️ IA Guardiã: na Valyn, sinais com vela média (0,75–1,5σ) estão abaixo do empate (${Math.round(g.media.wr*100)}% em ${g.media.n}). O motor agora só sinaliza vela ≥ 1,5σ.`);
-    if(!g.apertar&&ant.apertar) msgs.push('🛡️ IA Guardiã: a faixa de vela média voltou para perto do empate — filtro de volta a 0,75σ.');
+    if(!g.apertar&&ant.apertar) msgs.push('🛡️ IA Guardiã: reavaliação do zero — filtro de volta a 0,75σ até juntar 60 novas confirmações.');
     if(g.parar&&!ant.parar) msgs.push(`⛔ IA Guardiã: o acerto CONFIRMADO na Valyn está abaixo do empate com folga estatística (${Math.round(g.todos.wr*100)}% em ${g.todos.n}; empate ${Math.round(g.be*100)}%). Pare de operar com dinheiro real e revise.`);
-    if(!g.parar&&ant.parar) msgs.push('🛡️ IA Guardiã: o acerto confirmado saiu da zona de alerta.');
+    if(!g.parar&&ant.parar) msgs.push('🛡️ IA Guardiã: o acerto confirmado saiu da zona de alerta (ou foi reavaliado do zero).');
     for(const m of msgs){ showToast(m,g.parar||g.apertar?'warn-t':'call-t'); if(typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegram(m.replace(/^(\S+) /,'$1 *').replace(/:/,':*')); }
-    try{ localStorage.setItem('protrader_guardiao',JSON.stringify({apertar:g.apertar,parar:g.parar})); }catch(e){}
+    _guardiaoAntMem={apertar:g.apertar,parar:g.parar};
+    try{ localStorage.setItem('protrader_guardiao',JSON.stringify(_guardiaoAntMem)); }catch(e){}
   }catch(e){ console.warn('guardiã:',e); }
 }
 
+
+// Depois que a Guardiã aperta, sinais de vela média deixam de existir e ela não teria como voltar sozinha.
+// Este botão recomeça a contagem a partir de agora (o histórico continua guardado).
+function reavaliarGuardiao(){
+  if(!confirm('Recomeçar a avaliação da IA Guardiã a partir de agora? O filtro volta a 0,75σ e ela precisa de 60 novas confirmações para agir de novo. O histórico não é apagado.')) return;
+  _guardiaoDesdeMem=Date.now();
+  try{ localStorage.setItem('protrader_guardiao_desde',String(_guardiaoDesdeMem)); }catch(e){}
+  avisarGuardiao(); renderMLPanel();
+}
 
 // ── Painel visual de aprendizado ──
 function renderMLPanel(){
@@ -5992,10 +6062,11 @@ function renderMLPanel(){
     :`<div style="margin-top:6px;font-size:9px;color:var(--muted);">Filtro atual: vela ≥ ${fmtForca(g.limiar,2)} · ${g.todos.n<GUARDIAO_MIN?`faltam ${GUARDIAO_MIN-g.todos.n} confirmações para a IA poder agir`:'sem alerta'}</div>`;
   el.innerHTML=`<div style="display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:4px;font-size:8px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding-bottom:3px;"><span>Grupo</span><span>Valyn (confirmado)</span><span style="text-align:right;">Twelve Data</span></div>
     ${linha('Todas confirmadas',g.todos,apiG(()=>true))}
-    ${linha('Vela 0,75–1,5σ',g.media,apiG(o=>o.forca!=null&&o.forca<1.5))}
-    ${linha('Vela ≥ 1,5σ',g.forte,apiG(o=>o.forca!=null&&o.forca>=1.5))}
+    ${linha('Vela 0,75–1,5σ',g.media,apiG(naFaixaMedia))}
+    ${linha('Vela ≥ 1,5σ',g.forte,apiG(naFaixaForte))}
     ${status}
-    <div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Empate com seu payout: ${(g.be*100).toFixed(1)}%. Verde = faixa inteira acima do empate. Se a Valyn ficar bem abaixo da Twelve Data nos mesmos grupos, o ganho medido na API não chega até a corretora.</div>`;
+    <div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Empate com seu payout: ${(g.be*100).toFixed(1)}%. Verde = faixa inteira acima do empate. Se a Valyn ficar bem abaixo da Twelve Data nos mesmos grupos, o ganho medido na API não chega até a corretora.${g.desde?` Contando desde ${new Date(g.desde).toLocaleDateString('pt-BR')}.`:''}</div>
+    ${(g.apertar||g.parar)?`<button onclick="reavaliarGuardiao()" style="width:100%;margin-top:6px;padding:5px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:5px;color:#A78BFA;font-size:9px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">↺ Reavaliar do zero (depois de revisar)</button>`:''}`;
 }
 
 function resetMLMemory(){
@@ -6086,7 +6157,7 @@ async function sendTelegramSignal(r){
 💰 Preço: \`${r.price}\`
 🎯 Indicadores a favor: *${r.alinhados} de ${r.comLeitura}*
 📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral'}
-⏰ Expiração: ${r.exp}${r.bos?'\n🧱 BOS: rompimento a favor ✓':''}${r.forca!=null?`\n🕯️ Vela do sinal: ${fmtForca(r.forca)} a favor`:''}
+⏰ Expiração: ${r.exp}${r.bos?'\n🧱 BOS: rompimento a favor ✓':''}${r.forca!=null?`\n🕯️ Vela do sinal: ${fmtForcaDir(r.forca)}${r.forca>=0?' a favor':''}`:''}
 ⏱ *Entre até ${r.validoAte?horaDupla(r.validoAte):'—'}* — depois disso o sinal não vale${r.wr!=null?`\n📊 Acerto medido no par: ${r.wr}%`:''}
 
 [📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)
@@ -6491,9 +6562,14 @@ setTimeout(showDaySummary, 3000);
 // ║    aparelho (MT); W/L no Telegram antes de expirar não vale;      ║
 // ║    aviso de cota esgotada; preço sem                              ║
 // ║ 2026.10.06 — Auditoria de mercado: filtro de vela forte (≥0,75σ  ║
-// ║    a favor): 65,9% → 71,5% (16/16 dias, 6/6 pares, 72,3% no dia  ║
+// ║    a favor): 66,4% → 71,6% (18/18 dias, 6/6 pares, 72,9% no dia  ║
 // ║    novo 05/10). Pesos do AutoML desligados (não mudavam nenhum   ║
 // ║    sinal); no lugar, IA Guardiã que aprende com a Valyn.         ║
+// ║ 2026.10.06b — Casos de borda: velas de fim de semana e buracos   ║
+// ║    de dados fora do motor; força decidida pelo valor exibido;    ║
+// ║    faixas da Guardiã corretas + reavaliar do zero; backtest sem  ║
+// ║    recalcular a Guardiã por vela; trava de aba 150 s + pagehide; ║
+// ║    chaves com autocomplete=off; força no CSV; payout 50–100%.    ║
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
