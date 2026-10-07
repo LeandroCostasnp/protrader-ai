@@ -898,6 +898,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
     <div class="aa-dir call" id="aaDir">CALL</div>
     <div class="aa-meta" id="aaMeta">87% · Força 9/10 · 6/8 confluências</div>
     <div class="aa-meta" id="aaExp">Expiração: 1 minuto</div>
+    <div id="aaIA" style="display:none;margin:4px 0;padding:5px 7px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:6px;"></div>
     <div class="aa-btns">
       <button class="aa-enter" onclick="enterAutoSignal()">✓ ENTRAR AGORA</button>
       <button class="aa-skip" onclick="skipAutoSignal()">Ignorar</button>
@@ -1060,6 +1061,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
           <div class="cbar-row"><span>Indicadores a favor</span><span id="confPct">—</span></div>
           <div class="cbar"><div class="cfill" id="cfill"></div></div>
           <div id="confNota" style="font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4;"></div>
+          <div id="sigIA" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:6px;"></div>
 
           <!-- BOTÃO OPERAR NA CORRETORA -->
           <a id="brokerBtn" href="https://trade.valyntrade.com/traderoom" rel="noopener" target="_blank"
@@ -1301,6 +1303,19 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
       <button class="btn-export" onclick="exportCSV()">⬇️ Exportar Diário CSV</button>
       <button class="btn-export" onclick="exportExcel()" style="background:rgba(0,212,170,.08);border-color:rgba(0,212,170,.3);color:var(--accent);">📊 Exportar Excel Formatado</button>
       <button class="btn-pdf" onclick="exportPDF()">📄 Relatório Semanal PDF</button>
+      <!-- REVISOR IA (CLAUDE) -->
+      <div class="tf-stats" style="border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.04);">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="tfs-title" style="color:#A78BFA;margin-bottom:0;">🧠 Revisor IA (Claude) — só observando</div>
+          <label style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted);cursor:pointer;white-space:nowrap;"><input type="checkbox" id="iaLigadoChk" onchange="iaSetLigado(this.checked)" checked> ligado</label>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin:4px 0 6px;">Cada sinal do motor ganha um parecer: ✅ CONCORDA · ⚠️ RESSALVA · ⛔ DISCORDA, com 2 motivos (cartão do sinal, alerta do Auto, Diário e Telegram). Não bloqueia nada: aqui você vê se o parecer acerta.</div>
+        <div id="iaPanel"><div style="font-size:9px;color:var(--muted);text-align:center;padding:8px;">Carregando…</div></div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <input type="password" id="iaChaveInput" autocomplete="off" placeholder="Chave sk-ant-… (opcional: fica só neste aparelho)" style="flex:1;min-width:0;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 7px;color:var(--text);font-size:9px;outline:none;">
+          <button onclick="iaSalvarChave()" style="padding:4px 8px;font-size:9px;font-weight:700;border-radius:4px;border:1px solid rgba(139,92,246,.4);background:rgba(139,92,246,.1);color:#A78BFA;cursor:pointer;">Salvar</button>
+        </div>
+      </div>
       <!-- ACERTO REAL POR PONTUAÇÃO -->
       <div class="tf-stats" style="border:1px solid rgba(0,152,255,.3);">
         <div class="tfs-title">🎯 Acerto real por pontuação</div>
@@ -1357,7 +1372,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06g (auditoria: calendário blindado, avisos sem sumir, limpeza; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.06h (Revisor IA Claude, só observando; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2066,7 +2081,7 @@ function updateDiary(){
     return `<div class="diary-item" style="${o.entrou===false?'opacity:.7':''}">
       <div class="di-top"><div class="di-pair">${o.pair}</div><div class="di-dir ${o.dir.toLowerCase()}">${o.dir}</div><div class="di-result ${o.result}">${rot[o.result]||o.result}</div></div>
       <div class="di-meta"><span>${o.tf}</span><span>${rotuloEstrutura(o)||o.conf+' pts'}</span><span>${o.ts}</span><span>${origem} · ${entrou}</span></div>
-      <div class="di-setup">${surfEsc(o.setup||'')}${precos}<span style="color:var(--muted)">${fonte}</span></div>
+      <div class="di-setup">${surfEsc(o.setup||'')}${precos}<span style="color:var(--muted)">${fonte}</span></div>${iaLinhaDiario(o)}
       <div style="display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap;">
         <input type="text" placeholder="📝 Nota..." value="${surfEsc(o.note||'')}"
           style="flex:1;min-width:90px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 7px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:10px;outline:none;"
@@ -2086,8 +2101,8 @@ function marcarEntrou(id){
 function exportCSV(){
   if(ops.length===0){showToast('Nenhuma operação para exportar','warn-t');return;}
   const q=v=>{const t=v==null?'':String(v);return /[",;\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
-  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)','Força vela (σ)']];
-  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'',o.forca??'']);});
+  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)','Força vela (σ)','IA parecer','IA motivos','IA resposta (s)','IA a tempo']];
+  ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'',o.forca??'',o.ia&&o.ia.v||(o.ia&&o.ia.erro?'erro':''),o.ia&&o.ia.m?o.ia.m.join(' | '):(o.ia&&o.ia.erro||''),o.ia&&o.ia.lat!=null?o.ia.lat:'',o.ia&&o.ia.v?(o.ia.aTempo?'sim':'não'):'']);});
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(rows.map(r=>r.map(q).join(',')).join('\n'));
   a.download='protrader_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
@@ -2135,6 +2150,7 @@ function registrarSinal(r,opts){
     entrada:{t:agora,preco:r.precoRef??null,precoSinal:r.precoRef??null,tVela:r.tRef??null,fonte:r.fontePreco||'vela'},expiraEm:agora+(r.clockSecs||60)*1000,bos:r.bos??null,estrutura:r.estrutura??null,forca:r.forcaVela??null,
     regime:r.regime||null,volRel:r.volRel!=null?+Number(r.volRel).toFixed(2):null,motor:r.versao||null,votos:r.votos||null});
   saveOps(); renderHistory(); updateDiary(); updateStats();
+  try{ iaRevisarSinal(id,r).catch(e=>console.warn('Revisor IA:',e)); }catch(e){ /* o sinal segue sem revisão */ }
   return id;
 }
 
@@ -2203,7 +2219,7 @@ function atualizarPaineisResultado(){
   generateInsight(); calcPairScores(); checkAutoLossStreak(); checkBankStop();
   renderPairDashboard(); renderWeeklyStats(); renderHeatmap(); updateSeqVisual();
   updateSessionCounter(); if(typeof calcBanca==='function') calcBanca();
-  renderMLPanel(); renderCalibracao(); surfRenderStats(); avisarGuardiao();
+  renderMLPanel(); renderCalibracao(); surfRenderStats(); avisarGuardiao(); renderIAPanel();
 }
 
 // ─── Acerto real por pontuação (o que a pontuação vale na prática) ───
@@ -2318,6 +2334,7 @@ async function runAnalysis(){
     // M1: a vela que acabou de fechar ainda não foi publicada pela API — monta com o preço em tempo real
     const velas=tfDados==='M1'?(await velasAoVivo(pair,{garantir:true})||realCandles):realCandles;
     const m=motorSinal(velas,{par:pair,tf:tfDados,agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
+    iaGuardarVelas(pair,velas,tfDados); // para o Revisor IA (não muda o motor)
     atualizarLeituraLateral(m);
     ultimaLeituraMotor=m;
     if(!m.ok){ showToast('⛔ '+m.motivo,'warn-t'); mostrarEsperaMotor(m); return; }
@@ -2951,7 +2968,9 @@ function showAndFinalizeResult(r,opts){
   document.getElementById('focoBtns').style.display='none';
 
   // — Registrar operação (todo sinal vira registro; o resultado é conferido pela API) —
-  if(opts.registrar!==false&&!opts.opId) registrarSinal(r,{origem:opts.origem||'manual',entrou:opts.entrou!==false});
+  let _iaOp=opts.opId||null;
+  if(opts.registrar!==false&&!opts.opId) _iaOp=registrarSinal(r,{origem:opts.origem||'manual',entrou:opts.entrou!==false});
+  try{ iaCardPara(_iaOp); }catch(e){ /* revisor fora */ }
 
   // — Sons, timer, toast, MTF, save —
   playSignalSoundByForce(isCall, r.force_score||8);
@@ -3135,6 +3154,7 @@ async function runAutoScan(){
     if(fim) ultimaVelaAuto[par]=fim;
     if(fim&&(Date.now()-fim)/1000>MOTOR_CFG.janelaEntradaSeg) return; // a vela fechou há muito: o sinal já não vale
     const m=motorSinal(velas,{par,tf:'M1',agora:Date.now(),pesos:pesosAprendidos(),cfg:cfgMotorUI()});
+    iaGuardarVelas(par,velas,'M1'); // para o Revisor IA (não muda o motor)
     if(par===pair) atualizarLeituraLateral(m);
     ultimaLeituraMotor=m;
     if(!m.ok) return;
@@ -3157,6 +3177,7 @@ function showAutoAlert(m){
   const id=registrarSinal(res,{origem:'auto',entrou:false,par:m.pair,tf:'M1'});
   const validoAte=m.tRef+MOTOR_CFG.janelaEntradaSeg*1000;
   autoResult={...m,res,id,validoAte};
+  try{ iaAtualizarUI(id); }catch(e){ /* revisor fora */ }
   const alert=document.getElementById('autoAlert');
   alert.className='auto-alert show '+(isCall?'call-a':'put-a');
   document.getElementById('aaPair').textContent=m.pair+' @ '+fmtPreco(m.pair,m.precoRef);
@@ -5360,6 +5381,250 @@ async function surfTick(){
   finally{surfOcupado=false;}
 }
 
+// ═══ REVISOR IA (Claude) — revisa cada sinal, NÃO decide ═══
+// O motor decide o sinal. A IA só dá um parecer: CONCORDA / RESSALVA / DISCORDA + 2 motivos.
+// Modo observação: nada é bloqueado. O painel 🧠 mede o acerto por parecer; a IA só pode virar
+// filtro quando a regra de prova abaixo (fixada ANTES de ver os dados) for atingida com sinais
+// que ela revisou antes do resultado sair (fora da amostra).
+// ▼▼▼ COLE AQUI A SUA CHAVE DA ANTHROPIC (console.anthropic.com → API Keys) ▼▼▼
+const ANTHROPIC_KEY='';
+// ▲▲▲ A chave fica visível no código do site: ponha um limite de gasto mensal no Console. ▲▲▲
+const IA_MODELO='claude-haiku-4-5-20251001';   // o mais rápido da Anthropic — o sinal só vale ~20 s
+const IA_PRECO={'claude-haiku-4-5-20251001':[1,5],'claude-sonnet-5-5':[2,10]}; // US$ por milhão de tokens (entrada, saída)
+const IA_MAX_DIA=150;          // revisões por dia neste aparelho (com o Haiku, ~US$ 0,30 no máximo)
+const IA_TEMPO_LIMITE=12000;   // ms
+const IA_PROVA={n:40,z:2.5};   // regra de prova: 40+ resultados em cada grupo e diferença com z ≥ 2,5
+const IA_ICONE={CONCORDA:'✅',RESSALVA:'⚠️',DISCORDA:'⛔'};
+const IA_COR={CONCORDA:'var(--green)',RESSALVA:'var(--gold)',DISCORDA:'var(--red)'};
+const IA_SISTEMA=`Você revisa sinais de opção binária em forex gerados por um motor técnico. O motor já decidiu; você não muda o sinal, só dá um parecer.
+- CONCORDA: os dados apoiam a direção e não há alerta relevante.
+- RESSALVA: a direção é defensável, mas há um ponto de atenção concreto nos dados.
+- DISCORDA: há um motivo concreto nos dados contra a entrada (por exemplo: notícia de alto impacto das moedas do par nos próximos minutos ou acabando de sair; preço colado em suporte/resistência no sentido do sinal; vela do sinal esticada no fim de uma sequência longa; estrutura contra).
+Seja calibrado: em 1 minuto o resultado é muito ruidoso. Não use DISCORDA sem motivo concreto e não invente certeza.
+Responda SÓ com JSON, sem texto fora dele: {"veredito":"CONCORDA|RESSALVA|DISCORDA","motivos":["...","..."]}
+Exatamente 2 motivos curtos (até 90 caracteres cada), em português, citando números dos dados recebidos.`;
+let _iaVelas={}, _iaCardOp=null, _iaUltimoErro='', _iaUsoMem=null;
+const _iaAvisados=new Set();
+
+function iaLigado(){ try{ return localStorage.getItem('protrader_ia_ligado')!=='0'; }catch(e){ return true; } }
+function iaSetLigado(on){
+  try{ localStorage.setItem('protrader_ia_ligado',on?'1':'0'); }catch(e){ /* sem storage */ }
+  renderIAPanel(); showToast(on?'🧠 Revisor IA ligado':'Revisor IA desligado',on?'call-t':'warn-t');
+}
+function iaChaveSalva(){ try{ return (localStorage.getItem('protrader_ia_chave')||'').trim(); }catch(e){ return ''; } }
+function iaChave(){ return iaChaveSalva()||String(ANTHROPIC_KEY||'').trim(); }
+function iaSalvarChave(){
+  const el=document.getElementById('iaChaveInput'); const v=(el&&el.value||'').trim();
+  try{ if(v) localStorage.setItem('protrader_ia_chave',v); else localStorage.removeItem('protrader_ia_chave'); }catch(e){ showToast('⛔ Navegador sem armazenamento — use a chave no código','warn-t'); return; }
+  if(el) el.value=''; _iaUltimoErro='';
+  showToast(v?'✓ Chave da Anthropic salva neste aparelho':'Chave deste aparelho removida (vale a do código)',v?'call-t':'warn-t');
+  renderIAPanel();
+}
+function iaUso(){
+  const d=tdHojeUTC(); let u=null;
+  try{ u=JSON.parse(localStorage.getItem('protrader_ia_uso')||'null'); }catch(e){ u=null; }
+  if(_iaUsoMem&&_iaUsoMem.d===d&&(!u||u.d!==d||_iaUsoMem.n>u.n)) u=_iaUsoMem;
+  if(!u||u.d!==d) u={d,n:0,tin:0,tout:0};
+  return u;
+}
+function iaUsoGravar(u){ _iaUsoMem={...u}; try{ localStorage.setItem('protrader_ia_uso',JSON.stringify(u)); }catch(e){ /* fica na memória */ } }
+function iaCustoUS(u){ const p=IA_PRECO[IA_MODELO]; return p?(u.tin*p[0]+u.tout*p[1])/1e6:null; }
+
+// Velas que o motor usou (tela e Auto) — vão para a IA junto com o sinal
+function iaGuardarVelas(par,velas,tfx){ if(velas&&velas.length) _iaVelas[String(par||'').replace(' (OTC)','')]={velas,tf:tfx||'M1'}; }
+
+function iaContexto(op,r){
+  const par=String(op.pair).replace(' (OTC)',''), dec=par.includes('JPY')?3:5;
+  const f=v=>Number.isFinite(+v)?(+v).toFixed(dec):'—';
+  const passo=({M1:60000,M5:300000,M15:900000,M30:1800000,H1:3600000})[op.tf]||60000;
+  const hBRT=ms=>new Date(ms).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+  const t0=op.entrada&&op.entrada.t||Date.now();
+  const J=janelaDados(new Date(t0));
+  const L=[];
+  L.push(`Par: ${par} · Sinal do motor: ${op.dir} (${op.dir==='CALL'?'compra':'venda'}) · Tempo gráfico: ${op.tf} · Expiração: ${r.expiry||'1 minuto'}`);
+  L.push(`Horário do sinal: ${hBRT(t0)} BRT · Sessão: ${J.label}`);
+  L.push(`Pontuação do motor: ${op.conf}/100 · ${r.confluences??'—'} de ${r.comLeitura??'—'} indicadores a favor · Regime: ${r.regime||'—'}`);
+  if(r.forcaVela!=null) L.push(`Vela do sinal: ${r.forcaVela}σ a favor (desvios-padrão)${r.estrutura?' · rompimento '+r.estrutura:''}`);
+  L.push(`Preço de referência: ${f(r.precoRef)} · Suporte ${r.support||'—'} · Resistência ${r.resistance||'—'}`);
+  if(r.p_structure) L.push('Estrutura e volatilidade: '+r.p_structure);
+  if(r.p_confluence) L.push('Indicadores (✓ a favor, ✗ contra, · sem leitura):\n'+r.p_confluence);
+  const moedas=par.split('/');
+  const nts=(typeof newsData!=='undefined'&&newsData||[]).filter(n=>n&&n.ts&&moedas.includes(n.currency)&&Math.abs(n.ts-t0)<=120*60000);
+  const semCal=!(typeof newsData!=='undefined'&&newsData&&newsData.length);
+  L.push(nts.length
+    ?'Calendário (moedas do par, ±2 h):\n'+nts.map(n=>`${hBRT(n.ts)} ${n.currency} ${n.title||n.name} (${n.impact==='high'?'alto':'médio'} impacto)${n.forecast?' · consenso '+n.forecast:''}${n.previous?' · anterior '+n.previous:''} — ${n.ts<=t0?'saiu há '+Math.round((t0-n.ts)/60000)+' min':'sai em '+Math.round((n.ts-t0)/60000)+' min'}`).join('\n')
+    :'Calendário: nenhuma notícia de médio/alto impacto das moedas do par em ±2 h'+(semCal?' (calendário indisponível agora — não dá para garantir)':''));
+  const V=_iaVelas[par];
+  if(V&&V.tf===op.tf){
+    const lim=(r.tRef||t0)+1000;
+    const fech=V.velas.filter(c=>{const t=msVela(c);return t!=null&&t+passo<=lim;}).slice(-20);
+    if(fech.length) L.push(`Últimas ${fech.length} velas ${op.tf} fechadas (hora BRT de abertura, abertura, máxima, mínima, fechamento):\n`+fech.map(c=>`${hBRT(msVela(c))} ${f(c.open)} ${f(c.high)} ${f(c.low)} ${f(c.close)}`).join('\n'));
+  }
+  return L.join('\n');
+}
+
+function iaLerParecer(d){
+  const txt=(d&&d.content||[]).filter(b=>b&&b.type==='text').map(b=>b.text).join('\n');
+  const a=txt.indexOf('{'), b=txt.lastIndexOf('}');
+  if(a<0||b<=a) throw new Error('resposta fora do formato');
+  let j; try{ j=JSON.parse(txt.slice(a,b+1)); }catch(e){ throw new Error('resposta fora do formato'); }
+  const v=String(j.veredito||'').toUpperCase().trim();
+  if(!IA_ICONE[v]) throw new Error('parecer inválido');
+  const m=(Array.isArray(j.motivos)?j.motivos:[]).map(x=>String(x||'').replace(/\s+/g,' ').trim().slice(0,140)).filter(Boolean).slice(0,2);
+  while(m.length<2) m.push('—');
+  return{v,m};
+}
+
+async function iaChamar(texto){
+  const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),IA_TEMPO_LIMITE);
+  try{
+    const corpo={model:IA_MODELO,max_tokens:300,system:IA_SISTEMA,messages:[{role:'user',content:texto}]};
+    if(/haiku/.test(IA_MODELO)) corpo.temperature=0;
+    let res;
+    try{
+      res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:ctl.signal,
+        headers:{'content-type':'application/json','x-api-key':iaChave(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify(corpo)});
+    }catch(e){ const er=new Error(e&&e.name==='AbortError'?`sem resposta em ${IA_TEMPO_LIMITE/1000} s`:'sem conexão com a Anthropic'); er.rede=true; throw er; }
+    const d=await res.json().catch(()=>null);
+    if(!res.ok){
+      const api=d&&d.error&&d.error.message||'';
+      const msg=res.status===401?'chave da Anthropic recusada (401)':res.status===403?'chave sem permissão (403)':res.status===404?`modelo "${IA_MODELO}" não encontrado`:res.status===429?'limite de uso da Anthropic (429)':/credit/i.test(api)?'sem crédito na conta da Anthropic':(`erro ${res.status}`+(api?`: ${api.slice(0,80)}`:''));
+      const er=new Error(msg); er.status=res.status; throw er;
+    }
+    return{...iaLerParecer(d),usage:d.usage||{}};
+  }finally{ clearTimeout(timer); }
+}
+
+async function iaRevisarSinal(id,r){
+  let op=ops.find(o=>o.id===id); if(!op||op.ia||!r) return;
+  if(!iaLigado()||!ehDono()) return;                 // visitante do link não gasta seus créditos
+  if(!iaChave()){ _iaUltimoErro='Sem chave da Anthropic — cole em ANTHROPIC_KEY no código ou no painel 🧠 (Stats)'; iaAtualizarUI(id); return; }
+  const u=iaUso();
+  if(u.n>=IA_MAX_DIA){ _iaUltimoErro=`Limite de ${IA_MAX_DIA} revisões hoje neste aparelho — volta amanhã`; iaAtualizarUI(id); return; }
+  u.n++; iaUsoGravar(u);
+  const t0=Date.now(), prazo=(r.tRef?r.tRef+MOTOR_CFG.janelaEntradaSeg*1000:op.expiraEm)||t0;
+  op.ia={estado:'revisando',t0,modelo:IA_MODELO}; iaAtualizarUI(id);
+  let out=null, erro=null;
+  for(let tentativa=0;tentativa<2&&!out;tentativa++){
+    try{ out=await iaChamar(iaContexto(op,r)); }
+    catch(e){
+      erro=e;
+      const repete=(e.rede||e.status===429||e.status>=500)&&Date.now()-t0<5000;
+      if(!repete) break;
+      await new Promise(ok=>setTimeout(ok,800));
+    }
+  }
+  op=ops.find(o=>o.id===id)||op;
+  const agora=Date.now();
+  if(out){
+    op.ia={v:out.v,m:out.m,t:agora,lat:+((agora-t0)/1000).toFixed(1),modelo:IA_MODELO,aTempo:agora<=prazo};
+    const u2=iaUso(); u2.tin+=+out.usage.input_tokens||0; u2.tout+=+out.usage.output_tokens||0; iaUsoGravar(u2);
+    _iaUltimoErro='';
+  }else{
+    const msg=erro&&erro.message||'falha desconhecida';
+    op.ia={erro:msg,t:agora,modelo:IA_MODELO};
+    _iaUltimoErro='Última falha: '+msg;
+    if(!_iaAvisados.has(msg)){ _iaAvisados.add(msg); showToast('🧠 Revisor IA: '+msg+' — o sinal segue normal','warn-t'); }
+  }
+  saveOps(); iaAtualizarUI(id); iaTelegram(op);
+}
+
+function iaTelegram(op){
+  if(!op||!op.tg||!op.ia||!op.ia.v) return;
+  if(typeof tgEnabled==='undefined'||!tgEnabled) return;
+  const limpa=t=>String(t).replace(/[*_`\[\]]/g,'');
+  sendTelegramMsg(`🧠 *Revisão IA* — ${op.dir} ${op.pair}\n${IA_ICONE[op.ia.v]} *${op.ia.v}*\n• ${limpa(op.ia.m[0])}\n• ${limpa(op.ia.m[1])}${op.ia.aTempo?'':'\n(chegou depois da janela de entrada)'}\n_Só observando: quem decide o sinal é o motor._`);
+}
+
+// ─── Tela ───
+function iaBlocoHTML(op,compacto){
+  if(!iaLigado()) return '';
+  const cab=`<div style="font-size:8px;color:#A78BFA;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;">🧠 Revisão IA · só observando</div>`;
+  if(!ehDono()) return compacto?'':cab+'<div style="font-size:9px;color:var(--muted);">Roda só no aparelho marcado como seu (painel do Telegram).</div>';
+  const ia=op&&op.ia;
+  if(!ia) return _iaUltimoErro?cab+`<div style="font-size:9px;color:var(--muted);">${surfEsc(_iaUltimoErro)}</div>`:'';
+  if(ia.estado==='revisando') return cab+'<div style="font-size:10px;color:var(--muted);">Revisando com Claude…</div>';
+  if(ia.erro) return cab+`<div style="font-size:9px;color:var(--muted);">Sem revisão: ${surfEsc(ia.erro)} — o sinal segue normal.</div>`;
+  if(!ia.v) return '';
+  return cab+`<div style="font-size:12px;font-weight:800;color:${IA_COR[ia.v]};">${IA_ICONE[ia.v]} ${ia.v} <span style="font-size:8px;font-weight:400;color:var(--muted);">${String(ia.lat).replace('.',',')} s${ia.aTempo?'':' · chegou tarde'}</span></div>`+
+    `<div style="font-size:9px;color:var(--text);line-height:1.4;text-align:left;">• ${surfEsc(ia.m[0])}<br>• ${surfEsc(ia.m[1])}</div>`;
+}
+function iaCardPara(id){ _iaCardOp=id||null; iaAtualizarUI(id); if(!id){ const el=document.getElementById('sigIA'); if(el){ el.innerHTML=''; el.style.display='none'; } } }
+function iaAtualizarUI(id){
+  try{
+    const op=id?ops.find(o=>o.id===id):null;
+    if(id&&id===_iaCardOp){ const el=document.getElementById('sigIA'); if(el){ const h=iaBlocoHTML(op); el.innerHTML=h; el.style.display=h?'block':'none'; } }
+    if(id&&typeof autoResult!=='undefined'&&autoResult&&autoResult.id===id){ const el=document.getElementById('aaIA'); if(el){ const h=iaBlocoHTML(op,true); el.innerHTML=h; el.style.display=h?'block':'none'; } }
+    if(op&&op.ia&&(op.ia.v||op.ia.erro)){ updateDiary(); renderIAPanel(); }
+  }catch(e){ console.warn('Revisor IA (tela):',e); }
+}
+function iaLinhaDiario(o){
+  const ia=o&&o.ia; if(!ia||!ia.v) return '';
+  return `<div style="font-size:9px;margin-top:3px;color:var(--muted);">🧠 <b style="color:${IA_COR[ia.v]}">${IA_ICONE[ia.v]} ${ia.v}</b> — ${surfEsc(ia.m.join(' · '))}</div>`;
+}
+
+// ─── Painel: acerto por parecer e regra de prova ───
+function iaZ(w1,n1,w2,n2){ if(!n1||!n2) return 0; const p=(w1+w2)/(n1+n2), se=Math.sqrt(p*(1-p)*(1/n1+1/n2)); return se>0?(w1/n1-w2/n2)/se:0; }
+function iaProva(){
+  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const g=arr=>{const c=arr.filter(fechada);return{w:c.filter(o=>o.result==='win').length,n:c.length};};
+  const rev=ops.filter(o=>o.ia&&o.ia.v);
+  const C=g(rev.filter(o=>o.ia.v==='CONCORDA')), R=g(rev.filter(o=>o.ia.v==='RESSALVA')), D=g(rev.filter(o=>o.ia.v==='DISCORDA'));
+  const testes=[
+    {nome:'Bloquear quando DISCORDA',bom:{w:C.w+R.w,n:C.n+R.n},ruim:D,rotRuim:'DISCORDA'},
+    {nome:'Entrar só com CONCORDA',bom:C,ruim:{w:R.w+D.w,n:R.n+D.n},rotRuim:'RESSALVA + DISCORDA'}];
+  return testes.map(t=>{
+    const z=iaZ(t.bom.w,t.bom.n,t.ruim.w,t.ruim.n);
+    const wrRuim=t.ruim.n?t.ruim.w/t.ruim.n:null;
+    const ok=t.bom.n>=IA_PROVA.n&&t.ruim.n>=IA_PROVA.n&&z>=IA_PROVA.z&&wrRuim!=null&&wrRuim<be;
+    return{...t,z,ok,be,falta:Math.max(0,IA_PROVA.n-t.bom.n)+Math.max(0,IA_PROVA.n-t.ruim.n)};
+  });
+}
+function renderIAPanel(){
+  const el=document.getElementById('iaPanel'); if(!el) return;
+  const chk=document.getElementById('iaLigadoChk'); if(chk) chk.checked=iaLigado();
+  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const linha=(rotulo,arr,dica)=>{
+    const f=arr.filter(fechada), w=f.filter(o=>o.result==='win').length, n=f.length;
+    if(!n) return `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">${rotulo} <span style="color:var(--dim);">(${arr.length} revisado${arr.length===1?'':'s'})</span></span><span style="color:var(--dim);">sem resultado ainda</span></div>`;
+    const ic=wilsonIC(w,n), cor=ic.lo>be?'var(--green)':ic.hi<be?'var(--red)':'var(--gold)';
+    return `<div title="${dica||''}" style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;">
+      <span style="color:var(--muted);">${rotulo} <span style="color:var(--dim);">(${n})</span></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${Math.round(w/n*100)}% <span style="font-weight:400;color:var(--muted);">${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}%</span></span></div>`;
+  };
+  const sinais=ops.filter(o=>o.origem!=='noticia'&&o.motor);
+  const rev=sinais.filter(o=>o.ia&&o.ia.v);
+  const u=iaUso(), custo=iaCustoUS(u);
+  const fonteChave=iaChaveSalva()?'neste aparelho':String(ANTHROPIC_KEY||'').trim()?'no código':'<b style="color:var(--red);">FALTANDO</b>';
+  const lat=rev.filter(o=>o.ia.lat!=null), latMed=lat.length?lat.reduce((s,o)=>s+o.ia.lat,0)/lat.length:null;
+  const aTempo=rev.length?Math.round(rev.filter(o=>o.ia.aTempo).length/rev.length*100):null;
+  const status=!iaLigado()?'Desligado — os sinais saem sem revisão.'
+    :!ehDono()?'Roda só no aparelho marcado como seu (painel do Telegram) — visitante do link não gasta seus créditos.'
+    :`Modelo ${IA_MODELO} · chave ${fonteChave} · hoje ${u.n}/${IA_MAX_DIA} revisões${custo!=null?` · ≈ US$ ${custo.toFixed(3).replace('.',',')}`:''}${latMed!=null?` · resposta média ${latMed.toFixed(1).replace('.',',')} s · ${aTempo}% dentro da janela`:''}`;
+  const P=iaProva();
+  const prova=P.map(t=>{
+    const zTxt=t.bom.n&&t.ruim.n?` · diferença z = ${t.z.toFixed(2).replace('.',',')}`:'';
+    const txt=t.ok?`<b style="color:var(--green);">✅ prova atingida</b> — ${t.rotRuim} ficou abaixo do empate. Peça para ligar este filtro.`
+      :t.falta>0?`faltam ${t.falta} resultado(s) para testar${zTxt}`
+      :`sem prova ainda${zTxt} (precisa z ≥ ${String(IA_PROVA.z).replace('.',',')} e ${t.rotRuim} abaixo de ${(t.be*100).toFixed(1).replace('.',',')}%)`;
+    return `<div style="font-size:9px;padding:2px 0;"><span style="color:var(--text);">${t.nome}:</span> <span style="color:var(--muted);">${txt}</span></div>`;
+  }).join('');
+  el.innerHTML=
+    `<div style="font-size:9px;color:var(--muted);margin-bottom:5px;line-height:1.4;">${status}</div>`+
+    (_iaUltimoErro&&iaLigado()&&ehDono()?`<div style="font-size:9px;color:var(--gold);margin-bottom:5px;">${surfEsc(_iaUltimoErro)}</div>`:'')+
+    linha('Todos os revisados',rev)+
+    linha('✅ CONCORDA',rev.filter(o=>o.ia.v==='CONCORDA'))+
+    linha('⚠️ RESSALVA',rev.filter(o=>o.ia.v==='RESSALVA'))+
+    linha('⛔ DISCORDA',rev.filter(o=>o.ia.v==='DISCORDA'))+
+    linha('Sem revisão (desligado, erro ou limite)',sinais.filter(o=>!(o.ia&&o.ia.v)))+
+    `<div style="margin-top:6px;padding-top:5px;border-top:1px solid var(--br);">
+      <div style="font-size:8px;color:#A78BFA;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;">Vira filtro só com prova</div>${prova}
+      <div style="font-size:8px;color:var(--muted);margin-top:3px;line-height:1.4;">Regra fixada antes dos dados: ${IA_PROVA.n}+ resultados em cada grupo, diferença com z ≥ ${String(IA_PROVA.z).replace('.',',')} (mais exigente que o normal porque o painel é olhado todo dia) e o grupo cortado abaixo do empate. Conta todo sinal com resultado da API, tenha você entrado ou não.</div>
+    </div>`;
+}
+setTimeout(()=>{ try{ renderIAPanel(); }catch(e){ /* sem painel */ } },1500);
+
 // ═══ PDF REPORT ═══
 async function exportPDF(){
   const closed=ops.filter(minhas);
@@ -6823,6 +7088,13 @@ setTimeout(showDaySummary, 3000);
 // ║    proxy; saída em tempo real só até 5 s após a expiração; Telegram║
 // ║    ignora respostas antigas; Auto em uma aba só; aviso de aba     ║
 // ║    escondida; pesos do aprendizado só com 100+ confirmações.      ║
+// ║ 2026.10.06h — REVISOR IA (Claude Haiku 4.5): cada sinal novo do  ║
+// ║    motor ganha CONCORDA/RESSALVA/DISCORDA + 2 motivos (cartão,    ║
+// ║    alerta do Auto, Diário, CSV e Telegram). Só observa: não       ║
+// ║    bloqueia nem muda o motor. Painel 🧠 em Stats com acerto por   ║
+// ║    parecer (Wilson × empate) e regra de prova fixada antes dos    ║
+// ║    dados (40+ por grupo, z ≥ 2,5). Só no aparelho do dono;        ║
+// ║    150 revisões/dia; chave em ANTHROPIC_KEY ou no painel.         ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
