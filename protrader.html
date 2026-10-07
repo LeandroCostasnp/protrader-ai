@@ -5,7 +5,7 @@
   <link rel="icon" href="data:," type="image/x-icon">
   <link rel="shortcut icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProTrader AI — Valyn Trade</title>
+<title>ProTrader AI — IQ Option</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 /* NEWS BANNER */
@@ -793,6 +793,24 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
   .banca-campos{grid-template-columns:repeat(2,1fr);} .banca-campos .banca-saldo{grid-column:1/-1;}
   .banca-acoes button{min-height:42px;font-size:12px;}
 }
+
+/* ═══ 2026.10.07c — IQ OPTION ═══ */
+.iq-btn{width:100%;margin-top:8px;padding:10px;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Space Grotesk',sans-serif;letter-spacing:.4px;}
+.iq-btn.call{background:linear-gradient(135deg,#00B894,#0098FF);} .iq-btn.put{background:linear-gradient(135deg,#E04558,#F5A623);}
+.iq-btn.off{background:var(--s3);color:var(--muted);cursor:not-allowed;font-weight:600;font-size:10px;}
+.iq-card-status{margin-top:6px;padding:6px 8px;border:1px solid rgba(0,152,255,.3);background:rgba(0,152,255,.06);border-radius:6px;font-size:9.5px;color:var(--text);line-height:1.4;}
+#aaIQ{font-size:10px;color:var(--text);}
+.iq-status{font-size:9.5px;color:var(--text);line-height:1.5;margin-bottom:4px;}
+.iq-linha{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.iq-inp{flex:1;min-width:0;background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:10px;padding:4px 6px;font-family:'JetBrains Mono',monospace;}
+.iq-b{padding:4px 9px;border-radius:4px;border:1px solid var(--br);background:var(--s3);color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+.iq-b.azul{background:rgba(0,152,255,.12);border-color:rgba(0,152,255,.3);color:var(--blue);}
+.iq-campos{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.iq-campos>label{display:flex;flex-direction:column;gap:3px;font-size:8.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.iq-campos select,.iq-campos input[type=number]{background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:10px;padding:4px;text-transform:none;}
+.iq-radio{display:flex;gap:10px;text-transform:none;font-weight:600;font-size:10px;color:var(--text);letter-spacing:0;} .iq-radio label{display:flex;align-items:center;gap:4px;cursor:pointer;}
+.iq-chk{display:flex;align-items:center;gap:6px;font-size:9.5px;color:var(--muted);margin-top:8px;cursor:pointer;}
+@media (max-width:900px){ .iq-b{min-height:40px;font-size:12px;flex:1;} .iq-btn{min-height:48px;font-size:14px;} .iq-campos{grid-template-columns:1fr;} }
 </style>
 </head>
 <body class="night-mode">
@@ -1019,6 +1037,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
     <div class="aa-meta" id="aaMeta">87% · Força 9/10 · 6/8 confluências</div>
     <div class="aa-meta" id="aaExp">Expiração: 1 minuto</div>
     <div id="aaIA" style="display:none;margin:4px 0;padding:5px 7px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:6px;"></div>
+    <div id="aaIQ" class="aa-meta" style="display:none;margin:4px 0;padding:5px 7px;background:rgba(0,152,255,.08);border:1px solid rgba(0,152,255,.3);border-radius:6px;"></div>
     <div class="aa-btns">
       <button class="aa-enter" onclick="enterAutoSignal()">✓ ENTRAR AGORA</button>
       <button class="aa-skip" onclick="skipAutoSignal()">Ignorar</button>
@@ -1103,7 +1122,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
     <div class="candle-card" id="bancaCard">
       <div class="candle-title" style="margin-bottom:10px;">💰 Gestão de Banca <span class="banca-auto-tag">automática</span></div>
       <div class="banca-campos">
-        <div class="banca-campo banca-saldo"><div class="banca-lbl" id="bancaSaldoLbl">Saldo na Valyn (R$)</div><input id="bancaSaldo" class="banca-inp" type="text" inputmode="decimal" placeholder="Ex: 2.700,00" autocomplete="off" onchange="bancaComecar()"></div>
+        <div class="banca-campo banca-saldo"><div class="banca-lbl" id="bancaSaldoLbl">Saldo na IQ (R$)</div><input id="bancaSaldo" class="banca-inp" type="text" inputmode="decimal" placeholder="Ex: 2.700,00" autocomplete="off" onchange="bancaComecar()"></div>
         <div class="banca-campo"><div class="banca-lbl">Risco/op. (%)</div><input id="bancaRisco" class="banca-inp" type="number" placeholder="1" value="1" min="0.5" max="3" step="0.5" oninput="calcBanca()"></div>
         <div class="banca-campo"><div class="banca-lbl">Payout (%)</div><input id="bancaPayout" class="banca-inp" type="number" placeholder="85" value="85" min="50" max="100" step="1" oninput="calcBanca()"></div>
         <div class="banca-campo"><div class="banca-lbl">Stop dia (%)</div><input id="bancaStopPct" class="banca-inp" type="number" value="5" min="1" max="50" step="1" oninput="calcBanca()"></div>
@@ -1125,7 +1144,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
       </div>
       <div style="margin-top:8px;font-size:9px;color:var(--muted);line-height:1.5;" id="bancaInfo"></div>
       <div class="banca-acoes banca-so-com-memoria">
-        <button onclick="bancaConferir()" title="Digite o saldo da Valyn: a diferença vira um ajuste e a banca fica igual">⟳ Conferir com a Valyn</button>
+        <button onclick="bancaConferir()" title="Digite o saldo da IQ: a diferença vira um ajuste e a banca fica igual">⟳ Conferir com a IQ</button>
         <button onclick="bancaMovimento('deposito')">＋ Depósito</button>
         <button onclick="bancaMovimento('saque')">− Saque</button>
       </div>
@@ -1191,10 +1210,12 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
           <div id="sigIA" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:6px;"></div>
 
           <!-- BOTÃO OPERAR NA CORRETORA -->
-          <a id="brokerBtn" href="https://trade.valyntrade.com/traderoom" rel="noopener" target="_blank"
+          <a id="brokerBtn" href="https://iqoption.com/traderoom" rel="noopener" target="_blank"
             style="display:none;width:100%;margin-top:8px;padding:10px;background:linear-gradient(135deg,#00D4AA,#0098FF);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;text-align:center;letter-spacing:.5px;text-decoration:none;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 15px rgba(0,212,170,.3);transition:all .2s;box-sizing:border-box;">
-            <span id="brokerBtnDir">📈</span> OPERAR AGORA — VALYN TRADE
+            <span id="brokerBtnDir">📈</span> ABRIR A IQ OPTION
           </a>
+          <button id="iqBtn" class="iq-btn" style="display:none" onclick="iqEntrarCartao()"></button>
+          <div id="iqCardStatus" class="iq-card-status" style="display:none"></div>
         </div>
       </div>
       <div class="timer-wrap">
@@ -1327,6 +1348,22 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
         <details class="td-ajuda"><summary>Como as chaves funcionam</summary><div>Usa uma por vez; quando a cota do dia (800) de uma acaba, passa sozinho para a próxima. Chave colada aqui fica só neste aparelho e entra na frente. Campo vazio + Usar = só as chaves do código.</div></details>
       </div>
     </details>
+    <details class="grp" id="grpIQ">
+      <summary><span class="grp-t">📲 IQ Option</span><span class="grp-sum" id="sumIQ"></span></summary>
+      <div class="grp-body">
+        <div id="iqStatus" class="iq-status"></div>
+        <div class="iq-linha"><input id="iqToken" class="iq-inp" type="password" autocomplete="off" placeholder="cole o token da IQ"><button class="iq-b azul" onclick="iqSalvarToken()">Conectar</button></div>
+        <div class="iq-linha iq-campos">
+          <label>Conta<span class="iq-radio"><label><input type="radio" name="iqConta" value="TRAINING" onchange="iqMudarConta(this.value)"> Demo</label><label><input type="radio" name="iqConta" value="NORMAL" onchange="iqMudarConta(this.value)"> Real</label></span></label>
+          <label>Execução<select id="iqModo" onchange="iqMudarModo(this.value)"><option value="manual">Manual (botão no sinal)</option><option value="auto">Automática (entra sozinho)</option></select></label>
+          <label>Máx. ordens/dia<input id="iqMaxDia" type="number" min="1" max="50" value="5" onchange="iqCfgSalvar({maxDia:Math.max(1,parseInt(this.value)||5)});iqRender()"></label>
+          <label>Servidor<select id="iqServidor" onchange="iqCfgSalvar({servidor:this.value});iqConectar()"><option value="binary-options">Binária / Turbo</option><option value="turbo-options">Turbo</option><option value="digital-options">Digital</option><option value="blitz-options">Blitz</option></select></label>
+        </div>
+        <label class="iq-chk"><input type="checkbox" id="iqBanca" onchange="iqCfgSalvar({banca:this.checked});if(this.checked)iqSincronizarBanca(true);iqRender();calcBanca()"> Banca do ProTrader = saldo da IQ (sincroniza sozinho)</label>
+        <div class="iq-linha"><button class="iq-b" onclick="iqConectar()">↻ Atualizar</button><button class="iq-b" onclick="iqDiagnostico()">⬇ Diagnóstico</button><button class="iq-b" onclick="iqEsquecer()">Apagar token</button></div>
+        <div class="td-nota" style="margin-top:6px;">O token fica só neste aparelho: não vai para o código do site (que é público) nem para o backup. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.</div>
+      </div>
+    </details>
     <details class="grp" id="grpTelegram">
       <summary><span class="grp-t">✈️ Telegram</span><span class="grp-sum" id="sumTelegram"></span><div id="tgStatus" style="margin-left:auto;font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(0,212,170,.1);color:var(--green);">✅ CONFIGURADO</div></summary>
       <div class="grp-body">
@@ -1368,8 +1405,8 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
       </div>
       <!-- PAINEL DE APRENDIZADO AUTOMÁTICO -->
       <div class="tf-stats" style="border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.04);">
-        <div class="tfs-title" style="color:#A78BFA;">🛡️ IA Guardiã — aprende com a Valyn</div>
-        <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">Usa só o resultado que você CONFIRMOU na Valyn. Se a vela média (0,75–1,5σ) ficar abaixo do empate com folga (60+ confirmações), passa a exigir vela ≥ 1,5σ. Se o total ficar abaixo do empate, avisa para parar.</div>
+        <div class="tfs-title" style="color:#A78BFA;">🛡️ IA Guardiã — aprende com a IQ</div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">Usa só o resultado que você CONFIRMOU na IQ. Se a vela média (0,75–1,5σ) ficar abaixo do empate com folga (60+ confirmações), passa a exigir vela ≥ 1,5σ. Se o total ficar abaixo do empate, avisa para parar.</div>
         <div id="mlPanel">
           <div style="font-size:9px;color:var(--muted);text-align:center;padding:12px;">Opere e registre W/L para o sistema aprender</div>
         </div>
@@ -1465,7 +1502,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
           <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera.<br>
           <b>2026.10.06c</b>: + rompimento no lateral (CHOCH/BOS + vela forte): 75,3% · 74,7% · 70,0% em 05/10. Sistema completo: 72,5% em 1.832 sinais.<br>
           <b>2026.10.06d</b>: sem sinal no fechamento de NY (17h–20h em NY: 54,9% · 51,1%). <b>Sistema completo: 73,6% em 1.736 sinais</b> (73,5% · 73,8% · 72,6% em 05/10). Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
-          Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na Valyn" (Stats).
+          Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na IQ" (Stats).
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
       </div>
@@ -1503,7 +1540,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07b (banca automática com memória; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07c (IQ Option: banca, valores e ordens; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2147,11 +2184,11 @@ function markResult(id,result){
   const op=ops.find(o=>o.id===id); if(!op) return false;
   const antes=op.result;
   if(antes==='open'){ op.corretora='manual'; }                    // você informou o resultado da corretora
-  else if(antes===result){ op.corretora='igual'; updateStats(); updateDiary(); renderHistory(); showToast(`✓ ${result==='win'?'WIN':'LOSS'} confirmado na Valyn`,'call-t'); return true; }
+  else if(antes===result){ op.corretora='igual'; updateStats(); updateDiary(); renderHistory(); showToast(`✓ ${result==='win'?'WIN':'LOSS'} confirmado na IQ`,'call-t'); return true; }
   else { op.corretora=antes==='empate'?'manual':'diferente'; op.corrigido=antes; }
   op.result=result; op.resolvidoPor='manual';
   updateStats(); updateDiary(); renderHistory(); updateSeqBadge();
-  showToast(result==='win'?(antes!=='open'?'✏️ Corrigido para WIN (Valyn)':'✓ WIN registrado'):(antes!=='open'?'✏️ Corrigido para LOSS (Valyn)':'✗ LOSS registrado'),result==='win'?'call-t':'put-t');
+  showToast(result==='win'?(antes!=='open'?'✏️ Corrigido para WIN (IQ)':'✓ WIN registrado'):(antes!=='open'?'✏️ Corrigido para LOSS (IQ)':'✗ LOSS registrado'),result==='win'?'call-t':'put-t');
   return true;
 }
 
@@ -2196,7 +2233,7 @@ function updateDiary(){
   const body=document.getElementById('diaryBody');
   if(ops.length===0){body.innerHTML='<div class="diary-empty">Nenhuma operação registrada ainda.</div>';return;}
   const rot={win:'✓ WIN',loss:'✗ LOSS',empate:'= EMPATE','sem-dado':'? SEM DADO',open:'⏳ Aguardando'};
-  const selo={igual:'✓ igual na Valyn',diferente:'≠ diferente na Valyn',manual:'informado da Valyn'};
+  const selo={igual:'✓ igual na IQ',diferente:'≠ diferente na IQ',manual:'informado da IQ',iq:'✓ resultado da IQ Option'};
   const bt=(txt,tit,acao,cor)=>`<button title="${tit}" onclick="${acao}" style="padding:3px 7px;font-size:9px;font-weight:700;border-radius:4px;border:1px solid ${cor};background:transparent;color:${cor};cursor:pointer;white-space:nowrap;">${txt}</button>`;
   body.innerHTML=[...ops].reverse().slice(0,200).map(o=>{
     const origem=o.origem==='auto'?'🤖 Auto':o.origem==='noticia'?'🏄 Notícia':'👆 Tela';
@@ -2205,9 +2242,9 @@ function updateDiary(){
     const precos=o.entrada&&o.entrada.preco!=null&&o.saida?` · ${fmtPreco(o.pair,o.entrada.preco)} → ${fmtPreco(o.pair,o.saida.preco)}${o.saida.fonte==='vela'?' (vela)':fonteE}`:'';
     const fonte=o.corretora?` · ${selo[o.corretora]}`:o.resolvidoPor==='api'?' · pela API, falta conferir':o.resolvidoPor==='manual'?' · marcado à mão':'';
     let botoes='';
-    if(o.result==='open') botoes=bt('W','WIN na Valyn',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na Valyn',`markResultAndSave('${o.id}','loss')`,'var(--red)');
-    else if(o.result==='empate') botoes=bt('= igual','Empate também na Valyn',`confirmarCorretora('${o.id}',true)`,'var(--muted)')+bt('W','WIN na Valyn',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na Valyn',`markResultAndSave('${o.id}','loss')`,'var(--red)');
-    else if(fechada(o)&&o.entrou!==false&&!o.corretora) botoes=bt('✓ igual','A Valyn mostrou o mesmo resultado',`confirmarCorretora('${o.id}',true)`,'var(--green)')+bt('≠ diferente','A Valyn mostrou o resultado contrário',`confirmarCorretora('${o.id}',false)`,'var(--gold)');
+    if(o.result==='open') botoes=bt('W','WIN na IQ',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na IQ',`markResultAndSave('${o.id}','loss')`,'var(--red)');
+    else if(o.result==='empate') botoes=bt('= igual','Empate também na IQ',`confirmarCorretora('${o.id}',true)`,'var(--muted)')+bt('W','WIN na IQ',`markResultAndSave('${o.id}','win')`,'var(--green)')+bt('L','LOSS na IQ',`markResultAndSave('${o.id}','loss')`,'var(--red)');
+    else if(fechada(o)&&o.entrou!==false&&!o.corretora) botoes=bt('✓ igual','A IQ mostrou o mesmo resultado',`confirmarCorretora('${o.id}',true)`,'var(--green)')+bt('≠ diferente','A IQ mostrou o resultado contrário',`confirmarCorretora('${o.id}',false)`,'var(--gold)');
     if(o.entrou===false) botoes+=bt('＋ entrei','Eu entrei nesta',`marcarEntrou('${o.id}')`,'var(--blue)');
     return `<div class="diary-item" style="${o.entrou===false?'opacity:.7':''}">
       <div class="di-top"><div class="di-pair">${o.pair}</div><div class="di-dir ${o.dir.toLowerCase()}">${o.dir}</div><div class="di-result ${o.result}">${rot[o.result]||o.result}</div></div>
@@ -2232,7 +2269,7 @@ function marcarEntrou(id){
 function exportCSV(){
   if(ops.length===0){showToast('Nenhuma operação para exportar','warn-t');return;}
   const q=v=>{const t=v==null?'':String(v);return /[",;\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
-  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','Valyn','Atraso entrada (s)','Força vela (σ)','IA parecer','IA motivos','IA resposta (s)','IA a tempo']];
+  const rows=[['ID','Data/Hora (BRT)','Par','Direção','Pontuação','TF','Setup','Origem','Entrou','Preço entrada','Preço saída','Resultado','Conferido por','Valor','Payout','Regime','Volatilidade','Motor','Nota','BOS','Fonte entrada','Fonte saída','IQ','Atraso entrada (s)','Força vela (σ)','IA parecer','IA motivos','IA resposta (s)','IA a tempo']];
   ops.forEach(o=>{const t=tsOp(o);rows.push([o.id,t?new Date(t).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):o.ts,o.pair,o.dir,o.conf,o.tf,o.setup,o.origem||'manual',o.entrou===false?'não':'sim',o.entrada&&o.entrada.preco,o.saida&&o.saida.preco,o.result,o.resolvidoPor||'',o.stake||0,o.payout||'',o.regime||'',o.volRel??'',o.motor||'',o.note||'',o.bos?'sim':(o.bos===false?'não':''),o.entrada&&o.entrada.fonte||'',o.saida&&o.saida.fonte||'',o.corretora||'',o.entrada&&o.entrada.tVela?((o.entrada.t-o.entrada.tVela)/1000).toFixed(1):'',o.forca??'',o.ia&&o.ia.v||(o.ia&&o.ia.erro?'erro':''),o.ia&&o.ia.m?o.ia.m.join(' | '):(o.ia&&o.ia.erro||''),o.ia&&o.ia.lat!=null?o.ia.lat:'',o.ia&&o.ia.v?(o.ia.aTempo?'sim':'não'):'']);});
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(rows.map(r=>r.map(q).join(',')).join('\n'));
@@ -2282,6 +2319,7 @@ function registrarSinal(r,opts){
     regime:r.regime||null,volRel:r.volRel!=null?+Number(r.volRel).toFixed(2):null,motor:r.versao||null,votos:r.votos||null});
   saveOps(); renderHistory(); updateDiary(); updateStats();
   try{ iaRevisarSinal(id,r).catch(e=>console.warn('Revisor IA:',e)); }catch(e){ /* o sinal segue sem revisão */ }
+  try{ iqAposRegistrar(id,r); }catch(e){ console.warn('IQ:',e); }
   return id;
 }
 
@@ -2336,7 +2374,7 @@ async function resolverPendentes(){
 function posResultado(o){
   if(!o) return;
   if(fechada(o)&&!o.mlAprendido&&o.origem!=='noticia'&&o.votos){ updateMLAfterResult(o.result,o.id); o.mlAprendido=true; delete o.votos; }
-  if(o.tg&&o.resolvidoPor==='api'&&!o.tgResultado&&typeof tgEnabled!=='undefined'&&tgEnabled){
+  if(o.tg&&(o.resolvidoPor==='api'||o.resolvidoPor==='iq')&&!o.tgResultado&&typeof tgEnabled!=='undefined'&&tgEnabled){
     o.tgResultado=true;
     // sinal que foi para o Telegram conta sozinho no placar (WIN e LOSS: contar só WIN desligaria o stop de 2 losses)
     if(fechada(o)&&o.entrou===false){ o.entrou=true; o.entrouAuto=true; }
@@ -2374,10 +2412,10 @@ function renderCalibracao(){
   const dif=conf.filter(o=>o.corretora==='diferente').length;
   const blocoConc=conf.length
     ?(()=>{const pc=100-dif/conf.length*100, cor=pc>=95?'var(--green)':pc>=85?'var(--gold)':'var(--red)';
-      return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">Concordância API × Valyn <span style="color:var(--dim);">(${conf.length} conferidas · ${dif} diferentes)</span></span><span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${pc.toFixed(0)}%</span></div>`;})()
-    :`<div style="font-size:9px;color:var(--muted);padding:3px 0;">Concordância API × Valyn: confirme no Diário (✓ igual / ≠ diferente) para medir</div>`;
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.4);font-size:9px;"><span style="color:var(--muted);">Concordância API × IQ <span style="color:var(--dim);">(${conf.length} conferidas · ${dif} diferentes)</span></span><span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${pc.toFixed(0)}%</span></div>`;})()
+    :`<div style="font-size:9px;color:var(--muted);padding:3px 0;">Concordância API × IQ: confirme no Diário (✓ igual / ≠ diferente) para medir</div>`;
   el.innerHTML=
-    linha('★ Confirmadas na Valyn',ops.filter(confirmadaCorretora),'O número que importa: resultado que você conferiu na corretora')+
+    linha('★ Confirmadas na IQ',ops.filter(confirmadaCorretora),'O número que importa: resultado que você conferiu na corretora')+
     blocoConc+
     linha('Todos os sinais (preço em tempo real)',tr,'Entrada e saída pelo preço em tempo real da Twelve Data')+
     linha('Todos os sinais (qualquer fonte)',sinais)+
@@ -2392,7 +2430,7 @@ function renderCalibracao(){
     linha('Entrou até 10 s após a vela',ent.filter(o=>atraso(o)<=10))+
     linha('Entrou entre 10 e 20 s',ent.filter(o=>atraso(o)>10&&atraso(o)<=20))+
     linha('Entrou depois de 20 s',ent.filter(o=>atraso(o)>20))+
-    `<div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Verde = faixa inteira acima do empate (${(be*100).toFixed(1)}% com payout ${Math.round(payout*100)}%). Âmbar = ainda não dá para separar do acaso. Vermelho = abaixo do empate. Só "Confirmadas na Valyn" mede o seu dinheiro; o resto é preço da Twelve Data.</div>`;
+    `<div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Verde = faixa inteira acima do empate (${(be*100).toFixed(1)}% com payout ${Math.round(payout*100)}%). Âmbar = ainda não dá para separar do acaso. Vermelho = abaixo do empate. Só "Confirmadas na IQ" mede o seu dinheiro; o resto é preço da Twelve Data.</div>`;
 }
 
 // ═══ ANÁLISE — usa o MOTOR ÚNICO (o mesmo do Auto, do Scanner e do Backtest) ═══
@@ -2756,24 +2794,24 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 // ─── Resultados confirmados na corretora ───
-function confirmadaCorretora(o){ return !!o&&o.entrou!==false&&fechada(o)&&(o.corretora==='igual'||o.corretora==='diferente'||o.corretora==='manual'); }
+function confirmadaCorretora(o){ return !!o&&o.entrou!==false&&fechada(o)&&(o.corretora==='igual'||o.corretora==='diferente'||o.corretora==='manual'||o.corretora==='iq'); }
 function historicoConfirmado(){
   const f=ops.filter(confirmadaCorretora), w=f.filter(o=>o.result==='win').length;
   return{total:f.length,wins:w,wr:f.length?w/f.length:0};
 }
 function textoAcertoConfirmado(){
   const h=historicoConfirmado();
-  if(!h.total) return 'sem entradas confirmadas na Valyn ainda';
+  if(!h.total) return 'sem entradas confirmadas na IQ ainda';
   const ic=wilsonIC(h.wins,h.total);
   return `${Math.round(h.wr*100)}% em ${h.total} confirmadas (faixa ${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}%)`;
 }
 function confirmarCorretora(id,igual){
   const o=ops.find(x=>x.id===id); if(!o) return;
   if(igual){
-    if(o.result==='empate'){ o.corretora='igual'; saveOps(); atualizarPaineisResultado(); showToast('✓ Empate confirmado na Valyn','call-t'); return; }
+    if(o.result==='empate'){ o.corretora='igual'; saveOps(); atualizarPaineisResultado(); showToast('✓ Empate confirmado na IQ','call-t'); return; }
     markResultAndSave(id,o.result);
   } else {
-    if(o.result==='empate'){ showToast('Use W ou L para dizer o que a Valyn mostrou','warn-t'); return; }
+    if(o.result==='empate'){ showToast('Use W ou L para dizer o que a IQ mostrou','warn-t'); return; }
     markResultAndSave(id,o.result==='win'?'loss':'win');
   }
 }
@@ -2998,7 +3036,7 @@ function showAndFinalizeResult(r,opts){
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Backtest (sistema completo): 73,6% (preço da Twelve Data) · Confirmado na Valyn: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
+    if(nota) nota.textContent=`Backtest (sistema completo): 73,6% (preço da Twelve Data) · Confirmado na IQ: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -3114,6 +3152,7 @@ function showAndFinalizeResult(r,opts){
   let _iaOp=opts.opId||null;
   if(opts.registrar!==false&&!opts.opId) _iaOp=registrarSinal(r,{origem:opts.origem||'manual',entrou:opts.entrou!==false});
   try{ iaCardPara(_iaOp); }catch(e){ /* revisor fora */ }
+  try{ const _q=document.getElementById('iqCardStatus'); if(_q){ _q.innerHTML=''; _q.style.display='none'; } if(_iaOp) iqMarcar(_iaOp); iqBotaoCartao(); }catch(e){ /* IQ fora */ }
 
   // — Sons, timer, toast, MTF, save —
   playSignalSoundByForce(isCall, r.force_score||8);
@@ -3234,7 +3273,7 @@ function toggleAuto(){
 let _pedindoTrava=false;
 function alternarAuto(){
   autoMode=!autoMode;
-  if(autoMode){ try{ const g=guardiao(); if(g.parar) showToast(`⛔ IA Guardiã: na Valyn o acerto confirmado está abaixo do empate (${Math.round(g.todos.wr*100)}% em ${g.todos.n}). O Auto liga, mas opere só em conta demo até revisar.`,'warn-t'); }catch(e){} }
+  if(autoMode){ try{ const g=guardiao(); if(g.parar) showToast(`⛔ IA Guardiã: na IQ o acerto confirmado está abaixo do empate (${Math.round(g.todos.wr*100)}% em ${g.todos.n}). O Auto liga, mas opere só em conta demo até revisar.`,'warn-t'); }catch(e){} }
   const btn=document.getElementById('autoBtn');
   const status=document.getElementById('autoStatus');
   if(autoMode){
@@ -3322,12 +3361,13 @@ function showAutoAlert(m){
   const validoAte=m.tRef+MOTOR_CFG.janelaEntradaSeg*1000;
   autoResult={...m,res,id,validoAte};
   try{ iaAtualizarUI(id); }catch(e){ /* revisor fora */ }
+  try{ const _q=document.getElementById('aaIQ'); if(_q){ _q.innerHTML=''; _q.style.display='none'; } const _b=document.querySelector('#autoAlert .aa-enter'); if(_b) _b.textContent='✓ ENTRAR AGORA'; iqMarcar(id); }catch(e){ /* IQ fora */ }
   const alert=document.getElementById('autoAlert');
   alert.className='auto-alert show '+(isCall?'call-a':'put-a');
   document.getElementById('aaPair').textContent=m.pair+' @ '+fmtPreco(m.pair,m.precoRef);
   const aaDir=document.getElementById('aaDir');
   aaDir.textContent=m.direcao; aaDir.className='aa-dir '+(isCall?'call':'put');
-  document.getElementById('aaMeta').textContent=`${rotuloEstrutura(m)?rotuloEstrutura(m)+' · ':''}${m.forcaVela!=null?`vela ${fmtForcaDir(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · Valyn: ${textoAcertoConfirmado()}`;
+  document.getElementById('aaMeta').textContent=`${rotuloEstrutura(m)?rotuloEstrutura(m)+' · ':''}${m.forcaVela!=null?`vela ${fmtForcaDir(m.forcaVela)} · `:''}${m.alinhados} de ${m.comLeitura} indicadores · IQ: ${textoAcertoConfirmado()}`;
   const exp=document.getElementById('aaExp');
   const contar=()=>{ const s=Math.max(0,Math.ceil((validoAte-Date.now())/1000)); exp.textContent=`Exp: 1 minuto · entre em até ${s}s (até ${hhmmss(validoAte)}) · entradas hoje: ${dailyOpsCount}/5`; if(s<=0){ clearInterval(autoContagem); autoContagem=null; if(autoResult&&autoResult.id===id&&alert.classList.contains('show')){ skipAutoSignal(); showToast('⌛ Sinal expirou — passou da janela de entrada (nos dados, entrar atrasado derruba o acerto para ~50%)','warn-t'); } } };
   clearInterval(autoContagem); contar(); autoContagem=setInterval(contar,1000);
@@ -3349,13 +3389,15 @@ async function enterAutoSignal(){
   const a=autoResult; autoResult=null;
   if(Date.now()>a.validoAte){ showToast('⌛ Passou da janela de entrada — este sinal não vale mais','warn-t'); return; }
   const op=ops.find(o=>o.id===a.id);
-  if(op){
+  const _naIQ=!!(op&&op.iq&&op.iq.pos);
+  if(op&&!_naIQ){
     // a sua operação vale a partir do clique: entrada e expiração refeitas agora, com o preço em tempo real
     const agora=Date.now();
     op.entrou=true; op.entrada.t=agora; op.expiraEm=agora+60000;
     op.stake=(typeof sugerirEntrada==='function'?sugerirEntrada(op.conf).valor:0)||0;
     saveOps();
     tdPreco(TD_SYMBOL_MAP[a.pair]||a.pair,{espera:2000}).then(p=>{ if(p!=null&&op.result==='open'){ op.entrada.preco=p; op.entrada.fonte='tempo-real'; saveOps(); } });
+    try{ if(iqToken()&&IQ.ok) iqEntrar(op.id,{tRef:a.tRef},'clique'); }catch(e){ console.warn('IQ:',e); }
   }
   dailyOpsCount++;
   showAndFinalizeResult(a.res,{registrar:false,opId:a.id});
@@ -5812,19 +5854,19 @@ try{
 
 // ═══ MEMÓRIA DA BANCA (2026.10.07b) ═══
 // A banca não é mais digitada todo dia: ela é CALCULADA e lembrada neste aparelho.
-//   saldo = saldo inicial + depósitos − saques + ajustes (conferência com a Valyn) + resultado de cada entrada
+//   saldo = saldo inicial + depósitos − saques + ajustes (conferência com a IQ) + resultado de cada entrada
 // Resultado de cada entrada = valor × payout no WIN, −valor no LOSS (empate não mexe).
 // Corrigiu um resultado ou o valor no Diário? O saldo se recalcula sozinho.
 // A entrada é % do saldo ATUAL (cresce com o lucro, encolhe com a perda) e as travas de sempre continuam.
 // Stop ou meta do dia batidos: Auto desligado e sinais travados até o dia seguinte.
 var BANCA_MEM_KEY='protrader_banca_mem';
-var BACKUP_FORA=new Set(['protrader_ia_chave','protrader_td_chave','td_api_key','protrader_dono','protrader_auto_lock','protrader_ultimo_backup']);
+var BACKUP_FORA=new Set(['protrader_iq_token','protrader_ia_chave','protrader_td_chave','td_api_key','protrader_dono','protrader_auto_lock','protrader_ultimo_backup']);
 var _bancaMemCache, _bancaRes=null, _bancaResT=0, _bancaSujo=true, _bancaTravaAvisada=null, _bancaDesligouAuto=null; // var: pode ser lido antes desta linha rodar
 
 function inicioDoDia(ms){ const d=new Date(ms); d.setHours(0,0,0,0); return d.getTime(); }
 function bancaSujar(){ _bancaSujo=true; }
 function bancaPayoutPadrao(){ const v=parseFloat(document.getElementById('bancaPayout')?.value); return Math.min(1,Math.max(0.5,(isNaN(v)?85:v)/100)); }
-function brl(v){ v=+v||0; return (v<0?'−':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function brl(v){ v=+v||0; return (v<0?'−':'')+(typeof bancaSimbolo==='function'?bancaSimbolo():'R$')+' '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function brlSinal(v){ return (v>0?'+':'')+brl(v); }
 function pctTxt(v,casas){ return (v>0?'+':v<0?'−':'')+Math.abs(v*100).toFixed(casas??1).replace('.',',')+'%'; }
 function lerValorBR(t){
@@ -5944,24 +5986,24 @@ function bancaNovoMov(tipo,valor,nota){
 function bancaComecar(){
   const el=document.getElementById('bancaSaldo'); if(!el||bancaMem()) return;
   const v=lerValorBR(el.value);
-  if(!(v>0)){ showToast('Digite o saldo que a Valyn mostra (ex.: 2700 ou 2.700,00)','warn-t'); return; }
+  if(!(v>0)){ showToast('Digite o saldo que a IQ mostra (ex.: 2700 ou 2.700,00)','warn-t'); return; }
   bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
   showToast(`💰 Banca iniciada com ${brl(v)} — daqui para frente o saldo se atualiza sozinho`,'call-t');
   calcBanca();
 }
 function bancaConferir(){
   const R=bancaResumo(); if(!R) return bancaComecar();
-  const t=prompt(`Conferir com a Valyn\n\nO ProTrader calcula ${brl(R.atual)}.\nDigite o saldo que a Valyn mostra agora:`,R.atual.toFixed(2).replace('.',','));
+  const t=prompt(`Conferir com a IQ\n\nO ProTrader calcula ${brl(R.atual)}.\nDigite o saldo que a IQ mostra agora:`,R.atual.toFixed(2).replace('.',','));
   if(t==null) return;
   const v=lerValorBR(t); if(!(v>=0)){ showToast('Valor inválido','warn-t'); return; }
   const dif=Math.round((v-R.atual)*100)/100;
-  if(Math.abs(dif)<0.01){ showToast('✓ Bate com a Valyn','call-t'); return; }
-  bancaNovoMov('ajuste',dif,`Conferência com a Valyn: app ${brl(R.atual)} → Valyn ${brl(v)}`);
-  showToast(`✓ Ajuste de ${brlSinal(dif)} registrado — saldo igual ao da Valyn`,'call-t');
+  if(Math.abs(dif)<0.01){ showToast('✓ Bate com a IQ','call-t'); return; }
+  bancaNovoMov('ajuste',dif,`Conferência com a IQ: app ${brl(R.atual)} → IQ ${brl(v)}`);
+  showToast(`✓ Ajuste de ${brlSinal(dif)} registrado — saldo igual ao da IQ`,'call-t');
 }
 function bancaMovimento(tipo){
-  if(!bancaMem()){ showToast('Comece digitando o saldo da Valyn','warn-t'); return; }
-  const t=prompt(tipo==='deposito'?'Depósito na Valyn — valor (R$):':'Saque da Valyn — valor (R$):','');
+  if(!bancaMem()){ showToast('Comece digitando o saldo da IQ','warn-t'); return; }
+  const t=prompt(tipo==='deposito'?'Depósito na IQ — valor (R$):':'Saque da IQ — valor (R$):','');
   if(t==null) return;
   const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
   const R=bancaResumo();
@@ -5972,7 +6014,7 @@ function bancaMovimento(tipo){
 function bancaRecomecar(){
   if(!bancaMem()) return;
   if(!confirm('Recomeçar a banca do zero?\n\nO histórico de operações continua, mas o saldo passa a contar a partir de agora. Baixe o extrato antes se quiser guardar.')) return;
-  const t=prompt('Saldo que a Valyn mostra agora (R$):',''); if(t==null) return;
+  const t=prompt('Saldo que a IQ mostra agora (R$):',''); if(t==null) return;
   const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
   bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
   showToast(`💰 Banca recomeçada com ${brl(v)}`,'call-t'); calcBanca(); checkBankStop();
@@ -5985,7 +6027,7 @@ function bancaEditarValor(id,txt){
 }
 function bancaCampoValor(o){
   if(o.entrou===false||o.result==='sem-dado') return '';
-  return `<input type="text" inputmode="decimal" value="${o.stake?String(o.stake).replace('.',','):''}" placeholder="R$" title="Valor que você entrou na Valyn — a banca usa este número"
+  return `<input type="text" inputmode="decimal" value="${o.stake?String(o.stake).replace('.',','):''}" placeholder="R$" title="Valor que você entrou na IQ — a banca usa este número"
     onchange="bancaEditarValor('${o.id}',this.value)" style="width:64px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;outline:none;">`;
 }
 // Operações antigas que saem do histórico (limite de espaço) viram um lançamento só: o saldo não muda
@@ -6005,7 +6047,7 @@ function baixarArquivo(nome,conteudo,tipo){
   document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
 }
 function hojeISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-var BANCA_TIPO={inicio:'Início',deposito:'Depósito',saque:'Saque',ajuste:'Ajuste (Valyn)',consolidado:'Resumo de antigas',op:'Operação'};
+var BANCA_TIPO={inicio:'Início',deposito:'Depósito',saque:'Saque',ajuste:'Ajuste (IQ)',consolidado:'Resumo de antigas',op:'Operação'};
 function bancaExtrato(){
   const R=bancaResumo(); if(!R){ showToast('Comece a banca primeiro','warn-t'); return; }
   const num=v=>v==null||v===''?'':String((+v).toFixed(2)).replace('.',',');
@@ -6019,7 +6061,7 @@ function bancaExtrato(){
   }
   linhas.push([]);
   const res=(rot,mov,saldo,nota)=>linhas.push(['','','RESUMO','','','','','','',mov==null?'':num(mov),saldo==null?'':num(saldo),rot+(nota?' · '+nota:'')]);
-  res('Saldo inicial',null,R.inicio); res('Depósitos',R.dep); res('Saques',-R.saq); res('Ajustes (Valyn)',R.aj);
+  res('Saldo inicial',null,R.inicio); res('Depósitos',R.dep); res('Saques',-R.saq); res('Ajustes (IQ)',R.aj);
   res('Resultado das operações',R.pnlOps,null,`${R.w}W · ${R.l}L`); res('Saldo atual',null,R.atual);
   baixarArquivo(`protrader_extrato_banca_${hojeISO()}.csv`,'﻿'+linhas.map(l=>l.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
   showToast('⬇️ Extrato da banca baixado','call-t');
@@ -6063,7 +6105,7 @@ async function bancaPDF(){
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=14;
-    const P=v=>((v<0?'-':'')+'R$ '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    const P=v=>((v<0?'-':'')+(typeof bancaSimbolo==='function'?bancaSimbolo().replace('€','EUR'):'R$')+' '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}));
     const PS=v=>(v>0?'+':'')+P(v);
     const PC=v=>(v>0?'+':v<0?'-':'')+Math.abs(v*100).toFixed(1).replace('.',',')+'%';
     const dataBR=t=>new Date(t).toLocaleDateString('pt-BR');
@@ -6081,7 +6123,7 @@ async function bancaPDF(){
     // resumo
     const acerto=R.nOps?R.w/R.nOps:0, retorno=R.capital>0?R.pnlOps/R.capital:0;
     const caixas=[
-      ['Saldo inicial',P(R.inicio),cor.txt],['Depósitos - saques',PS(R.dep-R.saq),cor.txt],['Ajustes (Valyn)',PS(R.aj),cor.txt],['Saldo atual',P(R.atual),cor.acc],
+      ['Saldo inicial',P(R.inicio),cor.txt],['Depósitos - saques',PS(R.dep-R.saq),cor.txt],['Ajustes (IQ)',PS(R.aj),cor.txt],['Saldo atual',P(R.atual),cor.acc],
       ['Resultado das operações',PS(R.pnlOps),R.pnlOps>=0?cor.verde:cor.verm],['Retorno sobre o capital',PC(retorno),retorno>=0?cor.verde:cor.verm],
       ['Operações',`${R.nOps}  (${R.w}W · ${R.l}L · ${(acerto*100).toFixed(1).replace('.',',')}%)`,cor.txt],['Maior queda',`${P(-R.ddMax)}  (${PC(-R.ddPct)})`,cor.verm]];
     const cw=(W-2*M-9)/4;
@@ -6146,13 +6188,373 @@ async function bancaPDF(){
     // rodapé
     const n=doc.getNumberOfPages();
     for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFontSize(7); doc.setTextColor(...cor.mut);
-      doc.text('ProTrader AI · valores calculados a partir das entradas registradas no app — confira com o extrato da Valyn',M,H-8);
+      doc.text('ProTrader AI · valores calculados a partir das entradas registradas no app — confira com o extrato da IQ',M,H-8);
       doc.text(`${i}/${n}`,W-M,H-8,{align:'right'}); }
     doc.save(`protrader_relatorio_banca_${hojeISO()}.pdf`);
     showToast('📄 Relatório da banca baixado','call-t');
   }catch(e){ console.warn('PDF banca:',e); showToast('⛔ '+(e.message||'Falha ao gerar o PDF'),'warn-t'); }
 }
 setInterval(()=>{ try{ bancaRotinaDia(); }catch(e){ /* segue */ } },30000);
+
+// ═══ IQ OPTION (2026.10.07c) — saldo, valores e ordens pela integração oficial (MCP) ═══
+// O token fica SÓ neste aparelho (localStorage): não vai para o código do site (que é público) nem para o backup.
+// Quem tem o token abre operações na sua conta — por isso ele nunca fica no protrader.html.
+// Ferramentas usadas: list_balances, list_assets, place_trade, get_trade_history (servidor binary-options).
+// Na conexão o app confere o formato de cada ferramenta; se a IQ mudar o formato, as ordens ficam desligadas.
+var IQ_TOKEN_KEY='protrader_iq_token', IQ_CFG_KEY='protrader_iq_cfg';
+var IQ_SERVIDORES={'binary-options':'Binária / Turbo','turbo-options':'Turbo','digital-options':'Digital','blitz-options':'Blitz'};
+var IQ={sess:{},seq:0,ok:false,erro:'',tools:null,schema:null,saldos:[],ativos:null,ativosT:0,ordemLiberada:false,motivoOrdem:'',enviando:{},ultSync:0,dirMaiuscula:false};
+function iqToken(){ try{ return (localStorage.getItem(IQ_TOKEN_KEY)||'').trim(); }catch(e){ return ''; } }
+function iqCfg(){
+  let c=null; try{ c=JSON.parse(localStorage.getItem(IQ_CFG_KEY)||'null'); }catch(e){ c=null; }
+  return Object.assign({servidor:'binary-options',conta:'TRAINING',modo:'manual',banca:true,maxDia:5,realOk:false},c||{});
+}
+function iqCfgSalvar(p){ const c=Object.assign(iqCfg(),p||{}); try{ localStorage.setItem(IQ_CFG_KEY,JSON.stringify(c)); }catch(e){ /* sem storage */ } return c; }
+function iqContaTxt(c){ return (c||iqCfg().conta)==='NORMAL'?'Real':'Demo'; }
+function iqPronto(){ return !!(iqToken()&&IQ.ok&&IQ.ordemLiberada&&iqSaldoAtual()); }
+function iqSaldoAtual(){ const t=iqCfg().conta; return (IQ.saldos||[]).find(b=>String(b.type).toUpperCase()===t)||null; }
+function iqMoeda(){ const b=iqSaldoAtual(); return b&&b.currency?String(b.currency).toUpperCase():'BRL'; }
+function iqFmt(v,moeda){ const m=moeda||iqMoeda(), s=m==='BRL'?'R$':m==='USD'?'US$':m==='EUR'?'€':m;
+  return (v<0?'−':'')+s+' '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ─── cliente MCP (JSON-RPC por HTTP; aceita resposta JSON ou SSE) ───
+function iqLerResposta(txt,id){
+  const t=String(txt||'').trim(); if(!t) return null;
+  if(t[0]==='{'||t[0]==='[') return JSON.parse(t);
+  let ult=null;
+  for(const l of t.split(/\r?\n/)){ if(!l.startsWith('data:')) continue; try{ const j=JSON.parse(l.slice(5).trim()); if(id==null||j.id===id) return j; ult=j; }catch(e){ /* linha parcial */ } }
+  return ult;
+}
+async function iqRpc(srv,metodo,params,notificacao){
+  const tok=iqToken(); if(!tok) throw new Error('sem token da IQ');
+  const s=IQ.sess[srv]||{}, H={'Authorization':'Bearer '+tok,'Content-Type':'application/json','Accept':'application/json, text/event-stream'};
+  if(s.id) H['Mcp-Session-Id']=s.id; if(s.pv) H['MCP-Protocol-Version']=s.pv;
+  const corpo={jsonrpc:'2.0',method:metodo}; if(params) corpo.params=params;
+  const id=notificacao?null:++IQ.seq; if(id!=null) corpo.id=id;
+  const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),15000);
+  let res;
+  try{ res=await fetch(`https://${srv}.mcp.iqoption.com`,{method:'POST',headers:H,body:JSON.stringify(corpo),signal:ctl.signal}); }
+  catch(e){ const er=new Error(e&&e.name==='AbortError'?'a IQ não respondeu em 15 s':'o navegador não conseguiu falar com a IQ (rede ou bloqueio do site)'); er.rede=true; throw er; }
+  finally{ clearTimeout(timer); }
+  if(metodo==='initialize'){ const sid=res.headers.get('mcp-session-id'); IQ.sess[srv]={id:sid||null}; }
+  const txt=await res.text();
+  if(res.status===404&&s.id){ const er=new Error('sessão expirou'); er.sessao=true; throw er; }
+  if(!res.ok){ let m=''; try{ const j=iqLerResposta(txt); m=(j&&j.error&&j.error.message)||''; }catch(e){ m=''; }
+    const er=new Error(res.status===401||res.status===403?'token recusado pela IQ (expirou ou foi apagado)':res.status===429?'limite de consultas da IQ — aguarde':`IQ respondeu ${res.status}${m?': '+m.slice(0,80):''}`); er.status=res.status; throw er; }
+  if(notificacao) return null;
+  const j=iqLerResposta(txt,id);
+  if(!j) throw new Error('resposta vazia da IQ');
+  if(j.error) throw new Error('IQ: '+String(j.error.message||'erro').slice(0,100));
+  return j.result;
+}
+async function iqSessao(srv,nova){
+  if(!nova&&IQ.sess[srv]&&IQ.sess[srv].pronta) return;
+  delete IQ.sess[srv];
+  const r=await iqRpc(srv,'initialize',{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'ProTrader AI',version:'2026.10.07c'}});
+  IQ.sess[srv]=Object.assign(IQ.sess[srv]||{},{pv:(r&&r.protocolVersion)||'2025-06-18'});
+  await iqRpc(srv,'notifications/initialized',null,true);
+  IQ.sess[srv].pronta=true;
+}
+function iqConteudo(r){
+  if(r&&r.structuredContent&&typeof r.structuredContent==='object') return r.structuredContent;
+  const txt=((r&&r.content)||[]).filter(c=>c&&c.type==='text').map(c=>c.text).join('\n').trim();
+  if(!txt) return {};
+  try{ return JSON.parse(txt); }catch(e){ return {texto:txt}; }
+}
+async function iqTool(nome,args,escrita){
+  const srv=iqCfg().servidor;
+  for(let tentativa=0;tentativa<2;tentativa++){
+    try{
+      await iqSessao(srv,tentativa>0);
+      const r=await iqRpc(srv,'tools/call',{name:nome,arguments:args||{}});
+      if(r&&r.isError){ const c=iqConteudo(r); throw new Error('IQ: '+String(c.texto||c.message||c.error||JSON.stringify(c)).slice(0,140)); }
+      return iqConteudo(r);
+    }catch(e){
+      // sessão vencida (404): o pedido não foi processado — pode refazer, até ordem
+      if(e.sessao&&tentativa===0) continue;
+      throw e;
+    }
+  }
+}
+function iqLista(obj,chave){ if(Array.isArray(obj)) return obj; if(obj&&Array.isArray(obj[chave])) return obj[chave]; if(obj&&typeof obj==='object'){ for(const k in obj) if(Array.isArray(obj[k])) return obj[k]; } return []; }
+
+// ─── conectar: confere ferramentas e formato, lê saldos e ativos ───
+async function iqConectar(silencioso){
+  IQ.ok=false; IQ.erro=''; IQ.ordemLiberada=false; IQ.motivoOrdem=''; IQ.sess={};
+  if(!iqToken()){ IQ.erro='Cole o token da IQ (app da IQ → Configurações → AI integrations)'; iqRender(); return false; }
+  iqStatus('Conectando à IQ…');
+  try{
+    const srv=iqCfg().servidor;
+    await iqSessao(srv,true);
+    const tl=await iqRpc(srv,'tools/list',{});
+    IQ.tools=(tl&&tl.tools)||[];
+    const t=n=>IQ.tools.find(x=>x.name===n);
+    const faltam=['list_balances','list_assets','place_trade','get_trade_history'].filter(n=>!t(n));
+    const pt=t('place_trade'), props=(pt&&pt.inputSchema&&pt.inputSchema.properties)||{};
+    const chaves=['balance_id','asset_id','direction','amount','expired'];
+    const semChave=pt?chaves.filter(k=>!(k in props)):[];
+    const dirEnum=(props.direction&&props.direction.enum)||[];
+    IQ.dirMaiuscula=dirEnum.length>0&&dirEnum.every(x=>x===String(x).toUpperCase());
+    IQ.schema={profitPercent:'profit_percent' in props};
+    if(faltam.length) IQ.motivoOrdem=`faltam ferramentas: ${faltam.join(', ')}`;
+    else if(semChave.length) IQ.motivoOrdem=`a ordem da IQ mudou de formato (sem ${semChave.join(', ')})`;
+    IQ.ordemLiberada=!IQ.motivoOrdem;
+    IQ.ok=true;
+    await iqLerSaldos();
+    iqAtivos(true).catch(e=>console.warn('IQ ativos:',e));
+    if(!silencioso) showToast(IQ.ordemLiberada?`🟢 IQ Option conectada · ${iqContaTxt()} ${iqSaldoAtual()?iqFmt(iqSaldoAtual().amount):''}`:`⚠️ IQ conectada, mas ordens desligadas: ${IQ.motivoOrdem}`,IQ.ordemLiberada?'call-t':'warn-t');
+    await iqSincronizarBanca();
+  }catch(e){
+    IQ.ok=false; IQ.erro=e.message||'falha ao conectar';
+    if(e.rede) IQ.erro+=' — se continuar, a IQ pode não aceitar chamada direta do site; me avise que eu monto a ponte.';
+    if(!silencioso) showToast('⛔ IQ: '+IQ.erro,'warn-t');
+  }
+  iqRender(); return IQ.ok;
+}
+async function iqLerSaldos(){
+  const r=await iqTool('list_balances',{types:'ALL'});
+  IQ.saldos=iqLista(r,'balances').map(b=>({id:+b.balance_id||+b.id,type:String(b.type||'').toUpperCase(),currency:b.currency||'BRL',amount:+b.amount||0}));
+  IQ.saldosT=Date.now();
+  const b=iqSaldoAtual(); if(b&&b.currency&&iqCfg().moeda!==b.currency) iqCfgSalvar({moeda:String(b.currency).toUpperCase()});
+  return IQ.saldos;
+}
+async function iqAtivos(forcar){
+  if(!forcar&&IQ.ativos&&Date.now()-IQ.ativosT<300000) return IQ.ativos;
+  const r=await iqTool('list_assets',{only_enabled:true});
+  IQ.ativos=iqLista(r,'assets'); IQ.ativosT=Date.now(); iqRender();
+  return IQ.ativos;
+}
+function iqLimpaNome(n){ return String(n||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function iqAtivoDoPar(par){
+  const otc=/\(OTC\)/i.test(par), base=iqLimpaNome(String(par).replace(/\(OTC\)/i,''));
+  const lista=IQ.ativos||[];
+  const alvo=otc?base+'otc':base;
+  return lista.find(a=>iqLimpaNome(a.name)===alvo)||(!otc?null:lista.find(a=>iqLimpaNome(a.name)===base))||null;
+}
+function iqPayout(a){ const p=+a.profit_percent||0; return p>1?p/100:p; }
+function iqEscolherExpiracao(a,agoraMs){
+  const ag=Math.floor((agoraMs||Date.now())/1000), dead=Math.max(+a.deadtime_seconds||0,10)+3;
+  const exps=(a.expirations||[]).map(x=>+x>1e11?Math.floor(+x/1000):+x).filter(x=>x-ag>=dead).sort((x,y)=>x-y);
+  if(!exps.length) return null;
+  return exps.reduce((m,x)=>Math.abs(x-ag-60)<Math.abs(m-ag-60)?x:m,exps[0]);   // a mais perto de 1 minuto
+}
+
+// ─── banca = saldo da IQ ───
+async function iqSincronizarBanca(forcar){
+  const c=iqCfg(); if(!c.banca||!IQ.ok) return;
+  // com ordem aberta ou resultado pendente, o saldo da IQ ainda não bate com o do app: espera
+  const pend=ops.some(o=>o.iq&&o.iq.pos&&!o.iq.fim);
+  if(pend&&!forcar) return;
+  try{ await iqLerSaldos(); }catch(e){ IQ.erro=e.message; iqRender(); return; }
+  const b=iqSaldoAtual(); if(!b) return;
+  IQ.ultSync=Date.now();
+  const m=bancaMem();
+  if(!m){ bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:Math.round(b.amount*100)/100,origem:'iq'},movs:[]}); calcBanca(); iqRender(); return; }
+  const R=bancaResumo(), dif=Math.round((b.amount-R.atual)*100)/100;
+  if(Math.abs(dif)>=0.01){ bancaNovoMov('ajuste',dif,`Saldo da IQ (${iqContaTxt()}): ${iqFmt(b.amount,b.currency)}`); }
+  iqRender();
+}
+
+// ─── ordem ───
+function iqOrdensHoje(){ const h0=inicioDoDia(Date.now()); return ops.filter(o=>o.iq&&o.iq.pos&&(o.iq.t||0)>=h0).length; }
+function iqOrdemAberta(){ return ops.find(o=>o.iq&&o.iq.pos&&!o.iq.fim&&Date.now()<(o.expiraEm||0)+5000)||null; }
+function iqPodeEntrar(o,r){
+  const c=iqCfg();
+  if(!iqToken()) return 'IQ sem token';
+  if(!IQ.ok) return 'IQ desconectada';
+  if(!IQ.ordemLiberada) return 'ordens desligadas: '+IQ.motivoOrdem;
+  if(!ehDono()) return 'só no aparelho marcado como seu';
+  if(!o) return 'operação não encontrada';
+  if(o.iq&&(o.iq.pos||o.iq.enviando)) return 'já enviada';
+  const bt=bancaTravada(); if(bt) return bt.stopBatido?'stop do dia — travado até amanhã':'meta do dia — travado até amanhã';
+  if(c.conta==='NORMAL'&&!c.realOk) return 'conta Real não confirmada';
+  const tRef=(r&&r.tRef)||(o.entrada&&o.entrada.tVela);
+  if(tRef&&Date.now()>tRef+MOTOR_CFG.janelaEntradaSeg*1000) return 'passou da janela de entrada';
+  if(iqOrdensHoje()>=c.maxDia) return `limite de ${c.maxDia} ordens hoje`;
+  const ab=iqOrdemAberta(); if(ab&&ab.id!==o.id) return 'já há uma ordem aberta (uma por vez)';
+  if(!iqSaldoAtual()) return `sem saldo ${iqContaTxt()} na IQ`;
+  return '';
+}
+async function iqEntrar(id,r,quem){
+  const o=ops.find(x=>x.id===id);
+  const nao=iqPodeEntrar(o,r);
+  if(nao){ if(quem==='clique') showToast('📲 IQ: '+nao,'warn-t'); iqMarcar(id,{bloqueio:nao}); return false; }
+  o.iq={enviando:true,t:Date.now()}; iqMarcar(id);
+  try{
+    const ativos=await iqAtivos();
+    const a=iqAtivoDoPar(o.pair); if(!a) throw new Error(`${o.pair} não está disponível na IQ agora`);
+    if(a.is_open===false) throw new Error(`${o.pair} fechado na IQ agora`);
+    const exp=iqEscolherExpiracao(a); if(!exp) throw new Error('sem expiração disponível na IQ');
+    const b=iqSaldoAtual(), R=bancaResumo();
+    let valor=(typeof sugerirEntrada==='function'?sugerirEntrada(o.conf).valor:0)||0;
+    const min=+a.minimum_amount||1, max=+a.maximum_amount||Infinity;
+    if(valor<min){ if(R&&min<=R.atual*0.03) valor=min; else throw new Error(`entrada sugerida (${iqFmt(valor)}) abaixo do mínimo da IQ (${iqFmt(min)})`); }
+    valor=Math.min(valor,max,b.amount); valor=Math.round(valor*100)/100;
+    if(!(valor>0)) throw new Error('valor da entrada zerado');
+    // última conferência (o tempo passou enquanto buscava os ativos)
+    const nao2=iqPodeEntrar(Object.assign({},o,{iq:null}),r); if(nao2) throw new Error(nao2);
+    const dir=IQ.dirMaiuscula?o.dir:o.dir.toLowerCase();
+    const args={balance_id:b.id,asset_id:+a.asset_id||+a.id,direction:dir,amount:valor,expired:exp};
+    if(IQ.schema&&IQ.schema.profitPercent) args.profit_percent=+a.profit_percent;
+    const res=await iqTool('place_trade',args,true);
+    const pos=+(res&&(res.position_id||res.id||(res.position&&res.position.position_id)));
+    if(!(pos>0)) throw new Error('a IQ não devolveu o número da posição');
+    const agora=Date.now();
+    o.iq={pos,bal:b.id,conta:b.type,valor,exp,pp:iqPayout(a),t:agora,asset:a.name};
+    o.entrou=true; o.stake=valor; o.payout=iqPayout(a)||o.payout; o.expiraEm=exp*1000; o.corretoraNome='IQ Option';
+    if(o.entrada){ o.entrada.t=agora; }
+    saveOps(); atualizarPaineisResultado();
+    const txt=`📲 IQ ${iqContaTxt(b.type)}: ${o.dir} ${o.pair} ${iqFmt(valor,b.currency)} · expira ${new Date(exp*1000).toLocaleTimeString('pt-BR')}`;
+    showToast('✅ '+txt,o.dir==='CALL'?'call-t':'put-t');
+    if(typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegramMsg(`✅ *Ordem aberta na IQ* (${iqContaTxt(b.type)})\n${o.dir==='CALL'?'🟢':'🔴'} ${o.dir} ${o.pair} · ${iqFmt(valor,b.currency)}\n⏰ Expira ${new Date(exp*1000).toLocaleTimeString('pt-BR')} · payout ${Math.round(iqPayout(a)*100)}%`);
+    iqMarcar(id); return true;
+  }catch(e){
+    o.iq={erro:e.message||'falha',t:Date.now()}; saveOps();
+    showToast('⛔ IQ: '+o.iq.erro+' — ordem NÃO enviada','warn-t');
+    if(quem==='auto'&&typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegramMsg(`⛔ *IQ: ordem não enviada* — ${o.dir} ${o.pair}\n${String(o.iq.erro).replace(/[*_`\[\]]/g,'')}`);
+    iqMarcar(id); return false;
+  }
+}
+// chamado por registrarSinal (sinal novo): no modo automático, entra sozinho
+function iqAposRegistrar(id,r){
+  const c=iqCfg(); if(c.modo!=='auto'||!iqToken()) return;
+  const o=ops.find(x=>x.id===id); if(!o||o.origem==='noticia') return;
+  setTimeout(()=>{ iqEntrar(id,r,'auto'); },0);
+}
+function iqEntrarCartao(){ if(_iaCardOp){ const o=ops.find(x=>x.id===_iaCardOp); iqEntrar(_iaCardOp,o&&o.entrada?{tRef:o.entrada.tVela}:null,'clique'); } }
+
+// ─── resultado direto da IQ (histórico) ───
+var _iqConferindo=false;
+async function iqConferirResultados(){
+  if(_iqConferindo||!IQ.ok) return;
+  const agora=Date.now();
+  const pend=ops.filter(o=>o.iq&&o.iq.pos&&!o.iq.fim&&agora>=(o.expiraEm||0)+3000);
+  if(!pend.length) return;
+  _iqConferindo=true;
+  try{
+    const r=await iqTool('get_trade_history',{skip:0,limit:50});
+    const hist=iqLista(r,'history');
+    let mudou=false;
+    for(const o of pend){
+      const h=hist.find(x=>+x.position_id===o.iq.pos);
+      if(!h){ if(agora-(o.expiraEm||0)>15*60000){ o.iq.fim='sem-historico'; mudou=true; } continue; }
+      const rs=String(h.result||h.close_reason||'').toLowerCase(), lucro=+h.profit;
+      const res=/win|won|ganh/.test(rs)?'win':/loos|loss|lost|perd/.test(rs)?'loss':/equal|draw|tie|empat|refund/.test(rs)?'empate':(lucro>o.iq.valor?'win':lucro===o.iq.valor||lucro===0&&!rs?'empate':'loss');
+      const antes=o.result;
+      if(antes==='open'){ o.result=res; o.corretora='iq'; }
+      else if(antes!==res){ o.corrigido=antes; o.result=res; o.corretora='iq'; }
+      else o.corretora='iq';
+      o.resolvidoPor='iq'; o.iq.fim=res; o.iq.lucro=isNaN(lucro)?null:lucro;
+      if(h.close_price!=null) o.saida=Object.assign(o.saida||{},{preco:+h.close_price,fonte:'iq'});
+      if(h.open_price!=null&&o.entrada) o.entrada.precoIQ=+h.open_price;
+      mudou=true;
+      try{ posResultado(o); }catch(e){ /* segue */ }
+    }
+    if(mudou){ saveOps(); atualizarPaineisResultado(); setTimeout(()=>iqSincronizarBanca(),1500); }
+  }catch(e){ console.warn('IQ resultados:',e); }
+  finally{ _iqConferindo=false; }
+}
+
+// ─── tela ───
+function iqStatus(t){ const el=document.getElementById('iqStatus'); if(el) el.textContent=t; }
+function iqMarcar(id,extra){
+  // atualiza o botão do cartão e o alerta do Auto para esta operação
+  try{
+    const o=ops.find(x=>x.id===id); if(!o) return;
+    const html=iqHtmlOp(o,extra);
+    if(id===_iaCardOp){ const el=document.getElementById('iqCardStatus'); if(el){ el.innerHTML=html; el.style.display=html?'block':'none'; } iqBotaoCartao(); }
+    if(typeof autoResult!=='undefined'&&autoResult&&autoResult.id===id){ const el=document.getElementById('aaIQ'); if(el){ el.innerHTML=html; el.style.display=html?'block':'none'; }
+      const bt=document.querySelector('#autoAlert .aa-enter'); if(bt) bt.textContent=o.iq&&o.iq.pos?'✓ JÁ ESTÁ NA IQ — FECHAR':'✓ ENTRAR AGORA'; }
+  }catch(e){ console.warn('IQ tela:',e); }
+}
+function iqHtmlOp(o,extra){
+  if(!iqToken()) return '';
+  const q=o.iq;
+  if(q&&q.enviando) return '📲 Enviando a ordem para a IQ…';
+  if(q&&q.pos) return `✅ <b>Ordem na IQ</b> (${iqContaTxt(q.conta)}) · ${iqFmt(q.valor)} · expira ${new Date(q.exp*1000).toLocaleTimeString('pt-BR')}${q.fim?` · <b>${q.fim==='win'?'WIN':q.fim==='loss'?'LOSS':q.fim==='empate'?'EMPATE':'sem histórico'}</b>`:''}`;
+  if(q&&q.erro) return `⛔ IQ: ${surfEsc(q.erro)} — ordem não enviada`;
+  if(extra&&extra.bloqueio&&iqCfg().modo==='auto') return `⏸ IQ: ${surfEsc(extra.bloqueio)}`;
+  return '';
+}
+function iqBotaoCartao(){
+  const b=document.getElementById('iqBtn'); if(!b) return;
+  const o=_iaCardOp?ops.find(x=>x.id===_iaCardOp):null;
+  const mostrar=!!(o&&iqToken()&&IQ.ok&&!(o.iq&&(o.iq.pos||o.iq.enviando)));
+  b.style.display=mostrar?'block':'none';
+  const bb=document.getElementById('brokerBtn'); if(bb&&o) bb.style.display=mostrar?'none':'block';
+  if(!mostrar) return;
+  const nao=iqPodeEntrar(o,o.entrada?{tRef:o.entrada.tVela}:null);
+  const v=(typeof sugerirEntrada==='function'?sugerirEntrada(o.conf).valor:0)||0;
+  b.disabled=!!nao;
+  b.innerHTML=nao?`📲 IQ: ${surfEsc(nao)}`:`📲 ENTRAR NA IQ (${iqContaTxt()}) — ${iqFmt(v)}`;
+  b.className='iq-btn '+(o.dir==='CALL'?'call':'put')+(nao?' off':'');
+}
+function iqRender(){
+  try{
+    const c=iqCfg(), tok=iqToken();
+    const sum=document.getElementById('sumIQ');
+    if(sum){ const b=iqSaldoAtual();
+      sum.textContent=!tok?'sem token':!IQ.ok?(IQ.erro?'erro':'desconectada'):`${iqContaTxt()} · ${b?iqFmt(b.amount,b.currency):'—'} · ${c.modo==='auto'?'automático':'manual'}${IQ.ordemLiberada?'':' · ordens off'}`;
+      sum.classList.toggle('alerta',!!tok&&(!IQ.ok||!IQ.ordemLiberada)); sum.classList.toggle('perigo',c.conta==='NORMAL'&&IQ.ok); }
+    const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+    set('iqServidor',c.servidor); set('iqModo',c.modo); set('iqMaxDia',c.maxDia);
+    const rd=document.querySelector(`input[name="iqConta"][value="${c.conta}"]`); if(rd) rd.checked=true;
+    const cb=document.getElementById('iqBanca'); if(cb) cb.checked=!!c.banca;
+    const ti=document.getElementById('iqToken'); if(ti&&document.activeElement!==ti){ ti.value=''; ti.placeholder=tok?`token salvo neste aparelho (…${tok.slice(-4)})`:'cole o token da IQ'; }
+    const st=document.getElementById('iqStatus');
+    if(st){
+      const saldos=(IQ.saldos||[]).filter(b=>b.type==='TRAINING'||b.type==='NORMAL').map(b=>`${b.type==='NORMAL'?'Real':'Demo'} ${iqFmt(b.amount,b.currency)}`).join(' · ');
+      const a=IQ.ativos&&typeof pair!=='undefined'?iqAtivoDoPar(pair):null;
+      st.innerHTML=!tok?'Cole o token (app da IQ → Configurações → AI integrations) e toque em Conectar.'
+        :!IQ.ok?`<span style="color:var(--gold)">${surfEsc(IQ.erro||'Desconectada — toque em Conectar.')}</span>`
+        :`🟢 Conectada (${IQ_SERVIDORES[c.servidor]||c.servidor}) · ${saldos||'sem saldos'}${a?` · ${a.name} paga ${Math.round(iqPayout(a)*100)}%`:''}<br>${IQ.ordemLiberada?`Ordens hoje: ${iqOrdensHoje()}/${c.maxDia}${IQ.ultSync?` · banca sincronizada às ${new Date(IQ.ultSync).toLocaleTimeString('pt-BR')}`:''}`:`<span style="color:var(--gold)">Ordens desligadas: ${surfEsc(IQ.motivoOrdem)} — baixe o diagnóstico e me mande.</span>`}`;
+    }
+    iqBotaoCartao();
+  }catch(e){ console.warn('IQ painel:',e); }
+}
+function iqSalvarToken(){
+  const el=document.getElementById('iqToken'); const v=(el&&el.value||'').trim();
+  if(!v){ showToast('Cole o token da IQ','warn-t'); return; }
+  if(!/^[A-Za-z0-9._~+\/=-]{16,}$/.test(v)){ showToast('Isso não parece um token da IQ','warn-t'); return; }
+  try{ localStorage.setItem(IQ_TOKEN_KEY,v); }catch(e){ showToast('⛔ Navegador sem armazenamento','warn-t'); return; }
+  if(el) el.value='';
+  iqConectar();
+}
+function iqEsquecer(){
+  if(!confirm('Apagar o token da IQ deste aparelho? (Para invalidar de vez, apague também no app da IQ → AI integrations.)')) return;
+  try{ localStorage.removeItem(IQ_TOKEN_KEY); }catch(e){ /* sem storage */ }
+  IQ.ok=false; IQ.erro=''; IQ.sess={}; IQ.saldos=[]; iqRender(); showToast('Token da IQ apagado deste aparelho','warn-t');
+}
+function iqMudarConta(conta){
+  const c=iqCfg();
+  if(conta==='NORMAL'&&!c.realOk){
+    if(!confirm('Usar a conta REAL da IQ?\n\nAs ordens passam a usar dinheiro de verdade' + (c.modo==='auto'?' e o modo automático entra sozinho em cada sinal':'') + '.\nO combinado era testar na Demo antes (2 semanas ou 100 operações).\n\nConfirmar conta Real?')){ iqRender(); return; }
+    iqCfgSalvar({conta:'NORMAL',realOk:true});
+  } else iqCfgSalvar({conta});
+  showToast(`IQ: conta ${iqContaTxt()} — a banca passa a seguir esse saldo`,conta==='NORMAL'?'put-t':'call-t');
+  iqSincronizarBanca(true).then(iqRender);
+}
+function iqMudarModo(m){
+  const c=iqCfg();
+  if(m==='auto'&&c.conta==='NORMAL'&&!confirm('Automático na conta REAL: o ProTrader entra sozinho, com dinheiro de verdade, em cada sinal (respeitando stop, meta e o limite do dia). Confirmar?')){ iqRender(); return; }
+  iqCfgSalvar({modo:m}); iqRender();
+  showToast(m==='auto'?`🤖 IQ automático (${iqContaTxt()}): cada sinal novo vira ordem sozinho`:'👆 IQ manual: use o botão "Entrar na IQ" no sinal','scan-t');
+}
+function iqDiagnostico(){
+  const d={app:'ProTrader AI',tipo:'diagnostico-iq',versao:'2026.10.07c',criadoEm:new Date().toISOString(),servidor:iqCfg().servidor,
+    conectada:IQ.ok,erro:IQ.erro,ordemLiberada:IQ.ordemLiberada,motivoOrdem:IQ.motivoOrdem,
+    ferramentas:(IQ.tools||[]).map(t=>({name:t.name,description:t.description,inputSchema:t.inputSchema,annotations:t.annotations})),
+    exemploAtivo:(IQ.ativos||[]).slice(0,2),saldos:(IQ.saldos||[]).map(b=>({type:b.type,currency:b.currency}))};
+  baixarArquivo(`protrader_diagnostico_iq_${hojeISO()}.json`,JSON.stringify(d,null,1),'application/json');
+  showToast('⬇️ Diagnóstico baixado (sem token e sem valores de saldo)','call-t');
+}
+function bancaSimbolo(){ const c=iqCfg(); if(!(c.banca&&iqToken()&&c.moeda)) return 'R$'; const m=c.moeda; return m==='BRL'?'R$':m==='USD'?'US$':m==='EUR'?'€':m; }
+// o botão do cartão acompanha a janela de entrada
+setInterval(()=>{ if(iqToken()&&_iaCardOp) iqBotaoCartao(); },1000);
+// ciclo: saldo a cada 60 s, resultados a cada 15 s (só com token e conectada)
+setInterval(()=>{ if(iqToken()&&IQ.ok) iqConferirResultados(); },15000);
+setInterval(()=>{ if(iqToken()&&IQ.ok&&iqCfg().banca) iqSincronizarBanca(); else if(iqToken()&&IQ.ok) iqLerSaldos().then(iqRender).catch(()=>{}); },60000);
+setTimeout(()=>{ try{ iqRender(); if(iqToken()&&ehDono()) iqConectar(true); }catch(e){ /* segue */ } },2500);
 
 // ═══ PDF REPORT ═══
 async function exportPDF(){
@@ -6414,7 +6816,7 @@ function sugerirEntrada(confianca){
   else if(perdasSeguidas===1){ mult*=0.75; motivos.push('perda anterior — reduz 25%'); }
 
   // 2. Histórico real vs ponto de equilíbrio
-  // tamanho da entrada só reage a resultado CONFIRMADO na Valyn (o da API pode ser otimista)
+  // tamanho da entrada só reage a resultado CONFIRMADO na IQ (o da API pode ser otimista)
   const hist=historicoConfirmado();
   if(hist.total>=20){
     if(hist.wr < st.breakEven){
@@ -6422,7 +6824,7 @@ function sugerirEntrada(confianca){
       motivos.push(`acerto confirmado ${(hist.wr*100).toFixed(0)}% abaixo do equilíbrio (${(st.breakEven*100).toFixed(1)}%)`);
     } else if(hist.wr > st.breakEven+0.08){
       mult*=1.15;   // teto baixo de propósito
-      motivos.push('acerto confirmado na Valyn acima do equilíbrio');
+      motivos.push('acerto confirmado na IQ acima do equilíbrio');
     }
   }
 
@@ -6491,13 +6893,13 @@ function renderBancaPanel(){
   if(sald){
     sald.readOnly=!!R;
     if(R&&document.activeElement!==sald) sald.value=R.atual.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    sald.title=R?'Automático: saldo inicial + depósitos − saques + resultado de cada entrada. Para corrigir, use "Conferir com a Valyn".':'Digite o saldo que a Valyn mostra e toque fora do campo';
+    sald.title=R?'Automático: saldo inicial + depósitos − saques + resultado de cada entrada. Para corrigir, use "Conferir com a IQ".':'Digite o saldo que a IQ mostra e toque fora do campo';
   }
-  if(lbl) lbl.textContent=R?'Saldo da banca (R$) · automático':'Saldo na Valyn (R$) — digite para começar';
+  if(lbl) lbl.textContent=R?'Saldo da banca (R$) · automático':'Saldo na IQ (R$) — digite para começar';
   document.querySelectorAll('.banca-so-com-memoria').forEach(x=>x.style.display=R?'':'none');
 
   if(!st.configurada){
-    el.innerHTML='<span style="color:var(--muted);">Digite o saldo que a Valyn mostra e toque fora do campo. Daqui para frente o ProTrader lembra a banca sozinho: soma cada WIN, tira cada LOSS, calcula a próxima entrada e trava o dia no stop ou na meta.</span>';
+    el.innerHTML='<span style="color:var(--muted);">Digite o saldo que a IQ mostra e toque fora do campo. Daqui para frente o ProTrader lembra a banca sozinho: soma cada WIN, tira cada LOSS, calcula a próxima entrada e trava o dia no stop ou na meta.</span>';
     return;
   }
 
@@ -7034,9 +7436,9 @@ function calibrateWeights(mem){
 // ou menor não muda a concordância. Os pesos ficam desligados; o aprendizado útil é a IA Guardiã abaixo.
 function pesosAprendidos(){ return null; }
 
-// ─── IA GUARDIÃ: aprende com o resultado CONFIRMADO na Valyn e só aperta o filtro ───
+// ─── IA GUARDIÃ: aprende com o resultado CONFIRMADO na IQ e só aperta o filtro ───
 // Nos dados da Twelve Data, o acerto cresce com a força da vela do sinal (0,75–1,5σ: ~68% · ≥1,5σ: ~75%).
-// Se na Valyn a faixa média ficar abaixo do empate com folga estatística (60+ confirmações),
+// Se na IQ a faixa média ficar abaixo do empate com folga estatística (60+ confirmações),
 // o motor passa a exigir vela ≥ 1,5σ. Se o total confirmado ficar abaixo do empate (60+), ela avisa para parar.
 const GUARDIAO_MIN=60;
 let _guardiaoDesdeMem=0, _guardiaoAntMem=null;
@@ -7063,9 +7465,9 @@ function avisarGuardiao(){
     const g=guardiao(); let ant=_guardiaoAntMem; // em memória: se o navegador não salvar, não repete o aviso
     if(!ant){ try{ ant=JSON.parse(localStorage.getItem('protrader_guardiao')||'{}'); }catch(e){ ant={}; } }
     const msgs=[];
-    if(g.apertar&&!ant.apertar) msgs.push(`🛡️ IA Guardiã: na Valyn, sinais com vela média (0,75–1,5σ) estão abaixo do empate (${Math.round(g.media.wr*100)}% em ${g.media.n}). O motor agora só sinaliza vela ≥ 1,5σ.`);
+    if(g.apertar&&!ant.apertar) msgs.push(`🛡️ IA Guardiã: na IQ, sinais com vela média (0,75–1,5σ) estão abaixo do empate (${Math.round(g.media.wr*100)}% em ${g.media.n}). O motor agora só sinaliza vela ≥ 1,5σ.`);
     if(!g.apertar&&ant.apertar) msgs.push('🛡️ IA Guardiã: reavaliação do zero — filtro de volta a 0,75σ até juntar 60 novas confirmações.');
-    if(g.parar&&!ant.parar) msgs.push(`⛔ IA Guardiã: o acerto CONFIRMADO na Valyn está abaixo do empate com folga estatística (${Math.round(g.todos.wr*100)}% em ${g.todos.n}; empate ${Math.round(g.be*100)}%). Pare de operar com dinheiro real e revise.`);
+    if(g.parar&&!ant.parar) msgs.push(`⛔ IA Guardiã: o acerto CONFIRMADO na IQ está abaixo do empate com folga estatística (${Math.round(g.todos.wr*100)}% em ${g.todos.n}; empate ${Math.round(g.be*100)}%). Pare de operar com dinheiro real e revise.`);
     if(!g.parar&&ant.parar) msgs.push('🛡️ IA Guardiã: o acerto confirmado saiu da zona de alerta (ou foi reavaliado do zero).');
     for(const m of msgs){ showToast(m,g.parar||g.apertar?'warn-t':'call-t'); if(typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegram(m.replace(/^(\S+) /,'$1 *').replace(/:/,':*')); }
     _guardiaoAntMem={apertar:g.apertar,parar:g.parar};
@@ -7098,15 +7500,15 @@ function renderMLPanel(){
       <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${cor};">${s.n?`${pc(s.wr)}% <span style="font-weight:400;color:var(--muted);">${pc(s.lo)}–${pc(s.hi)}% · ${s.n}</span>`:'sem confirmações'}</span>
       <span style="color:var(--dim);text-align:right;">${apiTxt}</span></div>`;
   };
-  const status=g.parar?`<div style="margin-top:6px;padding:6px;border-radius:6px;background:rgba(255,59,85,.12);border:1px solid rgba(255,59,85,.35);color:var(--red);font-size:9px;font-weight:700;">⛔ Abaixo do empate na Valyn com folga estatística — pare com dinheiro real e revise.</div>`
-    :g.apertar?`<div style="margin-top:6px;padding:6px;border-radius:6px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--gold);font-size:9px;font-weight:700;">🛡️ Filtro apertado pela IA: só vela ≥ 1,5σ (a faixa média não se pagou na Valyn).</div>`
+  const status=g.parar?`<div style="margin-top:6px;padding:6px;border-radius:6px;background:rgba(255,59,85,.12);border:1px solid rgba(255,59,85,.35);color:var(--red);font-size:9px;font-weight:700;">⛔ Abaixo do empate na IQ com folga estatística — pare com dinheiro real e revise.</div>`
+    :g.apertar?`<div style="margin-top:6px;padding:6px;border-radius:6px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--gold);font-size:9px;font-weight:700;">🛡️ Filtro apertado pela IA: só vela ≥ 1,5σ (a faixa média não se pagou na IQ).</div>`
     :`<div style="margin-top:6px;font-size:9px;color:var(--muted);">Filtro atual: vela ≥ ${fmtForca(g.limiar,2)} · ${g.todos.n<GUARDIAO_MIN?`faltam ${GUARDIAO_MIN-g.todos.n} confirmações para a IA poder agir`:'sem alerta'}</div>`;
-  el.innerHTML=`<div style="display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:4px;font-size:8px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding-bottom:3px;"><span>Grupo</span><span>Valyn (confirmado)</span><span style="text-align:right;">Twelve Data</span></div>
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:4px;font-size:8px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding-bottom:3px;"><span>Grupo</span><span>IQ (confirmado)</span><span style="text-align:right;">Twelve Data</span></div>
     ${linha('Todas confirmadas',g.todos,apiG(()=>true))}
     ${linha('Vela 0,75–1,5σ',g.media,apiG(naFaixaMedia))}
     ${linha('Vela ≥ 1,5σ',g.forte,apiG(naFaixaForte))}
     ${status}
-    <div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Empate com seu payout: ${(g.be*100).toFixed(1)}%. Verde = faixa inteira acima do empate. Se a Valyn ficar bem abaixo da Twelve Data nos mesmos grupos, o ganho medido na API não chega até a corretora.${g.desde?` Contando desde ${new Date(g.desde).toLocaleDateString('pt-BR')}.`:''}</div>
+    <div style="font-size:8px;color:var(--muted);margin-top:5px;line-height:1.4;">Empate com seu payout: ${(g.be*100).toFixed(1)}%. Verde = faixa inteira acima do empate. Se a IQ ficar bem abaixo da Twelve Data nos mesmos grupos, o ganho medido na API não chega até a corretora.${g.desde?` Contando desde ${new Date(g.desde).toLocaleDateString('pt-BR')}.`:''}</div>
     ${(g.apertar||g.parar)?`<button onclick="reavaliarGuardiao()" style="width:100%;margin-top:6px;padding:5px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:5px;color:#A78BFA;font-size:9px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">↺ Reavaliar do zero (depois de revisar)</button>`:''}`;
 }
 
@@ -7200,7 +7602,7 @@ async function sendTelegramSignal(r){
 📈 Regime: ${r.regime==='tendencia'?'tendência':'lateral (só rompimento com vela forte)'}
 ⏰ Expiração: ${r.exp}${r.wr!=null?`\n📊 Acerto medido no par: ${r.wr}%`:''}
 
-[📲 Clique aqui para operar](https://trade.valyntrade.com/traderoom)`;
+[📲 Clique aqui para operar](https://iqoption.com/traderoom)`;
   await sendTelegramMsg(msg);
   if(r.id) pendingTgSignalId=r.id;
   startTelegramPolling();
@@ -7253,14 +7655,14 @@ function startTelegramPolling(){
           {const _o=ops.find(o=>o.id===pendingTgSignalId); if(_o&&_o.entrou===false){_o.entrou=true;}}
           markResultAndSave(pendingTgSignalId,'win');
           pendingTgSignalId=null;
-          await sendTelegramMsg('✅ *WIN* registrado conforme a Valyn.');
+          await sendTelegramMsg('✅ *WIN* registrado conforme a IQ.');
           showToast('✅ WIN registrado pelo Telegram!','call-t');
           updateSessionCounter();
         } else if(text==='L'||text==='LOSS'){
           {const _o=ops.find(o=>o.id===pendingTgSignalId); if(_o&&_o.entrou===false){_o.entrou=true;}}
           markResultAndSave(pendingTgSignalId,'loss');
           pendingTgSignalId=null;
-          await sendTelegramMsg('❌ *LOSS* registrado conforme a Valyn.');
+          await sendTelegramMsg('❌ *LOSS* registrado conforme a IQ.');
           showToast('❌ LOSS registrado pelo Telegram!','put-t');
           updateSessionCounter();
         }
@@ -7665,6 +8067,17 @@ setTimeout(showDaySummary, 3000);
 // ║    seguinte. Conferir com a Valyn, depósito e saque. Baixar:      ║
 // ║    extrato (CSV), relatório PDF, backup/restaurar da memória.     ║
 // ║    Surf passa a gravar o valor da entrada.                        ║
+// ║ 2026.10.07c — IQ OPTION (integração oficial MCP): token só no     ║
+// ║    aparelho (fora do código público e do backup); conta Demo ou   ║
+// ║    Real (Real pede confirmação); banca = saldo da IQ; valor da    ║
+// ║    entrada = o da banca, respeitando mínimo/máximo do ativo;      ║
+// ║    expiração da IQ mais perto de 1 min; botão "Entrar na IQ" ou   ║
+// ║    modo automático; travas: dono, stop/meta, janela de 20 s, uma  ║
+// ║    ordem por vez, limite do dia. Resultado lido do histórico da   ║
+// ║    IQ (conta como confirmado). Formato das ferramentas conferido  ║
+// ║    na conexão: se mudar, ordens desligam e há um diagnóstico.     ║
+// ║    Corretora única: IQ Option — Valyn retirada da tela, textos e  ║
+// ║    links (o histórico continua; "confirmado" agora é na IQ).      ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
