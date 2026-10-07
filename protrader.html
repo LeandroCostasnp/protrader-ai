@@ -768,6 +768,31 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
   input,select{font-size:16px!important;}       /* iPhone não dá zoom ao tocar no campo */
   input[type=checkbox]{width:18px;height:18px;}
 }
+
+/* ═══ 2026.10.07b — BANCA AUTOMÁTICA ═══ */
+.banca-auto-tag{font-size:8px;letter-spacing:.5px;padding:1px 6px;border-radius:3px;background:rgba(0,212,170,.12);color:var(--accent);margin-left:6px;vertical-align:middle;}
+.banca-campos{display:grid;grid-template-columns:1.7fr repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.banca-lbl{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.banca-inp{width:100%;background:var(--s3);border:1px solid var(--br);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
+.banca-inp:focus{border-color:var(--accent);}
+.banca-inp[readonly]{background:rgba(0,212,170,.05);border-color:rgba(0,212,170,.35);color:var(--accent);font-weight:800;cursor:default;}
+.banca-acoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center;}
+.banca-acoes button{flex:1 1 auto;padding:7px 10px;border-radius:6px;border:1px solid var(--br);background:var(--s3);color:var(--text);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+.banca-acoes button:hover{border-color:var(--accent);}
+.banca-acoes.baixar>span{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+.banca-acoes.baixar button{color:var(--blue);border-color:rgba(0,152,255,.3);background:rgba(0,152,255,.06);}
+.banca-link{background:none;border:none;color:var(--dimtxt);font-size:9px;text-decoration:underline;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+.banca-trava{padding:8px 10px;border-radius:8px;font-size:10px;line-height:1.45;}
+#rp0>#bancaTravaBar{margin:6px 10px 0;}
+.banca-trava.stop{background:rgba(255,59,85,.1);border:1px solid rgba(255,59,85,.4);color:var(--red);}
+.banca-trava.meta{background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.4);color:var(--green);}
+.banca-trava span{color:var(--muted);font-size:9px;}
+.banca-spark{width:100%;height:36px;display:block;margin-top:4px;}
+.banca-aviso-bk{margin-top:6px;padding:6px 8px;background:rgba(0,152,255,.07);border:1px solid rgba(0,152,255,.25);border-radius:6px;font-size:9px;color:var(--blue);line-height:1.45;}
+@media (max-width:900px){
+  .banca-campos{grid-template-columns:repeat(2,1fr);} .banca-campos .banca-saldo{grid-column:1/-1;}
+  .banca-acoes button{min-height:42px;font-size:12px;}
+}
 </style>
 </head>
 <body class="night-mode">
@@ -1074,22 +1099,15 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
       </div>
     </div>
 
-    <!-- GESTÃO DE BANCA -->
+    <!-- GESTÃO DE BANCA (automática, com memória) -->
     <div class="candle-card" id="bancaCard">
-      <div class="candle-title" style="margin-bottom:10px;">💰 Gestão de Banca</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div>
-          <div style="font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">Saldo da Conta (R$)</div>
-          <input id="bancaSaldo" type="number" placeholder="Ex: 500" style="width:100%;background:var(--s3);border:1px solid var(--br);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" oninput="calcBanca()">
-        </div>
-        <div>
-          <div style="font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">Risco por Op. (%)</div>
-          <input id="bancaRisco" type="number" placeholder="1" value="1" min="0.5" max="3" step="0.5" style="width:100%;background:var(--s3);border:1px solid var(--br);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" oninput="calcBanca()">
-        </div>
-        <div>
-          <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">Payout (%)</div>
-          <input id="bancaPayout" type="number" placeholder="85" value="85" min="50" max="100" step="1" style="width:100%;background:var(--s3);border:1px solid var(--br);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" oninput="calcBanca()">
-        </div>
+      <div class="candle-title" style="margin-bottom:10px;">💰 Gestão de Banca <span class="banca-auto-tag">automática</span></div>
+      <div class="banca-campos">
+        <div class="banca-campo banca-saldo"><div class="banca-lbl" id="bancaSaldoLbl">Saldo na Valyn (R$)</div><input id="bancaSaldo" class="banca-inp" type="text" inputmode="decimal" placeholder="Ex: 2.700,00" autocomplete="off" onchange="bancaComecar()"></div>
+        <div class="banca-campo"><div class="banca-lbl">Risco/op. (%)</div><input id="bancaRisco" class="banca-inp" type="number" placeholder="1" value="1" min="0.5" max="3" step="0.5" oninput="calcBanca()"></div>
+        <div class="banca-campo"><div class="banca-lbl">Payout (%)</div><input id="bancaPayout" class="banca-inp" type="number" placeholder="85" value="85" min="50" max="100" step="1" oninput="calcBanca()"></div>
+        <div class="banca-campo"><div class="banca-lbl">Stop dia (%)</div><input id="bancaStopPct" class="banca-inp" type="number" value="5" min="1" max="50" step="1" oninput="calcBanca()"></div>
+        <div class="banca-campo"><div class="banca-lbl">Meta dia (%)</div><input id="bancaMetaPct" class="banca-inp" type="number" value="10" min="1" max="100" step="1" oninput="calcBanca()"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;" id="bancaResult">
         <div style="background:var(--s3);border:1px solid var(--br);border-radius:7px;padding:8px;text-align:center;">
@@ -1106,6 +1124,20 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
         </div>
       </div>
       <div style="margin-top:8px;font-size:9px;color:var(--muted);line-height:1.5;" id="bancaInfo"></div>
+      <div class="banca-acoes banca-so-com-memoria">
+        <button onclick="bancaConferir()" title="Digite o saldo da Valyn: a diferença vira um ajuste e a banca fica igual">⟳ Conferir com a Valyn</button>
+        <button onclick="bancaMovimento('deposito')">＋ Depósito</button>
+        <button onclick="bancaMovimento('saque')">− Saque</button>
+      </div>
+      <div class="banca-acoes baixar">
+        <span>Baixar</span>
+        <button class="banca-so-com-memoria" onclick="bancaExtrato()" title="Planilha com cada entrada, saldo antes e depois, depósitos e saques">⬇ Extrato</button>
+        <button class="banca-so-com-memoria" onclick="bancaPDF()" title="Curva do saldo, resultado por dia e por par, maior queda">📄 Relatório PDF</button>
+        <button onclick="bancaBackup()" title="Arquivo com a banca, o histórico e os ajustes (sem as chaves)">💾 Backup</button>
+        <button onclick="bancaRestaurarAbrir()" title="Volta um backup (outro aparelho ou navegador)">↺ Restaurar</button>
+        <input type="file" id="bancaRestaurarArq" accept=".json,application/json" style="display:none" onchange="bancaRestaurar(this)">
+      </div>
+      <div class="banca-so-com-memoria" style="text-align:right;margin-top:4px;"><button class="banca-link" onclick="bancaRecomecar()">recomeçar a banca do zero</button></div>
     </div>
 
   </div>
@@ -1179,6 +1211,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
         <div class="timer-status" id="timerStatus"></div>
       </div>
     </div>
+    <div id="bancaTravaBar" class="banca-trava" style="display:none;"></div>
     <div class="score-row" id="scoreRow" style="display:none;">
       <div class="sc"><div class="sc-lbl">Conflu.</div><div class="sc-val" id="scConf" style="color:var(--accent)">—</div></div>
       <div class="sc"><div class="sc-lbl">Volume</div><div class="sc-val" id="scVol" style="color:var(--blue)">—</div></div>
@@ -1470,7 +1503,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07 (tela organizada + celular; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07b (banca automática com memória; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2183,7 +2216,7 @@ function updateDiary(){
       <div style="display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap;">
         <input type="text" placeholder="📝 Nota..." value="${surfEsc(o.note||'')}"
           style="flex:1;min-width:90px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 7px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:10px;outline:none;"
-          onchange="saveOpNote('${o.id}',this.value)">${botoes}
+          onchange="saveOpNote('${o.id}',this.value)">${bancaCampoValor(o)}${botoes}
       </div>
     </div>`;
   }).join('');
@@ -2748,10 +2781,12 @@ function confirmarCorretora(id,igual){
 // ─── Poda do histórico (o navegador guarda ~5 MB) ───
 const MAX_OPS=3000;
 function podarHistorico(forte){
+  const _antes=ops;
   if(ops.length>MAX_OPS) ops=ops.slice(-MAX_OPS);
   const limite=forte?Math.floor(ops.length*0.8):ops.length;
   ops.forEach((o,i)=>{ if(o.mlAprendido&&o.votos) delete o.votos; });
   if(forte&&ops.length>200) ops=ops.slice(ops.length-limite);
+  if(ops!==_antes&&ops.length<_antes.length){ try{ const fica=new Set(ops); bancaConsolidar(_antes.filter(o=>!fica.has(o))); }catch(e){ console.warn('banca (poda):',e); } }
 }
 
 // ─── Avisos operacionais ───
@@ -3188,6 +3223,7 @@ function atualizarRotuloAuto(){
 
 function toggleAuto(){
   if(autoMode){ alternarAuto(); return; }
+  { const _bt=bancaTravada(); if(_bt){ showToast(bancaMsgTrava(_bt),'warn-t'); atualizarBarraTrava(_bt); return; } }
   if(_pedindoTrava) return; _pedindoTrava=true;
   pegarTravaAuto().then(ok=>{
     _pedindoTrava=false;
@@ -3309,6 +3345,7 @@ async function enterAutoSignal(){
   document.getElementById('autoAlert').classList.remove('show');
   clearInterval(autoContagem); autoContagem=null;
   if(!autoResult) return;
+  { const _bt=bancaTravada(); if(_bt){ autoResult=null; showToast(bancaMsgTrava(_bt),'warn-t'); return; } }
   const a=autoResult; autoResult=null;
   if(Date.now()>a.validoAte){ showToast('⌛ Passou da janela de entrada — este sinal não vale mais','warn-t'); return; }
   const op=ops.find(o=>o.id===a.id);
@@ -3367,6 +3404,7 @@ function typeIn(id,text){const el=document.getElementById(id);el.textContent='';
 
 // ═══ PERSISTENT STORAGE ═══
 function saveOps(){
+  bancaSujar();
   podarHistorico(false);
   try{ localStorage.setItem('protrader_ops',JSON.stringify(ops)); }
   catch(e){
@@ -5394,9 +5432,10 @@ function surfSetExp(v){SURF.expMin=parseInt(v,10)||5;surfSalvarCfg();}
 function surfDisparar(ev,par,dir,r,surp){
   const isCall=dir==='CALL', nome=ev.title||ev.name, sTxt=surfTextoSurpresa(ev,surp).replace(/<[^>]+>/g,'');
   const id='op_'+Date.now(), now=new Date();
+  const _sTrava=!!bancaTravada();   // banca travada (stop/meta): o sinal só é registrado, sem entrada
   ops.push({id,pair:par,dir,conf:r.forca,setup:'NOTÍCIA: '+nome,result:'open',hour:getBRTHour(),tf:'M1',
     ts:now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),origem:'noticia',exp:SURF.expMin+' min',
-    entrou:true,payout:getBancaConfig().payout,entrada:{t:Date.now(),precoSinal:r.vela?r.vela.close:null},expiraEm:Date.now()+SURF.expMin*60000,
+    entrou:!_sTrava,stake:_sTrava?0:((typeof sugerirEntrada==='function'?sugerirEntrada(r.forca).valor:0)||0),payout:getBancaConfig().payout,entrada:{t:Date.now(),precoSinal:r.vela?r.vela.close:null},expiraEm:Date.now()+SURF.expMin*60000,
     tg:typeof tgEnabled!=='undefined'&&tgEnabled});
   saveOps(); renderHistory(); updateDiary(); updateStats();
   try{playDirectionalSound(isCall);}catch(e){ /* áudio bloqueado pelo navegador */ }
@@ -5404,7 +5443,8 @@ function surfDisparar(ev,par,dir,r,surp){
   if('Notification' in window&&Notification.permission==='granted'){
     try{new Notification(`🏄 ${dir} — ${par}`,{body:`${nome}: ${sTxt} · exp ${SURF.expMin} min`});}catch(e){ /* sem notificação */ }
   }
-  if(typeof tgEnabled!=='undefined'&&tgEnabled){
+  if(_sTrava) setTimeout(()=>showToast('🔒 Banca travada até amanhã — este sinal do Surf foi só registrado, sem entrada','warn-t'),1500);
+  if(!_sTrava&&typeof tgEnabled!=='undefined'&&tgEnabled){
     sendTelegram(`🏄 *SURF NOTÍCIA — ${dir} ${par}*\n\n🗞 ${nome} (${ev.currency})\n📊 ${sTxt}\n✅ ${r.motivo}\n⏰ Expiração: ${SURF.expMin} min\n\n_Responda_ *W* _para WIN ou_ *L* _para LOSS_`);
     pendingTgSignalId=id; startTelegramPolling();
   }
@@ -5770,6 +5810,350 @@ try{
   }).observe(_sc,{attributes:true,attributeFilter:['style']});
 }catch(e){ /* sem observador */ }
 
+// ═══ MEMÓRIA DA BANCA (2026.10.07b) ═══
+// A banca não é mais digitada todo dia: ela é CALCULADA e lembrada neste aparelho.
+//   saldo = saldo inicial + depósitos − saques + ajustes (conferência com a Valyn) + resultado de cada entrada
+// Resultado de cada entrada = valor × payout no WIN, −valor no LOSS (empate não mexe).
+// Corrigiu um resultado ou o valor no Diário? O saldo se recalcula sozinho.
+// A entrada é % do saldo ATUAL (cresce com o lucro, encolhe com a perda) e as travas de sempre continuam.
+// Stop ou meta do dia batidos: Auto desligado e sinais travados até o dia seguinte.
+var BANCA_MEM_KEY='protrader_banca_mem';
+var BACKUP_FORA=new Set(['protrader_ia_chave','protrader_td_chave','td_api_key','protrader_dono','protrader_auto_lock','protrader_ultimo_backup']);
+var _bancaMemCache, _bancaRes=null, _bancaResT=0, _bancaSujo=true, _bancaTravaAvisada=null, _bancaDesligouAuto=null; // var: pode ser lido antes desta linha rodar
+
+function inicioDoDia(ms){ const d=new Date(ms); d.setHours(0,0,0,0); return d.getTime(); }
+function bancaSujar(){ _bancaSujo=true; }
+function bancaPayoutPadrao(){ const v=parseFloat(document.getElementById('bancaPayout')?.value); return Math.min(1,Math.max(0.5,(isNaN(v)?85:v)/100)); }
+function brl(v){ v=+v||0; return (v<0?'−':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function brlSinal(v){ return (v>0?'+':'')+brl(v); }
+function pctTxt(v,casas){ return (v>0?'+':v<0?'−':'')+Math.abs(v*100).toFixed(casas??1).replace('.',',')+'%'; }
+function lerValorBR(t){
+  let s=String(t==null?'':t).trim().replace(/[R$\s]/g,'');
+  if(!s) return NaN;
+  if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.');            // 2.700,50
+  else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,'');           // 2.700
+  const v=parseFloat(s); return isNaN(v)?NaN:Math.round(v*100)/100;
+}
+
+function bancaMem(){
+  if(_bancaMemCache!==undefined) return _bancaMemCache;
+  let m=null;
+  try{ m=JSON.parse(localStorage.getItem(BANCA_MEM_KEY)||'null'); }catch(e){ m=null; }
+  if(!m||!m.inicio){
+    // primeira vez nesta versão: o saldo que você digitava vira o saldo de abertura de hoje
+    let saldo=0;
+    try{ const b=JSON.parse(localStorage.getItem('protrader_banca')||'null'); saldo=+(b&&b.saldo)||0; }catch(e){ saldo=0; }
+    m=saldo>0?{v:1,inicio:{t:inicioDoDia(Date.now()),saldo:Math.round(saldo*100)/100,origem:'migrado'},movs:[]}:null;
+    if(m) bancaMemGravar(m,true);
+  }
+  if(m&&!Array.isArray(m.movs)) m.movs=[];
+  _bancaMemCache=m; return m;
+}
+function bancaMemGravar(m,silencioso){
+  _bancaMemCache=m; _bancaSujo=true;
+  try{ if(m) localStorage.setItem(BANCA_MEM_KEY,JSON.stringify(m)); else localStorage.removeItem(BANCA_MEM_KEY); }
+  catch(e){ if(!silencioso) showToast('⛔ Não consegui salvar a banca (navegador sem espaço) — baixe o backup','warn-t'); }
+}
+
+function bancaPnlOp(o){
+  if(!minhas(o)||!(o.stake>0)) return 0;
+  const po=o.payout||bancaPayoutPadrao();
+  return Math.round((o.result==='win'?o.stake*po:-o.stake)*100)/100;
+}
+// Linha do tempo: início, depósitos/saques/ajustes e cada entrada fechada, com o saldo depois de cada uma
+function bancaEventos(){
+  const m=bancaMem(); if(!m) return [];
+  const ev=[{t:m.inicio.t,tipo:'inicio',valor:m.inicio.saldo,nota:m.inicio.origem==='migrado'?'Saldo que estava digitado (abertura do dia)':'Saldo inicial'}];
+  m.movs.forEach(x=>ev.push({...x}));
+  ops.forEach(o=>{ const t=tsOp(o); if(t==null||t<m.inicio.t||!minhas(o)) return; ev.push({t,tipo:'op',valor:bancaPnlOp(o),op:o}); });
+  const ordem={inicio:0,consolidado:1,deposito:2,saque:2,ajuste:3,op:4};
+  ev.sort((a,b)=>a.t-b.t||(ordem[a.tipo]-ordem[b.tipo]));
+  let s=0; ev.forEach(e=>{ s=Math.round((s+e.valor)*100)/100; e.saldo=s; });
+  return ev;
+}
+function bancaResumo(){
+  if(!_bancaSujo&&Date.now()-_bancaResT<2000) return _bancaRes;
+  const m=bancaMem();
+  if(!m){ _bancaRes=null; _bancaSujo=false; _bancaResT=Date.now(); return null; }
+  const ev=bancaEventos(), hoje0=inicioDoDia(Date.now());
+  const R={inicioT:m.inicio.t,inicio:m.inicio.saldo,atual:m.inicio.saldo,abertura:m.inicio.saldo,pnlHoje:0,dep:0,saq:0,aj:0,pnlOps:0,nOps:0,w:0,l:0,ddMax:0,ddPct:0,ev};
+  let pico=null;
+  for(const e of ev){
+    if(e.t<hoje0) R.abertura=e.saldo;
+    if(e.tipo==='op'||e.tipo==='consolidado'){
+      R.pnlOps+=e.valor;
+      if(e.tipo==='op'){ R.nOps++; if(e.op.result==='win') R.w++; else R.l++; if(e.t>=hoje0) R.pnlHoje+=e.valor; }
+      pico=pico==null?e.saldo-e.valor:pico; pico=Math.max(pico,e.saldo);
+      const dd=pico-e.saldo; if(dd>R.ddMax){ R.ddMax=dd; R.ddPct=pico>0?dd/pico:0; }
+    }else{
+      if(e.tipo==='deposito') R.dep+=e.valor; else if(e.tipo==='saque') R.saq-=e.valor; else if(e.tipo==='ajuste') R.aj+=e.valor;
+      if(pico!=null) pico+=e.valor;          // dinheiro que entrou/saiu não é ganho nem queda
+    }
+  }
+  R.atual=ev.length?ev[ev.length-1].saldo:m.inicio.saldo;
+  R.pnlHoje=Math.round(R.pnlHoje*100)/100; R.pnlOps=Math.round(R.pnlOps*100)/100;
+  R.base=Math.round((R.atual-R.pnlHoje)*100)/100;           // base do stop/meta: saldo de hoje antes das entradas
+  R.capital=R.inicio+R.dep-R.saq;
+  _bancaRes=R; _bancaResT=Date.now(); _bancaSujo=false;
+  return R;
+}
+function bancaPorDia(ev){
+  const dias=new Map();
+  let ant=null;
+  for(const e of ev){
+    const k=new Date(e.t).toLocaleDateString('pt-BR');
+    if(!dias.has(k)) dias.set(k,{dia:k,t:inicioDoDia(e.t),abertura:ant==null?0:ant,ops:0,w:0,l:0,pnl:0,mov:0,fechamento:0});
+    const d=dias.get(k);
+    if(e.tipo==='inicio'&&ant==null) d.abertura=e.valor;
+    else if(e.tipo==='op'){ d.ops++; if(e.op.result==='win') d.w++; else d.l++; d.pnl+=e.valor; }
+    else if(e.tipo==='consolidado') d.pnl+=e.valor; else d.mov+=e.valor;
+    d.fechamento=e.saldo; ant=e.saldo;
+  }
+  return [...dias.values()];
+}
+
+// ─── Trava do dia (stop ou meta) ───
+function bancaTravada(){ try{ const st=getBancaState(); return st.configurada&&st.travado?st:null; }catch(e){ return null; } }
+function bancaMsgTrava(st){
+  return st.stopBatido?`🛑 Stop do dia: ${brl(st.pnlHoje)} (${String(st.stopPct).replace('.',',')}% da banca) — travado até amanhã`
+    :`🎯 Meta do dia batida: ${brlSinal(st.pnlHoje)} — travado até amanhã, lucro protegido`;
+}
+function bancaRotinaDia(){
+  // o dia virou: trava some sozinha (é calculada) e o Auto volta se foi a trava que desligou
+  try{
+    bancaSujar();
+    if(_bancaDesligouAuto&&_bancaDesligouAuto!==new Date().toDateString()&&!bancaTravada()){
+      _bancaDesligouAuto=null;
+      if(typeof autoMode!=='undefined'&&!autoMode&&ehDono()){
+        toggleAuto();
+        showToast('☀️ Novo dia — trava da banca liberada, Auto religado','call-t');
+        if(typeof tgEnabled!=='undefined'&&tgEnabled) sendTelegramMsg(`☀️ *Novo dia* — trava da banca liberada.\nSaldo: ${brl((bancaResumo()||{}).atual)}\n_Auto religado._`);
+      }
+    }
+    calcBanca();
+  }catch(e){ console.warn('banca (dia):',e); }
+}
+
+// ─── Movimentos ───
+function bancaNovoMov(tipo,valor,nota){
+  const m=bancaMem(); if(!m) return;
+  let t=Date.now(); while(m.movs.some(x=>x.t===t)) t++;
+  m.movs.push({id:'mv_'+t,t,tipo,valor:Math.round(valor*100)/100,nota:nota||''});
+  bancaMemGravar(m); calcBanca(); checkBankStop();
+}
+function bancaComecar(){
+  const el=document.getElementById('bancaSaldo'); if(!el||bancaMem()) return;
+  const v=lerValorBR(el.value);
+  if(!(v>0)){ showToast('Digite o saldo que a Valyn mostra (ex.: 2700 ou 2.700,00)','warn-t'); return; }
+  bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
+  showToast(`💰 Banca iniciada com ${brl(v)} — daqui para frente o saldo se atualiza sozinho`,'call-t');
+  calcBanca();
+}
+function bancaConferir(){
+  const R=bancaResumo(); if(!R) return bancaComecar();
+  const t=prompt(`Conferir com a Valyn\n\nO ProTrader calcula ${brl(R.atual)}.\nDigite o saldo que a Valyn mostra agora:`,R.atual.toFixed(2).replace('.',','));
+  if(t==null) return;
+  const v=lerValorBR(t); if(!(v>=0)){ showToast('Valor inválido','warn-t'); return; }
+  const dif=Math.round((v-R.atual)*100)/100;
+  if(Math.abs(dif)<0.01){ showToast('✓ Bate com a Valyn','call-t'); return; }
+  bancaNovoMov('ajuste',dif,`Conferência com a Valyn: app ${brl(R.atual)} → Valyn ${brl(v)}`);
+  showToast(`✓ Ajuste de ${brlSinal(dif)} registrado — saldo igual ao da Valyn`,'call-t');
+}
+function bancaMovimento(tipo){
+  if(!bancaMem()){ showToast('Comece digitando o saldo da Valyn','warn-t'); return; }
+  const t=prompt(tipo==='deposito'?'Depósito na Valyn — valor (R$):':'Saque da Valyn — valor (R$):','');
+  if(t==null) return;
+  const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
+  const R=bancaResumo();
+  if(tipo==='saque'&&R&&v>R.atual){ showToast('Saque maior que o saldo da banca','warn-t'); return; }
+  bancaNovoMov(tipo,tipo==='deposito'?v:-v,tipo==='deposito'?'Depósito':'Saque');
+  showToast(tipo==='deposito'?`＋ Depósito de ${brl(v)} registrado`:`− Saque de ${brl(v)} registrado`,'call-t');
+}
+function bancaRecomecar(){
+  if(!bancaMem()) return;
+  if(!confirm('Recomeçar a banca do zero?\n\nO histórico de operações continua, mas o saldo passa a contar a partir de agora. Baixe o extrato antes se quiser guardar.')) return;
+  const t=prompt('Saldo que a Valyn mostra agora (R$):',''); if(t==null) return;
+  const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
+  bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
+  showToast(`💰 Banca recomeçada com ${brl(v)}`,'call-t'); calcBanca(); checkBankStop();
+}
+function bancaEditarValor(id,txt){
+  const o=ops.find(x=>x.id===id); if(!o) return;
+  const v=lerValorBR(txt); if(!(v>=0)){ showToast('Valor inválido','warn-t'); updateDiary(); return; }
+  o.stake=v; saveOps(); atualizarPaineisResultado();
+  showToast(`✓ Valor da entrada: ${brl(v)} — banca recalculada`,'call-t');
+}
+function bancaCampoValor(o){
+  if(o.entrou===false||o.result==='sem-dado') return '';
+  return `<input type="text" inputmode="decimal" value="${o.stake?String(o.stake).replace('.',','):''}" placeholder="R$" title="Valor que você entrou na Valyn — a banca usa este número"
+    onchange="bancaEditarValor('${o.id}',this.value)" style="width:64px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;outline:none;">`;
+}
+// Operações antigas que saem do histórico (limite de espaço) viram um lançamento só: o saldo não muda
+function bancaConsolidar(removidas){
+  const m=bancaMem(); if(!m||!removidas||!removidas.length) return;
+  let soma=0,n=0,tMax=0;
+  for(const o of removidas){ const t=tsOp(o); if(t==null||t<m.inicio.t||!minhas(o)) continue; soma+=bancaPnlOp(o); n++; tMax=Math.max(tMax,t); }
+  if(!n) return;
+  m.movs.push({id:'mv_c'+tMax,t:tMax,tipo:'consolidado',valor:Math.round(soma*100)/100,nota:`${n} operações antigas resumidas (saíram do histórico)`,n});
+  bancaMemGravar(m,true);
+}
+
+// ─── Baixar: extrato, backup e relatório ───
+function baixarArquivo(nome,conteudo,tipo){
+  const blob=conteudo instanceof Blob?conteudo:new Blob([conteudo],{type:tipo||'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+function hojeISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+var BANCA_TIPO={inicio:'Início',deposito:'Depósito',saque:'Saque',ajuste:'Ajuste (Valyn)',consolidado:'Resumo de antigas',op:'Operação'};
+function bancaExtrato(){
+  const R=bancaResumo(); if(!R){ showToast('Comece a banca primeiro','warn-t'); return; }
+  const num=v=>v==null||v===''?'':String((+v).toFixed(2)).replace('.',',');
+  const q=v=>{ const t=v==null?'':String(v); return /[";\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
+  const linhas=[['Data','Hora','Tipo','Par','Direção','Origem','Valor da entrada (R$)','Payout (%)','Resultado','Movimento (R$)','Saldo (R$)','Nota']];
+  for(const e of R.ev){
+    const d=new Date(e.t), o=e.op;
+    linhas.push([d.toLocaleDateString('pt-BR'),d.toLocaleTimeString('pt-BR'),BANCA_TIPO[e.tipo]||e.tipo,o?o.pair:'',o?o.dir:'',
+      o?(o.origem==='auto'?'Auto':o.origem==='noticia'?'Notícia':'Tela'):'',o?num(o.stake||0):'',o?Math.round((o.payout||bancaPayoutPadrao())*100):'',
+      o?(o.result==='win'?'WIN':'LOSS'):'',num(e.valor),num(e.saldo),o?(o.stake>0?(o.note||''):'sem valor registrado'):(e.nota||'')]);
+  }
+  linhas.push([]);
+  const res=(rot,mov,saldo,nota)=>linhas.push(['','','RESUMO','','','','','','',mov==null?'':num(mov),saldo==null?'':num(saldo),rot+(nota?' · '+nota:'')]);
+  res('Saldo inicial',null,R.inicio); res('Depósitos',R.dep); res('Saques',-R.saq); res('Ajustes (Valyn)',R.aj);
+  res('Resultado das operações',R.pnlOps,null,`${R.w}W · ${R.l}L`); res('Saldo atual',null,R.atual);
+  baixarArquivo(`protrader_extrato_banca_${hojeISO()}.csv`,'﻿'+linhas.map(l=>l.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+  showToast('⬇️ Extrato da banca baixado','call-t');
+}
+function bancaBackup(){
+  const dados={};
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!/^protrader_/.test(k)||BACKUP_FORA.has(k)) continue; dados[k]=localStorage.getItem(k); } }
+  catch(e){ showToast('⛔ Navegador sem armazenamento — nada para salvar','warn-t'); return; }
+  const R=bancaResumo();
+  const arq={app:'ProTrader AI',tipo:'memoria',versao:'2026.10.07b',criadoEm:new Date().toISOString(),
+    resumo:R?{saldo:R.atual,operacoes:R.nOps,desde:new Date(R.inicioT).toISOString()}:null,dados};
+  baixarArquivo(`protrader_memoria_${hojeISO()}.json`,JSON.stringify(arq),'application/json');
+  try{ localStorage.setItem('protrader_ultimo_backup',String(Date.now())); }catch(e){ /* sem storage */ }
+  showToast('💾 Backup da memória baixado (banca, histórico e ajustes — sem as chaves)','call-t'); renderBancaPanel();
+}
+function bancaRestaurarAbrir(){ const i=document.getElementById('bancaRestaurarArq'); if(i){ i.value=''; i.click(); } }
+function bancaRestaurar(inp){
+  const f=inp&&inp.files&&inp.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    let arq=null; try{ arq=JSON.parse(rd.result); }catch(e){ arq=null; }
+    if(!arq||arq.app!=='ProTrader AI'||arq.tipo!=='memoria'||!arq.dados||typeof arq.dados!=='object'){ showToast('⛔ Esse arquivo não é um backup do ProTrader','warn-t'); return; }
+    const chaves=Object.keys(arq.dados).filter(k=>/^protrader_/.test(k)&&!BACKUP_FORA.has(k)&&typeof arq.dados[k]==='string');
+    const r=arq.resumo, quando=new Date(arq.criadoEm).toLocaleString('pt-BR');
+    if(!confirm(`Restaurar o backup de ${quando}?${r?`\nSaldo da banca: ${brl(r.saldo)} · ${r.operacoes} operações`:''}\n\nIsso SUBSTITUI a memória deste aparelho (banca, histórico e ajustes). As chaves e a marcação "meu aparelho" ficam como estão.`)) return;
+    try{
+      const tirar=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(/^protrader_/.test(k)&&!BACKUP_FORA.has(k)) tirar.push(k); }
+      tirar.forEach(k=>localStorage.removeItem(k));
+      chaves.forEach(k=>localStorage.setItem(k,arq.dados[k]));
+    }catch(e){ showToast('⛔ Não consegui gravar o backup (espaço do navegador)','warn-t'); return; }
+    showToast('✓ Memória restaurada — recarregando…','call-t');
+    setTimeout(()=>location.reload(),900);
+  };
+  rd.readAsText(f);
+}
+async function bancaPDF(){
+  const R=bancaResumo(); if(!R){ showToast('Comece a banca primeiro','warn-t'); return; }
+  showToast('📄 Gerando o relatório da banca…','scan-t');
+  try{
+    if(!window.jspdf) await new Promise((ok,falhou)=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.crossOrigin='anonymous'; sc.onload=ok; sc.onerror=()=>falhou(new Error('não consegui baixar o gerador de PDF')); document.head.appendChild(sc); });
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=14;
+    const P=v=>((v<0?'-':'')+'R$ '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    const PS=v=>(v>0?'+':'')+P(v);
+    const PC=v=>(v>0?'+':v<0?'-':'')+Math.abs(v*100).toFixed(1).replace('.',',')+'%';
+    const dataBR=t=>new Date(t).toLocaleDateString('pt-BR');
+    const cor={txt:[26,44,64],mut:[106,138,170],verde:[0,150,120],verm:[210,50,70],linha:[220,228,238],acc:[0,170,140]};
+    let y=0;
+    const novaPagina=()=>{ doc.addPage(); y=18; };
+    const precisa=h=>{ if(y+h>H-16) novaPagina(); };
+    // cabeçalho
+    doc.setFillColor(9,16,26); doc.rect(0,0,W,30,'F');
+    doc.setTextColor(0,212,170); doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('ProTrader AI',M,14);
+    doc.setTextColor(200,215,230); doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text('Relatório da Banca',M,22);
+    doc.setFontSize(9); doc.text(`${dataBR(R.inicioT)} a ${dataBR(Date.now())}`,W-M,14,{align:'right'});
+    doc.text(`gerado em ${new Date().toLocaleString('pt-BR')}`,W-M,22,{align:'right'});
+    y=38;
+    // resumo
+    const acerto=R.nOps?R.w/R.nOps:0, retorno=R.capital>0?R.pnlOps/R.capital:0;
+    const caixas=[
+      ['Saldo inicial',P(R.inicio),cor.txt],['Depósitos - saques',PS(R.dep-R.saq),cor.txt],['Ajustes (Valyn)',PS(R.aj),cor.txt],['Saldo atual',P(R.atual),cor.acc],
+      ['Resultado das operações',PS(R.pnlOps),R.pnlOps>=0?cor.verde:cor.verm],['Retorno sobre o capital',PC(retorno),retorno>=0?cor.verde:cor.verm],
+      ['Operações',`${R.nOps}  (${R.w}W · ${R.l}L · ${(acerto*100).toFixed(1).replace('.',',')}%)`,cor.txt],['Maior queda',`${P(-R.ddMax)}  (${PC(-R.ddPct)})`,cor.verm]];
+    const cw=(W-2*M-9)/4;
+    caixas.forEach((c,i)=>{
+      const x=M+(i%4)*(cw+3), yy=y+Math.floor(i/4)*20;
+      doc.setDrawColor(...cor.linha); doc.setFillColor(246,249,252); doc.roundedRect(x,yy,cw,17,1.5,1.5,'FD');
+      doc.setTextColor(...cor.mut); doc.setFontSize(7); doc.text(c[0].toUpperCase(),x+3,yy+5.5);
+      doc.setTextColor(...c[2]); doc.setFont('helvetica','bold'); doc.setFontSize(c[1].length>18?8:10.5); doc.text(c[1],x+3,yy+12.5); doc.setFont('helvetica','normal');
+    });
+    y+=44;
+    // curva do saldo (fechamento de cada dia)
+    const dias=bancaPorDia(R.ev);
+    const pts=[{t:R.inicioT,v:R.inicio}].concat(dias.map(d=>({t:d.t+86399000,v:d.fechamento})));
+    doc.setTextColor(...cor.txt); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('Evolução do saldo',M,y); doc.setFont('helvetica','normal');
+    y+=4;
+    const gx=M+16, gw=W-2*M-16, gh=48, gy=y;
+    const vmin=Math.min(...pts.map(p=>p.v)), vmax=Math.max(...pts.map(p=>p.v)), amp=(vmax-vmin)||Math.max(1,vmax*0.02);
+    const lo=vmin-amp*0.1, hi=vmax+amp*0.1, Y=v=>gy+gh-(v-lo)/(hi-lo)*gh;
+    doc.setDrawColor(...cor.linha); doc.setLineWidth(0.2);
+    for(let k=0;k<=3;k++){ const v=lo+(hi-lo)*k/3, yy=Y(v); doc.line(gx,yy,gx+gw,yy); doc.setTextColor(...cor.mut); doc.setFontSize(6.5); doc.text(P(v).replace('R$ ',''),gx-2,yy+1,{align:'right'}); }
+    if(pts.length>1){
+      const X=i=>gx+gw*i/(pts.length-1);
+      doc.setDrawColor(...cor.acc); doc.setLineWidth(0.7);
+      for(let i=1;i<pts.length;i++) doc.line(X(i-1),Y(pts[i-1].v),X(i),Y(pts[i].v));
+      doc.setFillColor(...cor.acc); doc.circle(X(pts.length-1),Y(pts[pts.length-1].v),0.9,'F');
+    }
+    doc.setTextColor(...cor.mut); doc.setFontSize(6.5);
+    doc.text(dataBR(pts[0].t),gx,gy+gh+4); doc.text(dataBR(Date.now()),gx+gw,gy+gh+4,{align:'right'});
+    y=gy+gh+11;
+    // tabela genérica
+    const tabela=(titulo,cab,linhas,larg,alinhar,corLinha)=>{
+      precisa(16); doc.setTextColor(...cor.txt); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(titulo,M,y); y+=5;
+      const xs=[]; let acc=M; larg.forEach(l=>{ xs.push(acc); acc+=l; });
+      const cabeca=()=>{ doc.setFillColor(9,16,26); doc.rect(M,y-3.6,W-2*M,5.4,'F'); doc.setTextColor(200,215,230); doc.setFontSize(7); doc.setFont('helvetica','bold');
+        cab.forEach((c,i)=>doc.text(c,alinhar[i]==='r'?xs[i]+larg[i]-1.5:xs[i]+1.5,y,{align:alinhar[i]==='r'?'right':'left'})); doc.setFont('helvetica','normal'); y+=5.2; };
+      cabeca();
+      linhas.forEach((l,j)=>{
+        if(y>H-18){ novaPagina(); cabeca(); }
+        if(j%2===0){ doc.setFillColor(246,249,252); doc.rect(M,y-3.6,W-2*M,5,'F'); }
+        doc.setFontSize(7.5);
+        l.forEach((c,i)=>{ const k=corLinha?corLinha(l,i):null; doc.setTextColor(...(k||cor.txt)); doc.text(String(c),alinhar[i]==='r'?xs[i]+larg[i]-1.5:xs[i]+1.5,y,{align:alinhar[i]==='r'?'right':'left'}); });
+        y+=5;
+      });
+      y+=6;
+    };
+    const ultDias=dias.slice(-31);
+    tabela(`Por dia${dias.length>31?' (últimos 31)':''}`,['Data','Abertura','Ops','W / L','Depós./saques/ajustes','Resultado','Fechamento'],
+      ultDias.map(d=>[d.dia,P(d.abertura),d.ops,`${d.w} / ${d.l}`,d.mov?PS(d.mov):'-',PS(Math.round(d.pnl*100)/100),P(d.fechamento)]),
+      [24,28,14,20,30,32,34],['l','r','r','r','r','r','r'],(l,i)=>i===5?(l[5].startsWith('+')?cor.verde:l[5].startsWith('-')?cor.verm:null):null);
+    // por par
+    const porPar={};
+    R.ev.filter(e=>e.tipo==='op').forEach(e=>{ const p=e.op.pair; (porPar[p]=porPar[p]||{n:0,w:0,pnl:0}); porPar[p].n++; if(e.op.result==='win') porPar[p].w++; porPar[p].pnl+=e.valor; });
+    const pares=Object.entries(porPar).sort((a,b)=>b[1].pnl-a[1].pnl);
+    if(pares.length) tabela('Por par',['Par','Operações','Acerto','Resultado'],
+      pares.map(([p,x])=>[p,x.n,(x.w/x.n*100).toFixed(1).replace('.',',')+'%',PS(Math.round(x.pnl*100)/100)]),[60,40,40,42],['l','r','r','r'],
+      (l,i)=>i===3?(l[3].startsWith('+')?cor.verde:l[3].startsWith('-')?cor.verm:null):null);
+    // movimentos
+    const movs=R.ev.filter(e=>e.tipo!=='op');
+    if(movs.length) tabela('Depósitos, saques e ajustes',['Data','Tipo','Valor','Saldo depois','Nota'],
+      movs.slice(-25).map(e=>[new Date(e.t).toLocaleString('pt-BR').slice(0,17),BANCA_TIPO[e.tipo]||e.tipo,e.tipo==='inicio'?P(e.valor):PS(e.valor),P(e.saldo),String(e.nota||'').replace(/→/g,'->').slice(0,48)]),
+      [30,28,26,28,70],['l','l','r','r','l']);
+    // rodapé
+    const n=doc.getNumberOfPages();
+    for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFontSize(7); doc.setTextColor(...cor.mut);
+      doc.text('ProTrader AI · valores calculados a partir das entradas registradas no app — confira com o extrato da Valyn',M,H-8);
+      doc.text(`${i}/${n}`,W-M,H-8,{align:'right'}); }
+    doc.save(`protrader_relatorio_banca_${hojeISO()}.pdf`);
+    showToast('📄 Relatório da banca baixado','call-t');
+  }catch(e){ console.warn('PDF banca:',e); showToast('⛔ '+(e.message||'Falha ao gerar o PDF'),'warn-t'); }
+}
+setInterval(()=>{ try{ bancaRotinaDia(); }catch(e){ /* segue */ } },30000);
+
 // ═══ PDF REPORT ═══
 async function exportPDF(){
   const closed=ops.filter(minhas);
@@ -5948,12 +6332,16 @@ function getBreakEvenWR(payout){
 }
 
 function getBancaConfig(){
-  const saldo  = parseFloat(document.getElementById('bancaSaldo')?.value)||0;
-  const risco  = parseFloat(document.getElementById('bancaRisco')?.value)||1;
-  const payout = Math.min(1,Math.max(0.5,(parseFloat(document.getElementById('bancaPayout')?.value)||85)/100)); // 50%–100%
-  return{saldo, risco, payout};
+  // saldo: o da memória da banca (automático); sem memória ainda, o que estiver digitado
+  const num=(id,def)=>{ const v=parseFloat(document.getElementById(id)?.value); return isNaN(v)?def:v; };
+  const R=typeof bancaResumo==='function'?bancaResumo():null;
+  const saldo=R?R.atual:(lerValorBR(document.getElementById('bancaSaldo')?.value)||0);
+  const risco=num('bancaRisco',1)||1;
+  const payout=Math.min(1,Math.max(0.5,num('bancaPayout',85)/100)); // 50%–100%
+  const stopPct=Math.min(50,Math.max(1,num('bancaStopPct',5)));
+  const metaPct=Math.min(100,Math.max(1,num('bancaMetaPct',10)));
+  return{saldo, risco, payout, stopPct, metaPct};
 }
-
 // ─── P&L REAL — calcula em dinheiro, não estimativa ───
 function calcRealPnL(periodo='hoje'){
   const{payout}=getBancaConfig();
@@ -5985,42 +6373,36 @@ function calcRealPnL(periodo='hoje'){
 
 // ─── ESTADO DA BANCA — quanto ainda posso arriscar hoje ───
 function getBancaState(){
-  const{saldo, risco, payout}=getBancaConfig();
-  if(saldo<=0) return{configurada:false};
-
+  const{risco, payout, stopPct, metaPct}=getBancaConfig();
+  const R=bancaResumo();
+  if(!R||!(R.atual>0)) return{configurada:false};
   const hoje=calcRealPnL('hoje');
-  const saldoAtual=saldo+hoje.pnl;
-  const stopDia=saldo*0.05;          // nunca perder mais que 5% num dia
-  const metaDia=saldo*0.10;
-  const perdaHoje=hoje.pnl<0 ? Math.abs(hoje.pnl) : 0;
+  const base=R.base>0?R.base:R.atual;                 // saldo de hoje antes das entradas (com depósitos/saques do dia)
+  const stopDia=base*stopPct/100, metaDia=base*metaPct/100;
+  const pnlHoje=R.pnlHoje, perdaHoje=pnlHoje<0?-pnlHoje:0;
   const restaPerder=Math.max(0, stopDia-perdaHoje);
-
-  const entradaBase=saldoAtual*(risco/100);
-  const opsRestantes=entradaBase>0 ? Math.floor(restaPerder/entradaBase) : 0;
-
-  const stopBatido=perdaHoje>=stopDia;
-  const metaBatida=hoje.pnl>=metaDia;
-
+  const entradaBase=R.atual*(risco/100);
+  const opsRestantes=entradaBase>0 ? Math.floor(restaPerder/entradaBase+1e-9) : 0;
+  const stopBatido=perdaHoje>0&&perdaHoje>=stopDia-0.005;
+  const metaBatida=metaDia>0&&pnlHoje>=metaDia-0.005;
+  const r2=v=>Math.round(v*100)/100;
   return{
     configurada:true,
-    saldoInicial:saldo, saldoAtual:Math.round(saldoAtual*100)/100,
-    payout, risco,
-    pnlHoje:hoje.pnl, wr:hoje.wr, wins:hoje.wins, losses:hoje.losses, total:hoje.total,
-    stopDia:Math.round(stopDia*100)/100,
-    metaDia:Math.round(metaDia*100)/100,
-    restaPerder:Math.round(restaPerder*100)/100,
-    opsRestantes, stopBatido, metaBatida,
+    saldoInicial:r2(base), saldoAtual:r2(R.atual), abertura:R.abertura,
+    payout, risco, stopPct, metaPct,
+    pnlHoje, wr:hoje.wr, wins:hoje.wins, losses:hoje.losses, total:hoje.total,
+    stopDia:r2(stopDia), metaDia:r2(metaDia), restaPerder:r2(restaPerder), faltaMeta:r2(Math.max(0,metaDia-pnlHoje)),
+    opsRestantes, stopBatido, metaBatida, travado:stopBatido||metaBatida,
     breakEven:getBreakEvenWR(payout)
   };
 }
-
 // ─── DIMENSIONAMENTO ASSISTIDO ───
 // Regra inegociável: depois de perder, o valor NUNCA sobe.
 // Dobrar após loss (martingale) é o jeito mais rápido de zerar a conta.
 function sugerirEntrada(confianca){
   const st=getBancaState();
   if(!st.configurada) return{valor:0, motivo:'Configure o saldo da banca primeiro.'};
-  if(st.stopBatido)   return{valor:0, bloqueado:true, motivo:'Stop do dia atingido. Pare por hoje.'};
+  if(st.travado)      return{valor:0, bloqueado:true, motivo:st.stopBatido?'🔒 Stop do dia atingido — travado até amanhã.':'🔒 Meta do dia batida — travado até amanhã. Lucro protegido.'};
 
   const base=st.saldoAtual*(st.risco/100);
   let mult=1, motivos=[];
@@ -6073,35 +6455,49 @@ function sugerirEntrada(confianca){
 
 // ─── BLOQUEIO POR STOP DE BANCA (P&L real) ───
 function checkBankStop(){
+  // Stop OU meta do dia: desliga o Auto, trava sinais e entradas até o dia seguinte (a trava é calculada: some sozinha à meia-noite)
   try{
     const st=getBancaState();
-    if(!st.configurada) return false;
-    if(st.stopBatido && !bankStopTriggered){
-      bankStopTriggered=true;
-      showToast(`🛑 Stop do dia atingido — você perdeu R$ ${Math.abs(st.pnlHoje).toFixed(2)} (5% da banca). Pare agora.`,'put-t');
-      playAlert();
-      if(typeof autoMode!=='undefined'&&autoMode) stopAuto();
+    if(!st.configurada||!st.travado){ atualizarBarraTrava(null); return false; }
+    atualizarBarraTrava(st);
+    const dia=new Date().toDateString();
+    if(typeof autoMode!=='undefined'&&autoMode){ stopAuto(); _bancaDesligouAuto=dia; }
+    if(_bancaTravaAvisada!==dia){
+      _bancaTravaAvisada=dia; bankStopTriggered=true;
+      showToast(bancaMsgTrava(st), st.stopBatido?'put-t':'call-t');
+      try{ playAlert(); }catch(e){ /* áudio bloqueado */ }
       if(typeof tgEnabled!=='undefined'&&tgEnabled){
-        sendTelegramMsg(`🛑 *Stop do dia atingido*\n\nPrejuízo: R$ ${Math.abs(st.pnlHoje).toFixed(2)}\nOperações: ${st.wins}W · ${st.losses}L\n\n_Sistema desligado. Volte amanhã._`);
+        sendTelegramMsg(st.stopBatido
+          ?`🛑 *Stop do dia atingido*\n\nResultado: ${brl(st.pnlHoje)} (${st.stopPct}% da banca)\nSaldo: ${brl(st.saldoAtual)}\nOperações: ${st.wins}W · ${st.losses}L\n\n_Auto desligado e sinais travados até amanhã._`
+          :`🎯 *Meta do dia batida*\n\nLucro: ${brlSinal(st.pnlHoje)} (${st.metaPct}% da banca)\nSaldo: ${brl(st.saldoAtual)}\nOperações: ${st.wins}W · ${st.losses}L\n\n_Auto desligado e sinais travados até amanhã. Lucro protegido._`);
       }
-      return true;
     }
-    if(st.metaBatida && !window._metaAvisada){
-      window._metaAvisada=true;
-      showToast(`🎯 Meta do dia batida — R$ ${st.pnlHoje.toFixed(2)} de lucro. Considere parar.`,'call-t');
-    }
-    return st.stopBatido;
+    return true;
   }catch(e){ return false; }
 }
-
+function atualizarBarraTrava(st){
+  const b=document.getElementById('bancaTravaBar'); if(!b) return;
+  if(!st){ b.style.display='none'; return; }
+  b.className='banca-trava '+(st.stopBatido?'stop':'meta');
+  b.innerHTML=`🔒 <b>${st.stopBatido?'Stop do dia atingido':'Meta do dia batida'}</b> — ${brlSinal(st.pnlHoje)} hoje · saldo ${brl(st.saldoAtual)}<br><span>Auto desligado e sinais travados até amanhã.</span>`;
+  b.style.display='block';
+}
 // ─── PAINEL DE GESTÃO ───
 function renderBancaPanel(){
   const el=document.getElementById('bancaInfo');
   if(!el) return;
-  const st=getBancaState();
+  const R=bancaResumo(), st=getBancaState();
+  const sald=document.getElementById('bancaSaldo'), lbl=document.getElementById('bancaSaldoLbl');
+  if(sald){
+    sald.readOnly=!!R;
+    if(R&&document.activeElement!==sald) sald.value=R.atual.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    sald.title=R?'Automático: saldo inicial + depósitos − saques + resultado de cada entrada. Para corrigir, use "Conferir com a Valyn".':'Digite o saldo que a Valyn mostra e toque fora do campo';
+  }
+  if(lbl) lbl.textContent=R?'Saldo da banca (R$) · automático':'Saldo na Valyn (R$) — digite para começar';
+  document.querySelectorAll('.banca-so-com-memoria').forEach(x=>x.style.display=R?'':'none');
 
   if(!st.configurada){
-    el.innerHTML='<span style="color:var(--muted);">Informe o saldo da banca para o sistema calcular o valor de cada entrada e proteger seu capital.</span>';
+    el.innerHTML='<span style="color:var(--muted);">Digite o saldo que a Valyn mostra e toque fora do campo. Daqui para frente o ProTrader lembra a banca sozinho: soma cada WIN, tira cada LOSS, calcula a próxima entrada e trava o dia no stop ou na meta.</span>';
     return;
   }
 
@@ -6109,92 +6505,103 @@ function renderBancaPanel(){
   const bePct=(st.breakEven*100).toFixed(1);
   const pnlCor=st.pnlHoje>0?'var(--green)':st.pnlHoje<0?'var(--red)':'var(--muted)';
   const wrCor=hist.total>=10 ? (hist.wr>=st.breakEven?'var(--green)':'var(--red)') : 'var(--muted)';
-
   const barra=(pct,cor)=>`<div style="height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:3px;"><div style="height:100%;width:${Math.min(100,Math.max(0,pct))}%;background:${cor};border-radius:2px;transition:width .4s;"></div></div>`;
+  const pHoje=st.saldoInicial>0?st.pnlHoje/st.saldoInicial:0;
+  const retorno=R.capital>0?R.pnlOps/R.capital:0;
+  const serie=R.ev.slice(-150).map(e=>e.saldo);
+  let spark='';
+  if(serie.length>1){
+    const mn=Math.min(...serie), mx=Math.max(...serie), a=(mx-mn)||1;
+    const pts=serie.map((v,i)=>`${(i/(serie.length-1)*300).toFixed(1)},${(33-(v-mn)/a*30).toFixed(1)}`).join(' ');
+    spark=`<svg class="banca-spark" viewBox="0 0 300 36" preserveAspectRatio="none" aria-label="Evolução do saldo"><polyline points="${pts}" fill="none" stroke="${retorno>=0?'var(--accent)':'var(--red)'}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+  }
+  let ultBk=0; try{ ultBk=+localStorage.getItem('protrader_ultimo_backup')||0; }catch(e){ ultBk=0; }
+  const diasBk=ultBk?Math.floor((Date.now()-ultBk)/86400000):null;
+  const avisoBk=R.nOps>0&&(diasBk==null||diasBk>=7)
+    ?`<div class="banca-aviso-bk">💾 ${diasBk==null?'Ainda sem backup da memória':`Último backup há ${diasBk} dias`} — se limpar o navegador, a banca e o histórico somem. Toque em <b>Backup</b>.</div>`:'';
+  const linha=(rot,val,cor)=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.5);"><span style="font-size:9px;color:var(--muted);">${rot}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:${cor||'var(--text)'};">${val}</span></div>`;
 
   el.innerHTML=`
+    ${st.travado?`<div class="banca-trava ${st.stopBatido?'stop':'meta'}" style="margin:0 0 8px;">🔒 <b>${st.stopBatido?'Stop do dia atingido':'Meta do dia batida'}</b> — sinais e Auto travados até amanhã.</div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
       <div style="padding:6px 8px;background:var(--s3);border-radius:6px;">
-        <div style="font-size:8px;color:var(--muted);letter-spacing:.5px;">SALDO ATUAL</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--text);">R$ ${st.saldoAtual.toFixed(2)}</div>
+        <div style="font-size:8px;color:var(--muted);letter-spacing:.5px;">SALDO AGORA</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--text);">${brl(st.saldoAtual)}</div>
+        <div style="font-size:8px;color:var(--muted);">abertura de hoje ${brl(st.saldoInicial)}</div>
       </div>
       <div style="padding:6px 8px;background:var(--s3);border-radius:6px;">
         <div style="font-size:8px;color:var(--muted);letter-spacing:.5px;">RESULTADO HOJE</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:${pnlCor};">${st.pnlHoje>=0?'+':''}R$ ${st.pnlHoje.toFixed(2)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:${pnlCor};">${brlSinal(st.pnlHoje)}</div>
+        <div style="font-size:8px;color:${pnlCor};">${pctTxt(pHoje)} · ${st.wins}W · ${st.losses}L</div>
       </div>
     </div>
 
     <div style="padding:6px 8px;background:rgba(255,59,85,.06);border:1px solid rgba(255,59,85,.18);border-radius:6px;margin-bottom:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;">
         <span style="font-size:9px;color:var(--muted);">Ainda pode perder hoje</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${st.restaPerder>0?'var(--gold)':'var(--red)'};">R$ ${st.restaPerder.toFixed(2)}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${st.restaPerder>0?'var(--gold)':'var(--red)'};">${brl(st.restaPerder)}</span>
       </div>
-      ${barra((st.restaPerder/st.stopDia)*100, st.restaPerder>st.stopDia*0.5?'var(--gold)':'var(--red)')}
-      <div style="font-size:8px;color:var(--muted);margin-top:3px;">${st.opsRestantes} ${st.opsRestantes===1?'operação':'operações'} até o stop · limite R$ ${st.stopDia.toFixed(2)}</div>
+      ${barra((st.restaPerder/Math.max(0.01,st.stopDia))*100, st.restaPerder>st.stopDia*0.5?'var(--gold)':'var(--red)')}
+      <div style="font-size:8px;color:var(--muted);margin-top:3px;">${st.opsRestantes} ${st.opsRestantes===1?'operação':'operações'} até o stop · limite ${brl(st.stopDia)} (${String(st.stopPct).replace('.',',')}%)</div>
+    </div>
+    <div style="padding:6px 8px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.18);border-radius:6px;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:9px;color:var(--muted);">${st.metaBatida?'Meta do dia batida':'Falta para a meta do dia'}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--green);">${st.metaBatida?brlSinal(st.pnlHoje):brl(st.faltaMeta)}</span>
+      </div>
+      ${barra((Math.max(0,st.pnlHoje)/Math.max(0.01,st.metaDia))*100,'var(--green)')}
+      <div style="font-size:8px;color:var(--muted);margin-top:3px;">meta ${brl(st.metaDia)} (${String(st.metaPct).replace('.',',')}%) · ao bater, trava até amanhã</div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.5);">
-      <span style="font-size:9px;color:var(--muted);">Acerto necessário só para empatar</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:var(--gold);">${bePct}%</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.5);">
-      <span style="font-size:9px;color:var(--muted);">Seu acerto real ${hist.total<10?'(poucas ops)':''}</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:${wrCor};">${hist.total>0?(hist.wr*100).toFixed(1)+'% · '+hist.total+' ops':'—'}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;padding:4px 0;">
-      <span style="font-size:9px;color:var(--muted);">Hoje</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--text);">${st.wins}W · ${st.losses}L</span>
+    <div style="padding:6px 8px;background:var(--s3);border-radius:6px;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:9px;color:var(--muted);">Desde ${new Date(R.inicioT).toLocaleDateString('pt-BR')} · ${R.nOps} entradas</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:${R.pnlOps>=0?'var(--green)':'var(--red)'};">${brlSinal(R.pnlOps)} <span style="font-weight:600;">(${pctTxt(retorno)})</span></span>
+      </div>
+      ${spark}
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:2px;"><span>maior queda ${brl(-R.ddMax)} (${pctTxt(-R.ddPct)})</span><span>${R.dep||R.saq?`depósitos ${brl(R.dep)} · saques ${brl(R.saq)}`:''}${R.aj?` · ajustes ${brlSinal(R.aj)}`:''}</span></div>
     </div>
 
+    ${linha('Acerto necessário só para empatar',bePct+'%','var(--gold)')}
+    ${linha('Seu acerto real '+(hist.total<10?'(poucas ops)':''),hist.total>0?(hist.wr*100).toFixed(1)+'% · '+hist.total+' ops':'—',wrCor)}
     ${hist.total>=20 && hist.wr<st.breakEven ? `
       <div style="margin-top:6px;padding:6px 8px;background:rgba(255,59,85,.08);border:1px solid rgba(255,59,85,.25);border-radius:6px;font-size:9px;color:var(--red);line-height:1.5;">
         Com ${(hist.wr*100).toFixed(1)}% de acerto e payout de ${(st.payout*100).toFixed(0)}%, a matemática está contra você.
         São necessários ${bePct}% só para empatar. Reveja a estratégia antes de continuar.
       </div>` : ''}
-    ${st.metaBatida ? `
-      <div style="margin-top:6px;padding:6px 8px;background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);border-radius:6px;font-size:9px;color:var(--green);">
-        Meta do dia batida. Lucro protegido é lucro real — considere encerrar.
-      </div>` : ''}
+    ${avisoBk}
   `;
 }
-
 function calcBanca(){
-  const{saldo,risco,payout}=getBancaConfig();
-  const st=getBancaState();
+  const{risco,payout,stopPct,metaPct}=getBancaConfig();
+  const st=getBancaState(), R=bancaResumo();
   const entradaEl=document.getElementById('bancaEntrada');
   const stopEl=document.getElementById('bancaStop');
   const metaEl=document.getElementById('bancaMeta');
-
-  if(saldo<=0){
+  if(!st.configurada){
     if(entradaEl) entradaEl.textContent='R$ —';
     if(stopEl)    stopEl.textContent='R$ —';
     if(metaEl)    metaEl.textContent='R$ —';
-    renderBancaPanel();
-    return;
+  } else {
+    const sug=sugerirEntrada(88);
+    if(entradaEl) entradaEl.textContent=st.travado?'🔒 travado':brl(sug.valor);
+    if(stopEl)    stopEl.textContent=brl(st.stopDia);
+    if(metaEl)    metaEl.textContent=brl(st.metaDia);
   }
-  const sug=sugerirEntrada(88);
-  if(entradaEl) entradaEl.textContent='R$ '+sug.valor.toFixed(2);
-  if(stopEl)    stopEl.textContent='R$ '+st.stopDia.toFixed(2);
-  if(metaEl)    metaEl.textContent='R$ '+st.metaDia.toFixed(2);
   renderBancaPanel();
-
-  try{localStorage.setItem('protrader_banca',JSON.stringify({saldo,risco,payout:payout*100}));}catch(e){}
+  atualizarBarraTrava(st.configurada&&st.travado?st:null);
+  try{localStorage.setItem('protrader_banca',JSON.stringify({saldo:R?R.atual:0,risco,payout:Math.round(payout*100),stopPct,metaPct}));}catch(e){}
 }
-
 function loadBanca(){
   try{
-    const b=localStorage.getItem('protrader_banca');
+    const b=JSON.parse(localStorage.getItem('protrader_banca')||'null');
     if(b){
-      const{saldo,risco,payout}=JSON.parse(b);
-      document.getElementById('bancaSaldo').value=saldo;
-      document.getElementById('bancaRisco').value=risco;
-      if(payout) document.getElementById('bancaPayout').value=payout; // antes voltava sempre a 85%
-      calcBanca();
+      const set=(id,v)=>{ const el=document.getElementById(id); if(el&&v!=null&&v!=='') el.value=v; };
+      set('bancaRisco',b.risco); set('bancaPayout',b.payout); set('bancaStopPct',b.stopPct); set('bancaMetaPct',b.metaPct);
     }
-  }catch(e){}
+  }catch(e){ /* sem storage */ }
+  bancaMem(); calcBanca(); checkBankStop();
 }
-
-// Mostra valor da entrada no sinal gerado
 // (updateBancaSignal removida: não era mais usada)
 // ═══ MELHORIA 1 — SOM DIFERENCIADO POR FORÇA ═══
 function playSignalSoundByForce(isCall, forceScore){
@@ -7248,6 +7655,16 @@ setTimeout(showDaySummary, 3000);
 // ║    horário em que zera; escondidos: volume (forex sem volume),    ║
 // ║    MTF vazio, Volume Score e selos "—". Celular: uma coluna com   ║
 // ║    a barra do ativo fixa e botões grandes (antes o centro sumia). ║
+// ║ 2026.10.07b — BANCA AUTOMÁTICA COM MEMÓRIA: o saldo não é mais    ║
+// ║    digitado todo dia — é saldo inicial + depósitos − saques +     ║
+// ║    ajustes + resultado de cada entrada (valor × payout no WIN,    ║
+// ║    −valor no LOSS), lembrado no aparelho e recalculado se você    ║
+// ║    corrigir resultado ou valor no Diário. Entrada = % do saldo    ║
+// ║    atual (travas de sempre). Stop OU meta do dia: Auto desligado, ║
+// ║    sinais/entradas travados até amanhã; Auto volta sozinho no dia ║
+// ║    seguinte. Conferir com a Valyn, depósito e saque. Baixar:      ║
+// ║    extrato (CSV), relatório PDF, backup/restaurar da memória.     ║
+// ║    Surf passa a gravar o valor da entrada.                        ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
