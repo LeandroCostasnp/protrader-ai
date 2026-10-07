@@ -811,6 +811,10 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 .iq-radio{display:flex;gap:10px;text-transform:none;font-weight:600;font-size:10px;color:var(--text);letter-spacing:0;} .iq-radio label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 .iq-chk{display:flex;align-items:center;gap:6px;font-size:9.5px;color:var(--muted);margin-top:8px;cursor:pointer;}
 @media (max-width:900px){ .iq-b{min-height:40px;font-size:12px;flex:1;} .iq-btn{min-height:48px;font-size:14px;} .iq-campos{grid-template-columns:1fr;} }
+
+/* ═══ 2026.10.07d — ponte da IQ ═══ */
+.iq-ajuda{font-size:9.5px;color:var(--muted);line-height:1.5;margin-top:4px;}
+.iq-passos{margin:6px 0 6px 16px;padding:0;color:var(--text);} .iq-passos li{margin:3px 0;}
 </style>
 </head>
 <body class="night-mode">
@@ -1353,6 +1357,19 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
       <div class="grp-body">
         <div id="iqStatus" class="iq-status"></div>
         <div class="iq-linha"><input id="iqToken" class="iq-inp" type="password" autocomplete="off" placeholder="cole o token da IQ"><button class="iq-b azul" onclick="iqSalvarToken()">Conectar</button></div>
+        <div class="iq-linha"><input id="iqPonte" class="iq-inp" type="text" autocomplete="off" inputmode="url" placeholder="ponte: https://protrader-iq.SEU-NOME.workers.dev"><button class="iq-b" onclick="iqSalvarPonte()">Salvar ponte</button></div>
+        <details class="td-ajuda" id="iqPonteAjuda"><summary>🌉 Como montar a ponte (5 min, grátis)</summary><div class="iq-ajuda">
+          A IQ não aceita chamada direta de sites. A ponte é um mini-servidor seu, grátis, na Cloudflare: só repassa os pedidos do ProTrader para a IQ e não guarda o token.
+          <ol class="iq-passos">
+            <li>Toque em <b>📋 Copiar código da ponte</b> (aqui embaixo) — faça isso no ProTrader publicado.</li>
+            <li>Abra <b>dash.cloudflare.com</b> e crie uma conta grátis (e-mail e senha).</li>
+            <li>No menu, entre em <b>Workers e Pages</b> (ou Compute → Workers) → <b>Criar</b> → <b>Criar Worker</b> (modelo "Hello World") → nome <b>protrader-iq</b> → <b>Implantar</b>.</li>
+            <li>Toque em <b>Editar código</b>, apague tudo, cole o código copiado e toque em <b>Implantar</b>.</li>
+            <li>Copie o endereço que aparece (termina em <b>.workers.dev</b>), cole no campo <b>ponte</b> acima e toque em <b>Salvar ponte</b>.</li>
+          </ol>
+          <div class="iq-linha"><button class="iq-b azul" onclick="iqCopiarPonte()">📋 Copiar código da ponte</button><button class="iq-b" onclick="iqBaixarPonte()">⬇ Baixar código</button></div>
+          <div style="margin-top:4px;">Teste: abrindo o endereço da ponte no navegador aparece "Ponte ProTrader → IQ Option funcionando."</div>
+        </div></details>
         <div class="iq-linha iq-campos">
           <label>Conta<span class="iq-radio"><label><input type="radio" name="iqConta" value="TRAINING" onchange="iqMudarConta(this.value)"> Demo</label><label><input type="radio" name="iqConta" value="NORMAL" onchange="iqMudarConta(this.value)"> Real</label></span></label>
           <label>Execução<select id="iqModo" onchange="iqMudarModo(this.value)"><option value="manual">Manual (botão no sinal)</option><option value="auto">Automática (entra sozinho)</option></select></label>
@@ -1540,7 +1557,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07c (IQ Option: banca, valores e ordens; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07d (IQ Option pela ponte; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -6201,7 +6218,27 @@ setInterval(()=>{ try{ bancaRotinaDia(); }catch(e){ /* segue */ } },30000);
 // Quem tem o token abre operações na sua conta — por isso ele nunca fica no protrader.html.
 // Ferramentas usadas: list_balances, list_assets, place_trade, get_trade_history (servidor binary-options).
 // Na conexão o app confere o formato de cada ferramenta; se a IQ mudar o formato, as ordens ficam desligadas.
-var IQ_TOKEN_KEY='protrader_iq_token', IQ_CFG_KEY='protrader_iq_cfg';
+var IQ_TOKEN_KEY='protrader_iq_token', IQ_CFG_KEY='protrader_iq_cfg', IQ_PONTE_KEY='protrader_iq_ponte';
+// A IQ não aceita chamada direta de sites (o navegador bloqueia). A "ponte" é um Cloudflare Worker do próprio
+// usuário que só repassa os pedidos para a IQ — não guarda token. Código dela abaixo (o app copia com a origem certa).
+var IQ_PONTE_CODIGO="// Ponte ProTrader → IQ Option (Cloudflare Worker)\n// O navegador não pode falar direto com a IQ (a IQ não libera chamadas de sites). Esta ponte repassa\n// os pedidos do ProTrader para a IQ e devolve a resposta. Ela NÃO guarda token: o token continua só\n// no seu aparelho e passa por aqui a cada pedido. Só aceita pedidos vindos do seu site e só repassa\n// para os servidores da IQ.\nconst ORIGENS = ['__ORIGEM__'];\nconst DESTINOS = /^((binary|turbo|blitz|digital)-options|marginal-(cfd|crypto|forex))\\.mcp\\.iqoption\\.com$/;\nconst CABECALHOS = ['authorization', 'content-type', 'accept', 'mcp-session-id', 'mcp-protocol-version', 'last-event-id'];\n\nexport default {\n  async fetch(req) {\n    const origem = req.headers.get('Origin') || '';\n    const cors = {\n      'Access-Control-Allow-Origin': ORIGENS.includes(origem) ? origem : ORIGENS[0],\n      'Access-Control-Allow-Methods': 'POST, GET, DELETE, OPTIONS',\n      'Access-Control-Allow-Headers': CABECALHOS.join(', '),\n      'Access-Control-Expose-Headers': 'mcp-session-id',\n      'Access-Control-Max-Age': '86400',\n      'Vary': 'Origin',\n    };\n    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });\n    const url = new URL(req.url);\n    if (url.pathname === '/' || url.pathname === '') return new Response('Ponte ProTrader → IQ Option funcionando.', { status: 200, headers: cors });\n    if (!ORIGENS.includes(origem)) return new Response('origem não autorizada', { status: 403, headers: cors });\n    const partes = url.pathname.split('/').filter(Boolean);\n    const host = partes.shift() || '';\n    if (!DESTINOS.test(host)) return new Response('destino não permitido', { status: 400, headers: cors });\n    const h = new Headers();\n    for (const k of CABECALHOS) { const v = req.headers.get(k); if (v) h.set(k, v); }\n    let r;\n    try {\n      r = await fetch('https://' + host + '/' + partes.join('/') + url.search, {\n        method: req.method, headers: h,\n        body: req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.arrayBuffer(),\n      });\n    } catch (e) {\n      return new Response('a ponte não conseguiu falar com a IQ: ' + (e && e.message), { status: 502, headers: cors });\n    }\n    const out = new Headers(cors);\n    for (const k of ['content-type', 'mcp-session-id', 'retry-after']) { const v = r.headers.get(k); if (v) out.set(k, v); }\n    return new Response(r.body, { status: r.status, headers: out });\n  },\n};\n";
+var IQ_ORIGEM_PADRAO='https://leandrocostasnp.github.io';
+function iqPonte(){ let u=''; try{ u=(localStorage.getItem(IQ_PONTE_KEY)||'').trim(); }catch(e){ u=''; } return u.replace(/\/+$/,''); }
+function iqUrl(srv){ const p=iqPonte(); return p?`${p}/${srv}.mcp.iqoption.com`:`https://${srv}.mcp.iqoption.com`; }
+function iqCodigoPonte(){ const o=/^https:\/\//.test(location.origin)?location.origin:IQ_ORIGEM_PADRAO; return IQ_PONTE_CODIGO.replace('__ORIGEM__',o); }
+function iqCopiarPonte(){
+  const t=iqCodigoPonte();
+  const fallback=()=>{ const a=document.createElement('textarea'); a.value=t; a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){ ok=false; } a.remove(); showToast(ok?'📋 Código da ponte copiado — cole no Worker da Cloudflare':'Não consegui copiar — use "Baixar código"',ok?'call-t':'warn-t'); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>showToast('📋 Código da ponte copiado — cole no Worker da Cloudflare','call-t')).catch(fallback); else fallback();
+}
+function iqBaixarPonte(){ baixarArquivo('ponte-protrader-iq.js',iqCodigoPonte(),'text/javascript'); showToast('⬇️ Código da ponte baixado','call-t'); }
+function iqSalvarPonte(){
+  const el=document.getElementById('iqPonte'); let v=((el&&el.value)||'').trim().replace(/\/+$/,'');
+  if(v&&!/^https:\/\/[a-z0-9.-]+(:\d+)?(\/[^\s]*)?$/i.test(v)){ showToast('O endereço da ponte começa com https:// (ex.: https://protrader-iq.seunome.workers.dev)','warn-t'); return; }
+  try{ if(v) localStorage.setItem(IQ_PONTE_KEY,v); else localStorage.removeItem(IQ_PONTE_KEY); }catch(e){ showToast('⛔ Navegador sem armazenamento','warn-t'); return; }
+  showToast(v?'🌉 Ponte salva — conectando à IQ por ela':'Ponte removida — tentando direto',v?'call-t':'warn-t');
+  iqConectar();
+}
 var IQ_SERVIDORES={'binary-options':'Binária / Turbo','turbo-options':'Turbo','digital-options':'Digital','blitz-options':'Blitz'};
 var IQ={sess:{},seq:0,ok:false,erro:'',tools:null,schema:null,saldos:[],ativos:null,ativosT:0,ordemLiberada:false,motivoOrdem:'',enviando:{},ultSync:0,dirMaiuscula:false};
 function iqToken(){ try{ return (localStorage.getItem(IQ_TOKEN_KEY)||'').trim(); }catch(e){ return ''; } }
@@ -6233,12 +6270,15 @@ async function iqRpc(srv,metodo,params,notificacao){
   const id=notificacao?null:++IQ.seq; if(id!=null) corpo.id=id;
   const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),15000);
   let res;
-  try{ res=await fetch(`https://${srv}.mcp.iqoption.com`,{method:'POST',headers:H,body:JSON.stringify(corpo),signal:ctl.signal}); }
-  catch(e){ const er=new Error(e&&e.name==='AbortError'?'a IQ não respondeu em 15 s':'o navegador não conseguiu falar com a IQ (rede ou bloqueio do site)'); er.rede=true; throw er; }
+  try{ res=await fetch(iqUrl(srv),{method:'POST',headers:H,body:JSON.stringify(corpo),signal:ctl.signal}); }
+  catch(e){ const er=new Error(e&&e.name==='AbortError'?(iqPonte()?'a ponte/IQ não respondeu em 15 s':'a IQ não respondeu em 15 s'):(iqPonte()?'não consegui falar com a ponte — confira o endereço em 📲 IQ Option':'a IQ não aceita chamada direta do site')); er.rede=true; throw er; }
   finally{ clearTimeout(timer); }
   if(metodo==='initialize'){ const sid=res.headers.get('mcp-session-id'); IQ.sess[srv]={id:sid||null}; }
   const txt=await res.text();
   if(res.status===404&&s.id){ const er=new Error('sessão expirou'); er.sessao=true; throw er; }
+  if(!res.ok&&iqPonte()&&/^(origem não autorizada|destino não permitido|a ponte não conseguiu)/.test(txt)){
+    throw new Error(/^origem/.test(txt)?'a ponte recusou este site — copie o código da ponte de novo a partir do ProTrader publicado e implante de novo':txt.slice(0,120));
+  }
   if(!res.ok){ let m=''; try{ const j=iqLerResposta(txt); m=(j&&j.error&&j.error.message)||''; }catch(e){ m=''; }
     const er=new Error(res.status===401||res.status===403?'token recusado pela IQ (expirou ou foi apagado)':res.status===429?'limite de consultas da IQ — aguarde':`IQ respondeu ${res.status}${m?': '+m.slice(0,80):''}`); er.status=res.status; throw er; }
   if(notificacao) return null;
@@ -6306,7 +6346,7 @@ async function iqConectar(silencioso){
     await iqSincronizarBanca();
   }catch(e){
     IQ.ok=false; IQ.erro=e.message||'falha ao conectar';
-    if(e.rede) IQ.erro+=' — se continuar, a IQ pode não aceitar chamada direta do site; me avise que eu monto a ponte.';
+    if(e.rede&&!iqPonte()){ IQ.erro='A IQ não aceita chamada direta do site. Monte a ponte (5 min, grátis) — passo a passo logo abaixo.'; const d=document.getElementById('iqPonteAjuda'); if(d) d.open=true; }
     if(!silencioso) showToast('⛔ IQ: '+IQ.erro,'warn-t');
   }
   iqRender(); return IQ.ok;
@@ -6500,6 +6540,7 @@ function iqRender(){
     set('iqServidor',c.servidor); set('iqModo',c.modo); set('iqMaxDia',c.maxDia);
     const rd=document.querySelector(`input[name="iqConta"][value="${c.conta}"]`); if(rd) rd.checked=true;
     const cb=document.getElementById('iqBanca'); if(cb) cb.checked=!!c.banca;
+    const pi=document.getElementById('iqPonte'); if(pi&&document.activeElement!==pi) pi.value=iqPonte();
     const ti=document.getElementById('iqToken'); if(ti&&document.activeElement!==ti){ ti.value=''; ti.placeholder=tok?`token salvo neste aparelho (…${tok.slice(-4)})`:'cole o token da IQ'; }
     const st=document.getElementById('iqStatus');
     if(st){
@@ -6507,7 +6548,7 @@ function iqRender(){
       const a=IQ.ativos&&typeof pair!=='undefined'?iqAtivoDoPar(pair):null;
       st.innerHTML=!tok?'Cole o token (app da IQ → Configurações → AI integrations) e toque em Conectar.'
         :!IQ.ok?`<span style="color:var(--gold)">${surfEsc(IQ.erro||'Desconectada — toque em Conectar.')}</span>`
-        :`🟢 Conectada (${IQ_SERVIDORES[c.servidor]||c.servidor}) · ${saldos||'sem saldos'}${a?` · ${a.name} paga ${Math.round(iqPayout(a)*100)}%`:''}<br>${IQ.ordemLiberada?`Ordens hoje: ${iqOrdensHoje()}/${c.maxDia}${IQ.ultSync?` · banca sincronizada às ${new Date(IQ.ultSync).toLocaleTimeString('pt-BR')}`:''}`:`<span style="color:var(--gold)">Ordens desligadas: ${surfEsc(IQ.motivoOrdem)} — baixe o diagnóstico e me mande.</span>`}`;
+        :`🟢 Conectada (${IQ_SERVIDORES[c.servidor]||c.servidor}${iqPonte()?' · via ponte':''}) · ${saldos||'sem saldos'}${a?` · ${a.name} paga ${Math.round(iqPayout(a)*100)}%`:''}<br>${IQ.ordemLiberada?`Ordens hoje: ${iqOrdensHoje()}/${c.maxDia}${IQ.ultSync?` · banca sincronizada às ${new Date(IQ.ultSync).toLocaleTimeString('pt-BR')}`:''}`:`<span style="color:var(--gold)">Ordens desligadas: ${surfEsc(IQ.motivoOrdem)} — baixe o diagnóstico e me mande.</span>`}`;
     }
     iqBotaoCartao();
   }catch(e){ console.warn('IQ painel:',e); }
@@ -8078,6 +8119,11 @@ setTimeout(showDaySummary, 3000);
 // ║    na conexão: se mudar, ordens desligam e há um diagnóstico.     ║
 // ║    Corretora única: IQ Option — Valyn retirada da tela, textos e  ║
 // ║    links (o histórico continua; "confirmado" agora é na IQ).      ║
+// ║ 2026.10.07d — PONTE DA IQ: a IQ não aceita chamada direta do site ║
+// ║    (bloqueio do navegador). Ponte = Cloudflare Worker do usuário  ║
+// ║    (grátis) que só repassa para *.mcp.iqoption.com, só aceita o   ║
+// ║    próprio site e não guarda token. Código copiado pelo painel    ║
+// ║    com a origem certa; endereço salvo no aparelho.                ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
