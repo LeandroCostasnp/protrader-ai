@@ -673,6 +673,101 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
   }
 }
 #at2{white-space:pre-line;}
+
+/* ═══ 2026.10.07 — TELA ORGANIZADA ═══ */
+/* painéis que só mostravam "—" ou "N/D" */
+.mtf-bar{display:none;}                         /* aparece só quando o MTF roda (o código liga com display:flex) */
+.vol-live-card{display:none!important;}          /* forex sem volume na Twelve Data */
+.trend-item:has(#trendVol){display:none;}
+.trend-grid{grid-template-columns:repeat(3,1fr);}
+.ilc-sig:not([id]){display:none;}                /* selos fixos em "—" (EMA 9/21, Bollinger) */
+/* aba Análise: rola por inteiro e o sinal fica sempre no topo */
+#rp0{overflow-y:auto;overflow-x:hidden;padding-bottom:12px;}
+#rp0>*{flex-shrink:0;}
+#rp0>.right-top{position:sticky;top:0;z-index:6;background:var(--s1);padding-bottom:8px;box-shadow:0 8px 12px -10px rgba(0,0,0,.7);}
+#rp0 .abox{flex:none;overflow:visible;}
+#rp0>.surf-card,#rp0>details.grp,#rp0>#nextSessionInfo{margin-left:10px;margin-right:10px;}
+#rp0>#nextSessionInfo{margin-top:6px;}
+#rp0::-webkit-scrollbar{width:3px;} #rp0::-webkit-scrollbar-thumb{background:var(--br);border-radius:2px;}
+/* grupos recolhíveis */
+details.grp{background:var(--s2);border:1px solid var(--br);border-radius:10px;margin-top:6px;}
+details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 12px;user-select:none;-webkit-user-select:none;}
+details.grp>summary::-webkit-details-marker{display:none;}
+details.grp>summary::after{content:'›';font-size:14px;line-height:1;color:var(--muted);transition:transform .15s;margin-left:2px;}
+details.grp[open]>summary::after{transform:rotate(90deg);}
+details.grp>summary:hover .grp-t{color:var(--text);}
+.grp-t{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.grp-sum{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--text);}
+.grp-sum.alerta{color:var(--gold);} .grp-sum.perigo{color:var(--red);}
+#grpTelegram #tgStatus{flex-shrink:0;}
+#sumTelegram:empty{display:none;}
+details.grp>.grp-body{padding:0 12px 10px;}
+/* painel da Twelve Data */
+.td-total{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:9px;color:var(--muted);}
+.td-total b{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);}
+.td-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin:4px 0 8px;}
+.td-bar>i{display:block;height:100%;border-radius:2px;transition:width .4s ease;}
+.td-row{font-size:9px;color:var(--muted);}
+.td-row-top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;}
+.td-row .td-bar{height:3px;margin:3px 0 7px;}
+.td-row.atual{color:var(--text);} .td-row.esg{color:var(--red);}
+.td-tag{font-family:'Space Grotesk',sans-serif;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--s3);color:var(--muted);margin-left:5px;}
+.td-row.atual .td-tag{background:rgba(0,212,170,.12);color:var(--accent);}
+.td-row.esg .td-tag{background:rgba(255,59,85,.12);color:var(--red);}
+.td-aviso{font-size:9px;color:var(--red);margin:2px 0 4px;}
+.td-nota{font-size:8.5px;color:var(--dimtxt);line-height:1.4;}
+details.td-ajuda{margin-top:6px;font-size:9px;color:var(--dimtxt);line-height:1.45;}
+details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
+/* telas médias */
+@media (max-width:1200px) and (min-width:901px){ .app{grid-template-columns:195px 1fr 290px;} .toolbar-right{gap:4px;} .btn-foco,.btn-scanner{padding:6px 8px;} }
+
+/* ═══ CELULAR (até 900 px): uma coluna — barra do ativo fixa, pares, sinal, gráfico, resto ═══ */
+@media (max-width:900px){
+  html,body{height:auto;overflow:visible;}
+  body{display:block;overflow-x:hidden;}
+  header{height:auto;min-height:0;flex-wrap:wrap;gap:6px;padding:8px 10px;}
+  header .logo-sub,header .logo-icon,#btnTheme,#btnNight,#btnPres,#btnCompact,header button[onclick="toggleShortcuts()"],#seqVisual,#updateCounter,header .pres-badge{display:none!important;}
+  header .logo img{width:30px!important;height:30px!important;}
+  .hdr-stat{padding:3px 6px;}
+  .hdr-r{flex-wrap:wrap;justify-content:flex-end;gap:4px;margin-left:auto;}
+  .app{display:flex;flex-direction:column;overflow:visible;min-height:0;}
+  .left,.left-body,.center{display:contents;}
+  .toolbar{order:1;position:sticky;top:0;z-index:60;height:auto;min-height:0;flex-wrap:wrap;gap:8px;padding:8px 10px;box-shadow:0 6px 14px -8px rgba(0,0,0,.8);}
+  .tb-l{flex-wrap:wrap;row-gap:2px;}
+  .tb-pair{font-size:16px;} .tb-price{font-size:18px;}
+  .toolbar-right{width:100%;flex-wrap:wrap;gap:6px;}
+  .toolbar-right>button{min-height:36px;font-size:12px;justify-content:center;}
+  .toolbar-right .btn-go{order:-2;flex:1.3 1 0;font-size:15px;min-height:46px;}
+  .toolbar-right .auto-btn{order:-1;flex:1 1 0;min-height:46px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .toolbar-right .btn-foco,.toolbar-right .btn-scanner,.toolbar-right .btn-theme{order:1;flex:1 1 0;}
+  .toolbar-right::after{content:'';order:0;flex-basis:100%;height:0;}   /* quebra: Analisar + Auto em cima, o resto embaixo */
+  .auto-status{display:none!important;}
+  .left-body>div{order:5;padding:0 10px;margin-top:12px;}
+  .left-body>div:nth-child(1),.left-body>div:nth-child(2){order:2;}
+  .left-body>div:nth-child(1){margin-top:10px;}
+  .pair-grid{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .pbtn{min-height:46px;font-size:12px;}
+  .tfb{min-height:40px;font-size:12px;}
+  .right{order:3;overflow:visible;border-left:none;border-top:1px solid var(--br);margin-top:12px;}
+  .rntab{min-height:44px;font-size:12px;}
+  .rpanel{overflow:visible;flex:none;}
+  #rp0{overflow:visible;padding-bottom:4px;}
+  #rp0>.right-top{position:static;box-shadow:none;}
+  .stats-body,.abox{overflow:visible;flex:none;}
+  details.grp>summary{min-height:44px;}
+  .grp-t{font-size:10px;} .grp-sum{font-size:10px;}
+  .mkt-data-wrap{order:4;overflow:visible;flex:none;padding:10px;}
+  #rp0>.surf-card,#rp0>details.grp,#rp0>#nextSessionInfo{margin-left:10px;margin-right:10px;}
+  #sigCard{scroll-margin-top:150px;}
+  #candleBody{overflow-x:auto;}
+  .mtf-bar{flex-wrap:wrap;}
+  .trend-grid{grid-template-columns:repeat(3,1fr);}
+  .auto-alert{width:calc(100vw - 20px);min-width:0;padding:14px 12px;top:10px;}
+  .aa-btns button{min-height:46px;}
+  .toast{max-width:calc(100vw - 20px);width:max-content;font-size:12px;}
+  input,select{font-size:16px!important;}       /* iPhone não dá zoom ao tocar no campo */
+  input[type=checkbox]{width:18px;height:18px;}
+}
 </style>
 </head>
 <body class="night-mode">
@@ -1104,9 +1199,42 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
       <div class="ai-insight-txt" id="aiInsightTxt">—</div>
     </div>
 
-    <!-- CONFIGURAÇÕES DO SINAL -->
-    <div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:10px 12px;margin-top:6px;">
-      <div style="font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">⚙️ Configurações</div>
+    <div class="atabs" id="aTabs" style="display:none;">
+      <button class="atab active" onclick="showTab(0)">Estrutura</button>
+      <button class="atab" onclick="showTab(1)">Volume</button>
+      <button class="atab" onclick="showTab(2)">Conflu.</button>
+      <button class="atab" onclick="showTab(3)">Setup</button>
+      <button class="atab" onclick="showTab(4)">Inds.</button>
+    </div>
+    <div class="abox">
+      <div class="atxt show" id="at0"></div>
+      <div class="atxt" id="at1"></div>
+      <div class="atxt" id="at2"></div>
+      <div class="atxt" id="at3"></div>
+      <div class="atxt" id="at4"><div class="ind-mini-grid" id="indGrid"></div></div>
+    </div>
+      <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
+    <!-- SURFAR NOTÍCIA -->
+    <div class="surf-card" style="background:var(--s2);border:1px solid rgba(245,166,35,.35);border-radius:10px;padding:10px 12px;margin-top:6px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <span style="font-size:14px;">🏄</span>
+        <div style="font-size:9px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;">Surfar Notícia</div>
+        <label style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted);cursor:pointer;">
+          <input type="checkbox" id="surfLigado" onchange="surfToggle(this.checked)" checked> ligado
+        </label>
+        <select id="surfExp" onchange="surfSetExp(this.value)" style="font-size:9px;background:var(--s3);color:var(--text);border:1px solid var(--br);border-radius:4px;padding:1px 2px;">
+          <option value="1">exp 1 min</option><option value="5" selected>exp 5 min</option><option value="15">exp 15 min</option>
+        </select>
+      </div>
+      <div style="font-size:8.5px;color:var(--muted);">Entra só quando o número surpreende o consenso <b>e</b> o preço confirma o mesmo lado.</div>
+      <div id="surfPainel" style="font-size:10px;color:var(--text);line-height:1.45;">Carregando calendário...</div>
+      <div id="surfStats" style="font-size:8.5px;color:var(--muted);margin-top:6px;border-top:1px solid var(--br);padding-top:5px;"></div>
+    </div>
+
+    <!-- AJUSTES (recolhíveis; o resumo fica à vista) -->
+    <details class="grp" id="grpMotor">
+      <summary><span class="grp-t">⚙️ Motor</span><span class="grp-sum" id="sumMotor"></span></summary>
+      <div class="grp-body">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <span style="font-size:10px;color:var(--muted);">Pontuação mínima</span>
         <span style="font-size:11px;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace;" id="minScoreVal">90/100</span>
@@ -1137,10 +1265,15 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <input type="checkbox" id="evitarFechamentoNY" checked autocomplete="off" onchange="salvarCfgMotor();updateSession();" style="margin-top:2px;">
         <span><b style="color:var(--text);">Evitar fechamento de NY</b> (17h–20h em Nova York)<br><span style="font-size:9px;color:var(--dim);">Nos dados: 54,9% · 51,1% nesse horário (o empate) × ~73% no resto do dia</span></span>
       </label>
-      <div style="margin:2px 0 8px;padding:7px;border:1px solid var(--br);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.4;">
+      <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
+      </div>
+    </details>
+    <details class="grp" id="grpHorario">
+      <summary><span class="grp-t">⏰ Horário do Auto</span><span class="grp-sum" id="sumHorario"></span></summary>
+      <div class="grp-body" style="font-size:10px;color:var(--muted);line-height:1.4;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="horarioAutoOn" autocomplete="off" onchange="salvarHorarioAuto()">
-          <b style="color:var(--text);">Horário do Auto</b> <span style="font-size:9px;">(relógio do aparelho)</span>
+          <b style="color:var(--text);">Ligar horário</b> <span style="font-size:9px;">(relógio do aparelho — fora dele o Auto não consulta a API)</span>
         </label>
         <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
           das <input type="time" id="horarioAutoIni" value="04:00" autocomplete="off" onchange="salvarHorarioAuto()" style="background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:11px;padding:2px 4px;">
@@ -1149,43 +1282,21 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <div id="horarioAutoInfo" style="font-size:9px;margin-top:4px;"></div>
         <div style="font-size:9px;margin-top:3px;color:var(--dim);">Com 3 chaves (2.400/dia) o Auto aguenta o dia todo. A cota zera às 20h MT (21h de Brasília). Nos dados: Londres + overlap (04h–12h MT) 73–76% · Ásia (20h–03h MT) 74%.</div>
       </div>
-      <div style="margin:0 0 8px;padding:7px;border:1px solid var(--br);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.4;">
-        <b style="color:var(--text);">Chaves da Twelve Data</b> <span id="chaveAtualInfo" style="font-size:9px;"></span>
-        <div id="chavesLista" style="margin-top:4px;"></div>
-        <div style="display:flex;gap:4px;margin-top:5px;">
+    </details>
+    <details class="grp" id="grpTD">
+      <summary><span class="grp-t">🔑 Twelve Data</span><span class="grp-sum" id="chaveAtualInfo"></span></summary>
+      <div class="grp-body">
+        <div id="chavesLista"></div>
+        <div style="display:flex;gap:4px;margin-top:8px;">
           <input id="chaveNova" type="text" placeholder="cole uma chave extra (opcional)" autocomplete="off" style="flex:1;min-width:0;background:var(--s3);border:1px solid var(--br);border-radius:4px;color:var(--text);font-size:10px;padding:3px 5px;font-family:'JetBrains Mono',monospace;">
           <button onclick="salvarChaveTD()" style="padding:3px 8px;background:rgba(0,152,255,.12);border:1px solid rgba(0,152,255,.3);border-radius:4px;color:var(--blue);font-size:10px;font-weight:700;cursor:pointer;">Usar</button>
         </div>
-        <div style="font-size:9px;margin-top:3px;color:var(--dim);">Usa uma por vez; quando a cota do dia (800) de uma acaba, passa sozinho para a próxima. Chave colada aqui fica só neste aparelho e entra na frente. Campo vazio + Usar = só as chaves do código.</div>
+        <details class="td-ajuda"><summary>Como as chaves funcionam</summary><div>Usa uma por vez; quando a cota do dia (800) de uma acaba, passa sozinho para a próxima. Chave colada aqui fica só neste aparelho e entra na frente. Campo vazio + Usar = só as chaves do código.</div></details>
       </div>
-      <div id="nextSessionInfo" style="display:none;font-size:9px;color:var(--blue);background:rgba(0,152,255,.06);border:1px solid rgba(0,152,255,.15);border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
-      <button onclick="resetDailyCountersManual()" style="width:100%;padding:6px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">🔄 Reset Diário Manual</button>
-    </div>
-
-    <!-- SURFAR NOTÍCIA -->
-    <div style="background:var(--s2);border:1px solid rgba(245,166,35,.35);border-radius:10px;padding:10px 12px;margin-top:6px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-        <span style="font-size:14px;">🏄</span>
-        <div style="font-size:9px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;">Surfar Notícia</div>
-        <label style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted);cursor:pointer;">
-          <input type="checkbox" id="surfLigado" onchange="surfToggle(this.checked)" checked> ligado
-        </label>
-        <select id="surfExp" onchange="surfSetExp(this.value)" style="font-size:9px;background:var(--s3);color:var(--text);border:1px solid var(--br);border-radius:4px;padding:1px 2px;">
-          <option value="1">exp 1 min</option><option value="5" selected>exp 5 min</option><option value="15">exp 15 min</option>
-        </select>
-      </div>
-      <div style="font-size:8.5px;color:var(--muted);">Entra só quando o número surpreende o consenso <b>e</b> o preço confirma o mesmo lado.</div>
-      <div id="surfPainel" style="font-size:10px;color:var(--text);line-height:1.45;">Carregando calendário...</div>
-      <div id="surfStats" style="font-size:8.5px;color:var(--muted);margin-top:6px;border-top:1px solid var(--br);padding-top:5px;"></div>
-    </div>
-
-    <!-- TELEGRAM -->
-    <div style="background:var(--s2);border:1px solid rgba(0,152,255,.3);border-radius:10px;padding:10px 12px;margin-top:6px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-        <span style="font-size:14px;">✈️</span>
-        <div style="font-size:9px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;">Telegram — Alertas no Celular</div>
-        <div id="tgStatus" style="margin-left:auto;font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(0,212,170,.1);color:var(--green);">✅ CONFIGURADO</div>
-      </div>
+    </details>
+    <details class="grp" id="grpTelegram">
+      <summary><span class="grp-t">✈️ Telegram</span><span class="grp-sum" id="sumTelegram"></span><div id="tgStatus" style="margin-left:auto;font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(0,212,170,.1);color:var(--green);">✅ CONFIGURADO</div></summary>
+      <div class="grp-body">
       <div style="display:flex;gap:5px;">
         <button onclick="testTelegram()" style="flex:1;padding:7px;background:rgba(0,152,255,.1);border:1px solid rgba(0,152,255,.3);border-radius:6px;color:var(--blue);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">✉️ Testar</button>
         <button onclick="toggleTelegram()" id="tgToggle" style="flex:1;padding:7px;background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:6px;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">✅ Ativar</button>
@@ -1195,21 +1306,8 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
         <input type="checkbox" id="donoChk" onchange="setDono(this.checked)">
         Este é meu aparelho (Telegram e Auto ligam sozinhos ao abrir)
       </label>
-    </div>
-    <div class="atabs" id="aTabs" style="display:none;">
-      <button class="atab active" onclick="showTab(0)">Estrutura</button>
-      <button class="atab" onclick="showTab(1)">Volume</button>
-      <button class="atab" onclick="showTab(2)">Conflu.</button>
-      <button class="atab" onclick="showTab(3)">Setup</button>
-      <button class="atab" onclick="showTab(4)">Inds.</button>
-    </div>
-    <div class="abox">
-      <div class="atxt show" id="at0"></div>
-      <div class="atxt" id="at1"></div>
-      <div class="atxt" id="at2"></div>
-      <div class="atxt" id="at3"></div>
-      <div class="atxt" id="at4"><div class="ind-mini-grid" id="indGrid"></div></div>
-    </div>
+          </div>
+    </details>
   </div>
 
   <!-- STATS -->
@@ -1372,7 +1470,7 @@ body.compact-mode #rp1,body.compact-mode #rp2,body.compact-mode #rp3{display:non
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.06h (Revisor IA Claude, só observando; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07 (tela organizada + celular; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2750,13 +2848,23 @@ function avisarForaHorario(){
 const TD_CHAVE_KEY='protrader_td_chave';
 function chaveTDSalva(){ try{ return (localStorage.getItem(TD_CHAVE_KEY)||'').trim(); }catch(e){ return ''; } }
 function mostrarChaveAtual(){
-  const el=document.getElementById('chaveAtualInfo');
-  if(el) el.textContent=apiKey?`em uso: …${String(apiKey).slice(-4)} (${tdChaves().indexOf(apiKey)+1} de ${tdChaves().length})`:'';
-  const lista=document.getElementById('chavesLista');
-  if(lista) lista.innerHTML=tdChaves().map((k,i)=>{
-    const u=tdUsoDe(k), esg=tdEsgotada(k), atual=k===apiKey;
-    return `<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 0;color:${atual?'var(--text)':esg?'var(--red)':'var(--muted)'};"><span>${atual?'▶ ':''}${i+1}. …${k.slice(-4)}${chaveTDSalva()===k?' (deste aparelho)':''}</span><span>${esg?'esgotada hoje':u+'/800'}</span></div>`;
-  }).join('');
+  // Painel da Twelve Data: total do dia, uso de cada chave (contado neste aparelho) e quando zera
+  const ks=tdChaves(), tot=ks.length, pos=ks.indexOf(apiKey)+1, local=chaveTDSalva();
+  const lin=ks.map((k,i)=>({k,i,u:Math.min(tdUsoDe(k),TD_POR_DIA),esg:tdEsgotada(k),atual:k===apiKey,local:!!local&&k===local}));
+  const cap=TD_POR_DIA*tot, sobra=lin.reduce((s2,x)=>s2+(x.esg?0:TD_POR_DIA-x.u),0), usado=cap-sobra;
+  const pct=cap?usado/cap:0, cor=pct>=.9?'var(--red)':pct>=.7?'var(--gold)':'var(--accent)';
+  const n=v=>v.toLocaleString('pt-BR');
+  const info=document.getElementById('chaveAtualInfo');
+  if(info){ info.textContent=apiKey?`${n(usado)}/${n(cap)} hoje · chave ${pos} de ${tot}`:'sem chave'; info.classList.toggle('alerta',pct>=.7&&pct<.9); info.classList.toggle('perigo',pct>=.9); }
+  const lista=document.getElementById('chavesLista'); if(!lista) return;
+  const barra=(p,c)=>`<div class="td-bar"><i style="width:${Math.max(1,Math.round(p*100))}%;background:${c}"></i></div>`;
+  lista.innerHTML=`<div class="td-total"><span><b>${n(usado)}</b> de ${n(cap)} consultas hoje</span><span>zera às ${horaLocal(tdProxMeiaNoiteUTC())}</span></div>${barra(pct,cor)}`+
+    lin.map(x=>{
+      const p=x.esg?1:x.u/TD_POR_DIA, c=x.esg?'var(--red)':x.atual?'var(--accent)':'var(--muted)', tag=x.esg?'esgotada':x.atual?'em uso':'reserva';
+      return `<div class="td-row${x.atual?' atual':''}${x.esg?' esg':''}"><div class="td-row-top"><span>${x.atual?'▶ ':''}Chave ${x.i+1} · …${x.k.slice(-4)}${x.local?' · deste aparelho':''}</span><span>${x.esg?'':x.u+'/'+TD_POR_DIA}<span class="td-tag">${tag}</span></span></div>${barra(p,c)}</div>`;
+    }).join('')+
+    (tdBloqueadoAte>Date.now()&&tdMotivoBloqueio?`<div class="td-aviso">⛔ ${tdMotivoBloqueio} — volta às ${horaLocal(tdBloqueadoAte)}</div>`:'')+
+    `<div class="td-nota">Contado neste aparelho. Outro aparelho usando as mesmas chaves também gasta a cota.</div>`;
 }
 function salvarChaveTD(){
   const inp=document.getElementById('chaveNova'); const v=((inp&&inp.value)||'').trim();
@@ -5625,6 +5733,43 @@ function renderIAPanel(){
 }
 setTimeout(()=>{ try{ renderIAPanel(); }catch(e){ /* sem painel */ } },1500);
 
+// ═══ TELA — grupos recolhíveis com resumo (2026.10.07) ═══
+function atualizarResumos(){
+  try{
+    const $=id=>document.getElementById(id);
+    const sm=$('sumMotor');
+    if(sm){
+      const filtros=[['exigirBOS','BOS'],['exigirForca','vela forte'],['operarLateral','lateral'],['evitarFechamentoNY','fech. NY']];
+      const off=filtros.filter(([id])=>$(id)&&!$(id).checked).map(f=>f[1]);
+      sm.textContent=`${$('minScoreSlider')?$('minScoreSlider').value:'—'}/100 · `+(off.length?`sem ${off.join(', ')}`:'filtros ligados')+($('doubleConfirm')&&$('doubleConfirm').checked?' · dupla':'');
+      sm.classList.toggle('alerta',off.length>0);
+    }
+    const sh=$('sumHorario'), on=$('horarioAutoOn');
+    if(sh) sh.textContent=on&&on.checked?`${($('horarioAutoIni')||{}).value||'—'}–${($('horarioAutoFim')||{}).value||'—'}`:'desligado · dia todo';
+    const st=$('sumTelegram');
+    if(st) st.textContent=ehDono()?'':'visitante';
+  }catch(e){ /* só resumo */ }
+}
+function iniciarGrupos(){
+  document.querySelectorAll('details.grp').forEach(d=>{
+    try{ const v=localStorage.getItem('protrader_grp_'+d.id); if(v!==null) d.open=v==='1'; }catch(e){ /* sem storage */ }
+    d.addEventListener('toggle',()=>{ try{ localStorage.setItem('protrader_grp_'+d.id,d.open?'1':'0'); }catch(e){ /* sem storage */ } });
+  });
+  document.addEventListener('change',e=>{ if(e.target&&e.target.closest&&e.target.closest('details.grp')) setTimeout(atualizarResumos,30); });
+  atualizarResumos(); setInterval(atualizarResumos,5000);
+}
+try{ iniciarGrupos(); }catch(e){ console.warn('grupos:',e); }
+// Celular: o sinal novo aparece fora da tela se você estiver lendo o gráfico — leva até ele
+try{
+  const _sc=document.getElementById('sigContent');
+  if(_sc&&'MutationObserver' in window) new MutationObserver(()=>{
+    if(window.innerWidth>900||_sc.style.display==='none') return;
+    const card=document.getElementById('sigCard'); if(!card) return;
+    const r=card.getBoundingClientRect();
+    if(r.top<120||r.top>window.innerHeight*0.6) card.scrollIntoView({behavior:'smooth',block:'start'});
+  }).observe(_sc,{attributes:true,attributeFilter:['style']});
+}catch(e){ /* sem observador */ }
+
 // ═══ PDF REPORT ═══
 async function exportPDF(){
   const closed=ops.filter(minhas);
@@ -7095,6 +7240,14 @@ setTimeout(showDaySummary, 3000);
 // ║    parecer (Wilson × empate) e regra de prova fixada antes dos    ║
 // ║    dados (40+ por grupo, z ≥ 2,5). Só no aparelho do dono;        ║
 // ║    150 revisões/dia; chave em ANTHROPIC_KEY ou no painel.         ║
+// ║ 2026.10.07 — Tela organizada (só visual; motor e regras iguais):  ║
+// ║    aba Análise rola inteira com o sinal fixo no topo (antes o     ║
+// ║    Telegram ficava cortado e inalcançável); ajustes em grupos     ║
+// ║    recolhíveis com resumo (Motor, Horário, Twelve Data, Telegram);║
+// ║    painel da Twelve Data com total do dia, barra por chave e      ║
+// ║    horário em que zera; escondidos: volume (forex sem volume),    ║
+// ║    MTF vazio, Volume Score e selos "—". Celular: uma coluna com   ║
+// ║    a barra do ativo fixa e botões grandes (antes o centro sumia). ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
