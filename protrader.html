@@ -812,6 +812,10 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 .iq-chk{display:flex;align-items:center;gap:6px;font-size:9.5px;color:var(--muted);margin-top:8px;cursor:pointer;}
 @media (max-width:900px){ .iq-b{min-height:40px;font-size:12px;flex:1;} .iq-btn{min-height:48px;font-size:14px;} .iq-campos{grid-template-columns:1fr;} }
 
+/* ═══ 2026.10.07e — banca em reais ═══ */
+.banca-cambio{margin:0 0 8px;padding:6px 8px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.22);border-radius:6px;font-size:9px;color:var(--muted);line-height:1.45;}
+.banca-cambio b{color:var(--text);} .banca-cambio.sem{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.3);color:var(--gold);} .banca-cambio a{color:var(--accent);}
+
 /* ═══ 2026.10.07d — ponte da IQ ═══ */
 .iq-ajuda{font-size:9.5px;color:var(--muted);line-height:1.5;margin-top:4px;}
 .iq-passos{margin:6px 0 6px 16px;padding:0;color:var(--text);} .iq-passos li{margin:3px 0;}
@@ -1378,7 +1382,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
         </div>
         <label class="iq-chk"><input type="checkbox" id="iqBanca" onchange="iqCfgSalvar({banca:this.checked});if(this.checked)iqSincronizarBanca(true);iqRender();calcBanca()"> Banca do ProTrader = saldo da IQ (sincroniza sozinho)</label>
         <div class="iq-linha"><button class="iq-b" onclick="iqConectar()">↻ Atualizar</button><button class="iq-b" onclick="iqDiagnostico()">⬇ Diagnóstico</button><button class="iq-b" onclick="iqEsquecer()">Apagar token</button></div>
-        <div class="td-nota" style="margin-top:6px;">O token fica só neste aparelho: não vai para o código do site (que é público) nem para o backup. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.</div>
+        <div class="td-nota" id="iqNotaToken" style="margin-top:6px;">O token fica só neste aparelho: não vai para o código do site (que é público) nem para o backup. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.</div>
       </div>
     </details>
     <details class="grp" id="grpTelegram">
@@ -1557,7 +1561,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07d (IQ Option pela ponte; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07f (ponte e token da IQ no código; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -3078,7 +3082,7 @@ function showAndFinalizeResult(r,opts){
         el.style.display='block';
         el.innerHTML=`
           <div style="font-size:8px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;">Entrada sugerida</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:${sug.reduzido?'var(--gold)':'var(--accent)'};line-height:1;">R$ ${sug.valor.toFixed(2)}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:${sug.reduzido?'var(--gold)':'var(--accent)'};line-height:1;">${brl(sug.valor)}</div>${bancaMoedaConta()!=='BRL'&&cambioTaxa()?`<div style="font-size:9px;color:var(--muted);margin-top:2px;">na corretora: <b>${contaFmt(sug.valor)}</b> · ${cambioTxt(true)}</div>`:''}
           <div style="font-size:8px;color:var(--muted);margin-top:3px;line-height:1.4;">${sug.pctBanca}% da banca · ${sug.motivo}</div>`;
       } else { el.style.display='none'; }
     }
@@ -5883,7 +5887,7 @@ var _bancaMemCache, _bancaRes=null, _bancaResT=0, _bancaSujo=true, _bancaTravaAv
 function inicioDoDia(ms){ const d=new Date(ms); d.setHours(0,0,0,0); return d.getTime(); }
 function bancaSujar(){ _bancaSujo=true; }
 function bancaPayoutPadrao(){ const v=parseFloat(document.getElementById('bancaPayout')?.value); return Math.min(1,Math.max(0.5,(isNaN(v)?85:v)/100)); }
-function brl(v){ v=+v||0; return (v<0?'−':'')+(typeof bancaSimbolo==='function'?bancaSimbolo():'R$')+' '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function brl(v){ v=(+v||0)*(typeof bancaTaxaExib==='function'?bancaTaxaExib():1); return (v<0?'−':'')+(typeof bancaSimbolo==='function'?bancaSimbolo():'R$')+' '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function brlSinal(v){ return (v>0?'+':'')+brl(v); }
 function pctTxt(v,casas){ return (v>0?'+':v<0?'−':'')+Math.abs(v*100).toFixed(casas??1).replace('.',',')+'%'; }
 function lerValorBR(t){
@@ -6010,17 +6014,17 @@ function bancaComecar(){
 }
 function bancaConferir(){
   const R=bancaResumo(); if(!R) return bancaComecar();
-  const t=prompt(`Conferir com a IQ\n\nO ProTrader calcula ${brl(R.atual)}.\nDigite o saldo que a IQ mostra agora:`,R.atual.toFixed(2).replace('.',','));
+  const t=prompt(`Conferir com a IQ\n\nO ProTrader calcula ${brl(R.atual)}${bancaMoedaConta()!=='BRL'?` (${contaFmt(R.atual)})`:''}.\nDigite o saldo que a IQ mostra agora, em ${contaSimbolo()}:`,R.atual.toFixed(2).replace('.',','));
   if(t==null) return;
   const v=lerValorBR(t); if(!(v>=0)){ showToast('Valor inválido','warn-t'); return; }
   const dif=Math.round((v-R.atual)*100)/100;
   if(Math.abs(dif)<0.01){ showToast('✓ Bate com a IQ','call-t'); return; }
-  bancaNovoMov('ajuste',dif,`Conferência com a IQ: app ${brl(R.atual)} → IQ ${brl(v)}`);
+  bancaNovoMov('ajuste',dif,`Conferência com a IQ: app ${contaFmt(R.atual)} → IQ ${contaFmt(v)}`);
   showToast(`✓ Ajuste de ${brlSinal(dif)} registrado — saldo igual ao da IQ`,'call-t');
 }
 function bancaMovimento(tipo){
   if(!bancaMem()){ showToast('Comece digitando o saldo da IQ','warn-t'); return; }
-  const t=prompt(tipo==='deposito'?'Depósito na IQ — valor (R$):':'Saque da IQ — valor (R$):','');
+  const t=prompt(`${tipo==='deposito'?'Depósito na IQ':'Saque da IQ'} — valor em ${contaSimbolo()}, como aparece na corretora:`,'');
   if(t==null) return;
   const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
   const R=bancaResumo();
@@ -6031,9 +6035,10 @@ function bancaMovimento(tipo){
 function bancaRecomecar(){
   if(!bancaMem()) return;
   if(!confirm('Recomeçar a banca do zero?\n\nO histórico de operações continua, mas o saldo passa a contar a partir de agora. Baixe o extrato antes se quiser guardar.')) return;
-  const t=prompt('Saldo que a IQ mostra agora (R$):',''); if(t==null) return;
+  const t=prompt(`Saldo que a IQ mostra agora (${contaSimbolo()}):`,''); if(t==null) return;
   const v=lerValorBR(t); if(!(v>0)){ showToast('Valor inválido','warn-t'); return; }
-  bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
+  const moeda=(iqCfg().banca&&iqSaldoAtual())?String(iqSaldoAtual().currency||'BRL').toUpperCase():undefined;
+  bancaMemGravar({v:1,...(moeda?{moeda}:{}),inicio:{t:Date.now(),saldo:v,origem:'digitado'},movs:[]});
   showToast(`💰 Banca recomeçada com ${brl(v)}`,'call-t'); calcBanca(); checkBankStop();
 }
 function bancaEditarValor(id,txt){
@@ -6044,7 +6049,7 @@ function bancaEditarValor(id,txt){
 }
 function bancaCampoValor(o){
   if(o.entrou===false||o.result==='sem-dado') return '';
-  return `<input type="text" inputmode="decimal" value="${o.stake?String(o.stake).replace('.',','):''}" placeholder="R$" title="Valor que você entrou na IQ — a banca usa este número"
+  return `<input type="text" inputmode="decimal" value="${o.stake?String(o.stake).replace('.',','):''}" placeholder="${contaSimbolo()}" title="Valor que você entrou na IQ, em ${contaSimbolo()} — a banca usa este número"
     onchange="bancaEditarValor('${o.id}',this.value)" style="width:64px;background:var(--s3);border:1px solid var(--br);border-radius:4px;padding:4px 6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;outline:none;">`;
 }
 // Operações antigas que saem do histórico (limite de espaço) viram um lançamento só: o saldo não muda
@@ -6069,17 +6074,21 @@ function bancaExtrato(){
   const R=bancaResumo(); if(!R){ showToast('Comece a banca primeiro','warn-t'); return; }
   const num=v=>v==null||v===''?'':String((+v).toFixed(2)).replace('.',',');
   const q=v=>{ const t=v==null?'':String(v); return /[";\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
-  const linhas=[['Data','Hora','Tipo','Par','Direção','Origem','Valor da entrada (R$)','Payout (%)','Resultado','Movimento (R$)','Saldo (R$)','Nota']];
+  const tx=bancaTaxaExib(), sim=bancaSimbolo(), dupla=bancaMoedaConta()!=='BRL'&&!!cambioTaxa(), cs=contaSimbolo();
+  const numR=v=>v==null||v===''?'':num(v*tx);
+  const extra=(ent,mov,sal)=>dupla?[ent==null||ent===''?'':num(ent),mov==null||mov===''?'':num(mov),sal==null||sal===''?'':num(sal)]:[];
+  const linhas=[['Data','Hora','Tipo','Par','Direção','Origem',`Valor da entrada (${sim})`,'Payout (%)','Resultado',`Movimento (${sim})`,`Saldo (${sim})`,'Nota'].concat(dupla?[`Valor da entrada (${cs})`,`Movimento (${cs})`,`Saldo (${cs})`]:[])];
   for(const e of R.ev){
     const d=new Date(e.t), o=e.op;
     linhas.push([d.toLocaleDateString('pt-BR'),d.toLocaleTimeString('pt-BR'),BANCA_TIPO[e.tipo]||e.tipo,o?o.pair:'',o?o.dir:'',
-      o?(o.origem==='auto'?'Auto':o.origem==='noticia'?'Notícia':'Tela'):'',o?num(o.stake||0):'',o?Math.round((o.payout||bancaPayoutPadrao())*100):'',
-      o?(o.result==='win'?'WIN':'LOSS'):'',num(e.valor),num(e.saldo),o?(o.stake>0?(o.note||''):'sem valor registrado'):(e.nota||'')]);
+      o?(o.origem==='auto'?'Auto':o.origem==='noticia'?'Notícia':'Tela'):'',o?numR(o.stake||0):'',o?Math.round((o.payout||bancaPayoutPadrao())*100):'',
+      o?(o.result==='win'?'WIN':'LOSS'):'',numR(e.valor),numR(e.saldo),o?(o.stake>0?(o.note||''):'sem valor registrado'):(e.nota||'')].concat(extra(o?(o.stake||0):'',e.valor,e.saldo)));
   }
   linhas.push([]);
-  const res=(rot,mov,saldo,nota)=>linhas.push(['','','RESUMO','','','','','','',mov==null?'':num(mov),saldo==null?'':num(saldo),rot+(nota?' · '+nota:'')]);
+  const res=(rot,mov,saldo,nota)=>linhas.push(['','','RESUMO','','','','','','',mov==null?'':numR(mov),saldo==null?'':numR(saldo),rot+(nota?' · '+nota:'')].concat(extra('',mov,saldo)));
   res('Saldo inicial',null,R.inicio); res('Depósitos',R.dep); res('Saques',-R.saq); res('Ajustes (IQ)',R.aj);
   res('Resultado das operações',R.pnlOps,null,`${R.w}W · ${R.l}L`); res('Saldo atual',null,R.atual);
+  if(dupla) linhas.push(['','','CÂMBIO','','','','','','','','',`Valores em R$ convertidos por ${cambioTxt()}; a conta na corretora é em ${cs}`]);
   baixarArquivo(`protrader_extrato_banca_${hojeISO()}.csv`,'﻿'+linhas.map(l=>l.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
   showToast('⬇️ Extrato da banca baixado','call-t');
 }
@@ -6122,7 +6131,8 @@ async function bancaPDF(){
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=14;
-    const P=v=>((v<0?'-':'')+(typeof bancaSimbolo==='function'?bancaSimbolo().replace('€','EUR'):'R$')+' '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    const txP=bancaTaxaExib(), simP=bancaSimbolo().replace('€','EUR');
+    const P=v=>{ const x=(+v||0)*txP; return (x<0?'-':'')+simP+' '+Math.abs(x).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
     const PS=v=>(v>0?'+':'')+P(v);
     const PC=v=>(v>0?'+':v<0?'-':'')+Math.abs(v*100).toFixed(1).replace('.',',')+'%';
     const dataBR=t=>new Date(t).toLocaleDateString('pt-BR');
@@ -6137,6 +6147,11 @@ async function bancaPDF(){
     doc.setFontSize(9); doc.text(`${dataBR(R.inicioT)} a ${dataBR(Date.now())}`,W-M,14,{align:'right'});
     doc.text(`gerado em ${new Date().toLocaleString('pt-BR')}`,W-M,22,{align:'right'});
     y=38;
+    if(bancaMoedaConta()!=='BRL'){
+      doc.setTextColor(...cor.mut); doc.setFontSize(8);
+      doc.text(cambioTaxa()?`Valores em reais pela cotação ${cambioTxt()}. A conta na corretora é em ${contaSimbolo()}: saldo atual ${contaFmt(R.atual).replace('−','-')}.`
+        :`Sem cotação do dia: valores em ${contaSimbolo()}, a moeda da conta na corretora.`,M,y); y+=6;
+    }
     // resumo
     const acerto=R.nOps?R.w/R.nOps:0, retorno=R.capital>0?R.pnlOps/R.capital:0;
     const caixas=[
@@ -6160,7 +6175,7 @@ async function bancaPDF(){
     const vmin=Math.min(...pts.map(p=>p.v)), vmax=Math.max(...pts.map(p=>p.v)), amp=(vmax-vmin)||Math.max(1,vmax*0.02);
     const lo=vmin-amp*0.1, hi=vmax+amp*0.1, Y=v=>gy+gh-(v-lo)/(hi-lo)*gh;
     doc.setDrawColor(...cor.linha); doc.setLineWidth(0.2);
-    for(let k=0;k<=3;k++){ const v=lo+(hi-lo)*k/3, yy=Y(v); doc.line(gx,yy,gx+gw,yy); doc.setTextColor(...cor.mut); doc.setFontSize(6.5); doc.text(P(v).replace('R$ ',''),gx-2,yy+1,{align:'right'}); }
+    for(let k=0;k<=3;k++){ const v=lo+(hi-lo)*k/3, yy=Y(v); doc.line(gx,yy,gx+gw,yy); doc.setTextColor(...cor.mut); doc.setFontSize(6.5); doc.text(P(v).replace(simP+' ',''),gx-2,yy+1,{align:'right'}); }
     if(pts.length>1){
       const X=i=>gx+gw*i/(pts.length-1);
       doc.setDrawColor(...cor.acc); doc.setLineWidth(0.7);
@@ -6219,11 +6234,23 @@ setInterval(()=>{ try{ bancaRotinaDia(); }catch(e){ /* segue */ } },30000);
 // Ferramentas usadas: list_balances, list_assets, place_trade, get_trade_history (servidor binary-options).
 // Na conexão o app confere o formato de cada ferramenta; se a IQ mudar o formato, as ordens ficam desligadas.
 var IQ_TOKEN_KEY='protrader_iq_token', IQ_CFG_KEY='protrader_iq_cfg', IQ_PONTE_KEY='protrader_iq_ponte';
+// ── Token da IQ embutido (decisão do dono) ──
+// ATENÇÃO: este arquivo fica num site e num GitHub públicos. Quem ler o código pode usar o token, de fora do site,
+// para abrir ordens na conta. Use um token NOVO (app da IQ → Configurações → AI integrations) e apague o antigo.
+// Vazio = cada aparelho digita o seu. Só vale em aparelho marcado como seu ("Este aparelho é meu").
+var IQ_TOKEN_CODIGO='';
+var IQ_PONTE_PADRAO='https://protrader-iq.leandro-66d.workers.dev';
+var IQ_SEM_CODIGO_KEY='protrader_iq_sem_codigo';
+function iqTokenLocal(){ try{ return (localStorage.getItem(IQ_TOKEN_KEY)||'').trim(); }catch(e){ return ''; } }
+function iqTokenCodigoAtivo(){
+  if(!String(IQ_TOKEN_CODIGO||'').trim()||!ehDono()) return false;
+  try{ return localStorage.getItem(IQ_SEM_CODIGO_KEY)!=='1'; }catch(e){ return true; }
+}
 // A IQ não aceita chamada direta de sites (o navegador bloqueia). A "ponte" é um Cloudflare Worker do próprio
 // usuário que só repassa os pedidos para a IQ — não guarda token. Código dela abaixo (o app copia com a origem certa).
 var IQ_PONTE_CODIGO="// Ponte ProTrader → IQ Option (Cloudflare Worker)\n// O navegador não pode falar direto com a IQ (a IQ não libera chamadas de sites). Esta ponte repassa\n// os pedidos do ProTrader para a IQ e devolve a resposta. Ela NÃO guarda token: o token continua só\n// no seu aparelho e passa por aqui a cada pedido. Só aceita pedidos vindos do seu site e só repassa\n// para os servidores da IQ.\nconst ORIGENS = ['__ORIGEM__'];\nconst DESTINOS = /^((binary|turbo|blitz|digital)-options|marginal-(cfd|crypto|forex))\\.mcp\\.iqoption\\.com$/;\nconst CABECALHOS = ['authorization', 'content-type', 'accept', 'mcp-session-id', 'mcp-protocol-version', 'last-event-id'];\n\nexport default {\n  async fetch(req) {\n    const origem = req.headers.get('Origin') || '';\n    const cors = {\n      'Access-Control-Allow-Origin': ORIGENS.includes(origem) ? origem : ORIGENS[0],\n      'Access-Control-Allow-Methods': 'POST, GET, DELETE, OPTIONS',\n      'Access-Control-Allow-Headers': CABECALHOS.join(', '),\n      'Access-Control-Expose-Headers': 'mcp-session-id',\n      'Access-Control-Max-Age': '86400',\n      'Vary': 'Origin',\n    };\n    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });\n    const url = new URL(req.url);\n    if (url.pathname === '/' || url.pathname === '') return new Response('Ponte ProTrader → IQ Option funcionando.', { status: 200, headers: cors });\n    if (!ORIGENS.includes(origem)) return new Response('origem não autorizada', { status: 403, headers: cors });\n    const partes = url.pathname.split('/').filter(Boolean);\n    const host = partes.shift() || '';\n    if (!DESTINOS.test(host)) return new Response('destino não permitido', { status: 400, headers: cors });\n    const h = new Headers();\n    for (const k of CABECALHOS) { const v = req.headers.get(k); if (v) h.set(k, v); }\n    let r;\n    try {\n      r = await fetch('https://' + host + '/' + partes.join('/') + url.search, {\n        method: req.method, headers: h,\n        body: req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.arrayBuffer(),\n      });\n    } catch (e) {\n      return new Response('a ponte não conseguiu falar com a IQ: ' + (e && e.message), { status: 502, headers: cors });\n    }\n    const out = new Headers(cors);\n    for (const k of ['content-type', 'mcp-session-id', 'retry-after']) { const v = r.headers.get(k); if (v) out.set(k, v); }\n    return new Response(r.body, { status: r.status, headers: out });\n  },\n};\n";
 var IQ_ORIGEM_PADRAO='https://leandrocostasnp.github.io';
-function iqPonte(){ let u=''; try{ u=(localStorage.getItem(IQ_PONTE_KEY)||'').trim(); }catch(e){ u=''; } return u.replace(/\/+$/,''); }
+function iqPonte(){ let u=''; try{ u=(localStorage.getItem(IQ_PONTE_KEY)||'').trim(); }catch(e){ u=''; } return (u||IQ_PONTE_PADRAO||'').replace(/\/+$/,''); }
 function iqUrl(srv){ const p=iqPonte(); return p?`${p}/${srv}.mcp.iqoption.com`:`https://${srv}.mcp.iqoption.com`; }
 function iqCodigoPonte(){ const o=/^https:\/\//.test(location.origin)?location.origin:IQ_ORIGEM_PADRAO; return IQ_PONTE_CODIGO.replace('__ORIGEM__',o); }
 function iqCopiarPonte(){
@@ -6236,12 +6263,12 @@ function iqSalvarPonte(){
   const el=document.getElementById('iqPonte'); let v=((el&&el.value)||'').trim().replace(/\/+$/,'');
   if(v&&!/^https:\/\/[a-z0-9.-]+(:\d+)?(\/[^\s]*)?$/i.test(v)){ showToast('O endereço da ponte começa com https:// (ex.: https://protrader-iq.seunome.workers.dev)','warn-t'); return; }
   try{ if(v) localStorage.setItem(IQ_PONTE_KEY,v); else localStorage.removeItem(IQ_PONTE_KEY); }catch(e){ showToast('⛔ Navegador sem armazenamento','warn-t'); return; }
-  showToast(v?'🌉 Ponte salva — conectando à IQ por ela':'Ponte removida — tentando direto',v?'call-t':'warn-t');
+  showToast(v?'🌉 Ponte salva — conectando à IQ por ela':(IQ_PONTE_PADRAO?'🌉 Usando a ponte padrão do ProTrader':'Ponte removida — tentando direto'),v||IQ_PONTE_PADRAO?'call-t':'warn-t');
   iqConectar();
 }
 var IQ_SERVIDORES={'binary-options':'Binária / Turbo','turbo-options':'Turbo','digital-options':'Digital','blitz-options':'Blitz'};
 var IQ={sess:{},seq:0,ok:false,erro:'',tools:null,schema:null,saldos:[],ativos:null,ativosT:0,ordemLiberada:false,motivoOrdem:'',enviando:{},ultSync:0,dirMaiuscula:false};
-function iqToken(){ try{ return (localStorage.getItem(IQ_TOKEN_KEY)||'').trim(); }catch(e){ return ''; } }
+function iqToken(){ return iqTokenLocal()||(iqTokenCodigoAtivo()?String(IQ_TOKEN_CODIGO).trim():''); }
 function iqCfg(){
   let c=null; try{ c=JSON.parse(localStorage.getItem(IQ_CFG_KEY)||'null'); }catch(e){ c=null; }
   return Object.assign({servidor:'binary-options',conta:'TRAINING',modo:'manual',banca:true,maxDia:5,realOk:false},c||{});
@@ -6251,8 +6278,10 @@ function iqContaTxt(c){ return (c||iqCfg().conta)==='NORMAL'?'Real':'Demo'; }
 function iqPronto(){ return !!(iqToken()&&IQ.ok&&IQ.ordemLiberada&&iqSaldoAtual()); }
 function iqSaldoAtual(){ const t=iqCfg().conta; return (IQ.saldos||[]).find(b=>String(b.type).toUpperCase()===t)||null; }
 function iqMoeda(){ const b=iqSaldoAtual(); return b&&b.currency?String(b.currency).toUpperCase():'BRL'; }
-function iqFmt(v,moeda){ const m=moeda||iqMoeda(), s=m==='BRL'?'R$':m==='USD'?'US$':m==='EUR'?'€':m;
-  return (v<0?'−':'')+s+' '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function iqFmt(v,moeda,semReal){ const m=String(moeda||iqMoeda()).toUpperCase(), s=simboloDe(m);
+  const f=x=>Math.abs(+x||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tx=m!=='BRL'&&!semReal&&typeof cambioTaxa==='function'?cambioTaxa(m):null;
+  return (v<0?'−':'')+s+' '+f(v)+(tx?` (≈ R$ ${f(v*tx)})`:''); }
 
 // ─── cliente MCP (JSON-RPC por HTTP; aceita resposta JSON ou SSE) ───
 function iqLerResposta(txt,id){
@@ -6389,7 +6418,14 @@ async function iqSincronizarBanca(forcar){
   const b=iqSaldoAtual(); if(!b) return;
   IQ.ultSync=Date.now();
   const m=bancaMem();
-  if(!m){ bancaMemGravar({v:1,inicio:{t:Date.now(),saldo:Math.round(b.amount*100)/100,origem:'iq'},movs:[]}); calcBanca(); iqRender(); return; }
+  const moeda=String(b.currency||'BRL').toUpperCase();
+  if(!m){ bancaMemGravar({v:1,moeda,inicio:{t:Date.now(),saldo:Math.round(b.amount*100)/100,origem:'iq'},movs:[]}); calcBanca(); iqRender(); cambioAtualizar(); return; }
+  if(!m.moeda){ m.moeda=moeda; bancaMemGravar(m); }
+  else if(m.moeda!==moeda){
+    showToast(`A conta ${iqContaTxt()} da corretora é em ${simboloDe(moeda)} e a banca está em ${simboloDe(m.moeda)}. Para seguir essa conta, use "recomeçar a banca do zero".`,'warn-t');
+    iqRender(); return;
+  }
+  cambioAtualizar();
   const R=bancaResumo(), dif=Math.round((b.amount-R.atual)*100)/100;
   if(Math.abs(dif)>=0.01){ bancaNovoMov('ajuste',dif,`Saldo da IQ (${iqContaTxt()}): ${iqFmt(b.amount,b.currency)}`); }
   iqRender();
@@ -6534,14 +6570,17 @@ function iqRender(){
     const c=iqCfg(), tok=iqToken();
     const sum=document.getElementById('sumIQ');
     if(sum){ const b=iqSaldoAtual();
-      sum.textContent=!tok?'sem token':!IQ.ok?(IQ.erro?'erro':'desconectada'):`${iqContaTxt()} · ${b?iqFmt(b.amount,b.currency):'—'} · ${c.modo==='auto'?'automático':'manual'}${IQ.ordemLiberada?'':' · ordens off'}`;
+      sum.textContent=!tok?'sem token':!IQ.ok?(IQ.erro?'erro':'desconectada'):`${iqContaTxt()} · ${b?iqFmt(b.amount,b.currency,true):'—'} · ${c.modo==='auto'?'automático':'manual'}${IQ.ordemLiberada?'':' · ordens off'}`;
       sum.classList.toggle('alerta',!!tok&&(!IQ.ok||!IQ.ordemLiberada)); sum.classList.toggle('perigo',c.conta==='NORMAL'&&IQ.ok); }
     const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
     set('iqServidor',c.servidor); set('iqModo',c.modo); set('iqMaxDia',c.maxDia);
     const rd=document.querySelector(`input[name="iqConta"][value="${c.conta}"]`); if(rd) rd.checked=true;
     const cb=document.getElementById('iqBanca'); if(cb) cb.checked=!!c.banca;
     const pi=document.getElementById('iqPonte'); if(pi&&document.activeElement!==pi) pi.value=iqPonte();
-    const ti=document.getElementById('iqToken'); if(ti&&document.activeElement!==ti){ ti.value=''; ti.placeholder=tok?`token salvo neste aparelho (…${tok.slice(-4)})`:'cole o token da IQ'; }
+    const ti=document.getElementById('iqToken'); if(ti&&document.activeElement!==ti){ ti.value=''; ti.placeholder=tok?(iqTokenLocal()?`token salvo neste aparelho (…${tok.slice(-4)})`:`token embutido no código (…${tok.slice(-4)})`):(String(IQ_TOKEN_CODIGO||'').trim()&&!ehDono()?'marque "Este aparelho é meu" para usar o token do código':'cole o token da IQ'); }
+    const nt=document.getElementById('iqNotaToken'); if(nt) nt.innerHTML=String(IQ_TOKEN_CODIGO||'').trim()
+      ?'⚠️ O token da IQ está <b>embutido no código</b> do site, que é público: quem ler o código pode usar. Ele só vale nos aparelhos marcados como seus. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.'
+      :'O token fica só neste aparelho: não vai para o código do site (que é público) nem para o backup. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.';
     const st=document.getElementById('iqStatus');
     if(st){
       const saldos=(IQ.saldos||[]).filter(b=>b.type==='TRAINING'||b.type==='NORMAL').map(b=>`${b.type==='NORMAL'?'Real':'Demo'} ${iqFmt(b.amount,b.currency)}`).join(' · ');
@@ -6557,13 +6596,13 @@ function iqSalvarToken(){
   const el=document.getElementById('iqToken'); const v=(el&&el.value||'').trim();
   if(!v){ showToast('Cole o token da IQ','warn-t'); return; }
   if(!/^[A-Za-z0-9._~+\/=-]{16,}$/.test(v)){ showToast('Isso não parece um token da IQ','warn-t'); return; }
-  try{ localStorage.setItem(IQ_TOKEN_KEY,v); }catch(e){ showToast('⛔ Navegador sem armazenamento','warn-t'); return; }
+  try{ localStorage.setItem(IQ_TOKEN_KEY,v); localStorage.removeItem(IQ_SEM_CODIGO_KEY); }catch(e){ showToast('⛔ Navegador sem armazenamento','warn-t'); return; }
   if(el) el.value='';
   iqConectar();
 }
 function iqEsquecer(){
-  if(!confirm('Apagar o token da IQ deste aparelho? (Para invalidar de vez, apague também no app da IQ → AI integrations.)')) return;
-  try{ localStorage.removeItem(IQ_TOKEN_KEY); }catch(e){ /* sem storage */ }
+  if(!confirm('Apagar o token da IQ deste aparelho? (Para invalidar de vez, apague também no app da IQ → AI integrations.)'+(String(IQ_TOKEN_CODIGO||'').trim()?'\n\nO token embutido no código também deixa de valer NESTE aparelho.':''))) return;
+  try{ localStorage.removeItem(IQ_TOKEN_KEY); if(String(IQ_TOKEN_CODIGO||'').trim()) localStorage.setItem(IQ_SEM_CODIGO_KEY,'1'); }catch(e){ /* sem storage */ }
   IQ.ok=false; IQ.erro=''; IQ.sess={}; IQ.saldos=[]; iqRender(); showToast('Token da IQ apagado deste aparelho','warn-t');
 }
 function iqMudarConta(conta){
@@ -6589,7 +6628,62 @@ function iqDiagnostico(){
   baixarArquivo(`protrader_diagnostico_iq_${hojeISO()}.json`,JSON.stringify(d,null,1),'application/json');
   showToast('⬇️ Diagnóstico baixado (sem token e sem valores de saldo)','call-t');
 }
-function bancaSimbolo(){ const c=iqCfg(); if(!(c.banca&&iqToken()&&c.moeda)) return 'R$'; const m=c.moeda; return m==='BRL'?'R$':m==='USD'?'US$':m==='EUR'?'€':m; }
+// ─── moeda da banca (2026.10.07e) ───
+// O livro-caixa fica na moeda da conta da corretora (o que ela mostra e o que vai na ordem).
+// A tela, o Telegram, o extrato e o PDF mostram em R$, convertendo pela cotação do dia.
+var CAMBIO_KEY='protrader_cambio', _cambio=null, _cambioEmVoo=null;
+function simboloDe(m){ m=String(m||'BRL').toUpperCase(); return m==='BRL'?'R$':m==='USD'?'US$':m==='EUR'?'€':m; }
+function bancaMoedaConta(){
+  const m=typeof bancaMem==='function'?bancaMem():null; if(m&&m.moeda) return String(m.moeda).toUpperCase();
+  const c=iqCfg(); return (c.banca&&c.moeda)?String(c.moeda).toUpperCase():'BRL';
+}
+function cambioLer(){ if(_cambio===null){ try{ _cambio=JSON.parse(localStorage.getItem(CAMBIO_KEY)||'null')||{}; }catch(e){ _cambio={}; } } return _cambio; }
+function cambioTaxa(m){ m=String(m||bancaMoedaConta()).toUpperCase(); if(m==='BRL') return 1; const c=cambioLer()[m]; return c&&c.taxa>0?c.taxa:null; }
+function bancaTaxaExib(){ return cambioTaxa()||1; }
+function bancaSimbolo(){ const m=bancaMoedaConta(); return (m==='BRL'||cambioTaxa(m))?'R$':simboloDe(m); }
+function contaSimbolo(){ return simboloDe(bancaMoedaConta()); }
+function contaFmt(v){ return (v<0?'−':'')+contaSimbolo()+' '+Math.abs(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function cambioTxt(curto){
+  const m=bancaMoedaConta(); if(m==='BRL') return '';
+  const c=cambioLer()[m]; if(!c||!(c.taxa>0)) return '';
+  const quando=new Date(c.t), hoje=new Date().toDateString()===quando.toDateString();
+  const h=hoje?quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):quando.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const tx=c.taxa.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4});
+  return curto?`${simboloDe(m)} 1 = R$ ${tx}`:`${simboloDe(m)} 1 = R$ ${tx} (${c.fonte}, ${h})`;
+}
+async function cambioAtualizar(forcar){
+  const m=bancaMoedaConta(); if(m==='BRL') return null;
+  const c=cambioLer()[m];
+  if(!forcar&&c&&Date.now()-c.t<20*60000) return c.taxa;
+  if(_cambioEmVoo) return _cambioEmVoo;
+  _cambioEmVoo=(async()=>{
+    let taxa=null, fonte='';
+    try{   // AwesomeAPI (grátis, sem chave, cotação comercial do dia)
+      const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),7000);
+      const r=await fetch(`https://economia.awesomeapi.com.br/json/last/${m}-BRL`,{signal:ctl.signal}); clearTimeout(to);
+      if(r.ok){ const j=await r.json(), q=j&&j[m+'BRL']; const v=q&&parseFloat(q.bid); if(v>0&&isFinite(v)){ taxa=v; fonte='AwesomeAPI'; } }
+    }catch(e){ /* tenta a Twelve Data */ }
+    if(!taxa&&typeof tdPreco==='function'){
+      try{ const v=await tdPreco(`${m}/BRL`,{prioridade:'baixa',ttl:1800000}); if(v>0&&isFinite(v)){ taxa=v; fonte='Twelve Data'; } }catch(e){ /* sem cotação */ }
+    }
+    if(taxa){
+      const tudo=cambioLer(); tudo[m]={taxa:Math.round(taxa*10000)/10000,t:Date.now(),fonte};
+      try{ localStorage.setItem(CAMBIO_KEY,JSON.stringify(tudo)); }catch(e){ /* sem storage: vale só nesta sessão */ }
+      try{ calcBanca(); }catch(e){ /* tela ainda montando */ }
+      try{ if(typeof iqRender==='function') iqRender(); }catch(e){ /* idem */ }
+    }
+    return taxa;
+  })();
+  try{ return await _cambioEmVoo; } finally{ _cambioEmVoo=null; }
+}
+function bancaLinhaCambio(){
+  const m=bancaMoedaConta(); if(m==='BRL') return '';
+  const R=bancaResumo();
+  if(!cambioTaxa(m)) return `<div class="banca-cambio sem">💱 Sua conta na corretora é em ${simboloDe(m)} e ainda não consegui a cotação para converter: por enquanto os valores aparecem em ${simboloDe(m)}. <a href="#" onclick="cambioAtualizar(true);return false;">tentar de novo</a></div>`;
+  return `<div class="banca-cambio">💱 Valores em <b>reais</b> · ${cambioTxt()}${R?` · na corretora: <b>${contaFmt(R.atual)}</b>`:''}</div>`;
+}
+setTimeout(()=>{ cambioAtualizar().catch(()=>{}); },3000);
+setInterval(()=>{ cambioAtualizar().catch(()=>{}); },15*60000);
 // o botão do cartão acompanha a janela de entrada
 setInterval(()=>{ if(iqToken()&&_iaCardOp) iqBotaoCartao(); },1000);
 // ciclo: saldo a cada 60 s, resultados a cada 15 s (só com token e conectada)
@@ -6933,10 +7027,10 @@ function renderBancaPanel(){
   const sald=document.getElementById('bancaSaldo'), lbl=document.getElementById('bancaSaldoLbl');
   if(sald){
     sald.readOnly=!!R;
-    if(R&&document.activeElement!==sald) sald.value=R.atual.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(R&&document.activeElement!==sald) sald.value=(R.atual*bancaTaxaExib()).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
     sald.title=R?'Automático: saldo inicial + depósitos − saques + resultado de cada entrada. Para corrigir, use "Conferir com a IQ".':'Digite o saldo que a IQ mostra e toque fora do campo';
   }
-  if(lbl) lbl.textContent=R?'Saldo da banca (R$) · automático':'Saldo na IQ (R$) — digite para começar';
+  if(lbl) lbl.textContent=R?`Saldo da banca (${bancaSimbolo()}) · automático`:`Saldo na IQ (${contaSimbolo()}) — digite para começar`;
   document.querySelectorAll('.banca-so-com-memoria').forEach(x=>x.style.display=R?'':'none');
 
   if(!st.configurada){
@@ -6964,7 +7058,7 @@ function renderBancaPanel(){
     ?`<div class="banca-aviso-bk">💾 ${diasBk==null?'Ainda sem backup da memória':`Último backup há ${diasBk} dias`} — se limpar o navegador, a banca e o histórico somem. Toque em <b>Backup</b>.</div>`:'';
   const linha=(rot,val,cor)=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(24,34,50,.5);"><span style="font-size:9px;color:var(--muted);">${rot}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:${cor||'var(--text)'};">${val}</span></div>`;
 
-  el.innerHTML=`
+  el.innerHTML=`${bancaLinhaCambio()}
     ${st.travado?`<div class="banca-trava ${st.stopBatido?'stop':'meta'}" style="margin:0 0 8px;">🔒 <b>${st.stopBatido?'Stop do dia atingido':'Meta do dia batida'}</b> — sinais e Auto travados até amanhã.</div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
       <div style="padding:6px 8px;background:var(--s3);border-radius:6px;">
@@ -8124,6 +8218,16 @@ setTimeout(showDaySummary, 3000);
 // ║    (grátis) que só repassa para *.mcp.iqoption.com, só aceita o   ║
 // ║    próprio site e não guarda token. Código copiado pelo painel    ║
 // ║    com a origem certa; endereço salvo no aparelho.                ║
+// ║ 2026.10.07e — BANCA EM REAIS: conta da corretora em dólar aparece ║
+// ║    em R$ (tela, cartão, Telegram, extrato, PDF) pela cotação do   ║
+// ║    dia (AwesomeAPI; reserva: Twelve Data). Livro-caixa e ordens   ║
+// ║    seguem na moeda da conta; o que se digita é o que a corretora  ║
+// ║    mostra. Troca de moeda da conta não vira "ajuste".             ║
+// ║ 2026.10.07f — PONTE PADRÃO no código (protrader-iq.leandro-66d)   ║
+// ║    e lugar para o TOKEN da IQ no código (IQ_TOKEN_CODIGO), por    ║
+// ║    decisão do dono, ciente de que o código é público. O token do  ║
+// ║    código só vale em aparelho marcado como seu; "Apagar token"    ║
+// ║    desliga também o do código naquele aparelho.                   ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
