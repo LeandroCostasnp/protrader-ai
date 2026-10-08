@@ -1375,7 +1375,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
           <div style="margin-top:4px;">Teste: abrindo o endereço da ponte no navegador aparece "Ponte ProTrader → IQ Option funcionando."</div>
         </div></details>
         <div class="iq-linha iq-campos">
-          <label>Conta<span class="iq-radio"><label><input type="radio" name="iqConta" value="TRAINING" onchange="iqMudarConta(this.value)"> Demo</label><label><input type="radio" name="iqConta" value="NORMAL" onchange="iqMudarConta(this.value)"> Real</label></span></label>
+          <label>Conta<span class="iq-radio" id="iqContaBox"><span>💰 Real</span></span></label>
           <label>Execução<select id="iqModo" onchange="iqMudarModo(this.value)"><option value="manual">Manual (botão no sinal)</option><option value="auto">Automática (entra sozinho)</option></select></label>
           <label>Máx. ordens/dia<input id="iqMaxDia" type="number" min="1" max="50" value="5" onchange="iqCfgSalvar({maxDia:Math.max(1,parseInt(this.value)||5)});iqRender()"></label>
           <label>Servidor<select id="iqServidor" onchange="iqCfgSalvar({servidor:this.value});iqConectar()"><option value="binary-options">Binária / Turbo</option><option value="turbo-options">Turbo</option><option value="digital-options">Digital</option><option value="blitz-options">Blitz</option></select></label>
@@ -1569,7 +1569,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07h (conta Real liberada sem trava de prova; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.08a (IQ só na conta Real; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2426,8 +2426,8 @@ function renderTdIqPanel(){
   const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
   const conf=ops.filter(o=>o&&o.corretora==='iq'&&o.iq&&o.iq.pos&&(o.result==='win'||o.result==='loss'));
   const pr=provaReal();
-  const linhaProva=`<div style="margin-top:6px;padding:5px 6px;border-radius:5px;font-size:9px;line-height:1.45;${pr.ok?'background:rgba(0,212,170,.08);color:var(--green);':'background:rgba(245,166,35,.08);color:var(--gold);'}">${pr.ok?'✅ Prova para a conta Real atingida':(realExigeProva()?'🔒 Conta Real bloqueada até a prova':'⚠️ Conta Real liberada sem prova na Demo')}: ${pr.txt}${pr.ok?'':(realExigeProva()?` · precisa de ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`:` · a vantagem só fica provada com ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`)}</div>`;
-  if(!conf.length){ el.innerHTML='<div style="font-size:9px;color:var(--muted);text-align:center;padding:6px;">Sem ordens confirmadas na IQ ainda. O painel enche sozinho conforme as ordens da Demo fecham.</div>'+linhaProva; return; }
+  const linhaProva=`<div style="margin-top:6px;padding:5px 6px;border-radius:5px;font-size:9px;line-height:1.45;${pr.ok?'background:rgba(0,212,170,.08);color:var(--green);':'background:rgba(245,166,35,.08);color:var(--gold);'}">${pr.ok?'✅ Prova para a conta Real atingida':(realExigeProva()?'🔒 Conta Real bloqueada até a prova':'⚠️ Conta Real sem prova de vantagem ainda')}: ${pr.txt}${pr.ok?'':(realExigeProva()?` · precisa de ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`:` · a vantagem só fica provada com ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`)}</div>`;
+  if(!conf.length){ el.innerHTML='<div style="font-size:9px;color:var(--muted);text-align:center;padding:6px;">Sem ordens confirmadas na IQ ainda. O painel enche sozinho conforme as ordens fecham.</div>'+linhaProva; return; }
   const est=a=>{ const n=a.length, w=a.filter(o=>o.result==='win').length, ic=wilsonIC(w,n); return{n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi}; };
   const pct=v=>Math.round(v*100)+'%';
   const atraso=o=>(o.entrada&&o.entrada.tVela&&o.iq.t)?(o.iq.t-o.entrada.tVela)/1000:null;
@@ -3366,7 +3366,7 @@ function toggleAuto(){
 let _pedindoTrava=false;
 function alternarAuto(){
   autoMode=!autoMode;
-  if(autoMode){ try{ const g=guardiao(); if(g.parar) showToast(`⛔ IA Guardiã: na IQ o acerto confirmado está abaixo do empate (${Math.round(g.todos.wr*100)}% em ${g.todos.n}). O Auto liga, mas opere só em conta demo até revisar.`,'warn-t'); }catch(e){} }
+  if(autoMode){ try{ const g=guardiao(); if(g.parar) showToast(`⛔ IA Guardiã: na IQ o acerto confirmado está abaixo do empate (${Math.round(g.todos.wr*100)}% em ${g.todos.n}). O Auto liga, mas o recomendado é pausar e revisar antes de seguir na conta Real.`,'warn-t'); }catch(e){} }
   const btn=document.getElementById('autoBtn');
   const status=document.getElementById('autoStatus');
   if(autoMode){
@@ -6343,9 +6343,14 @@ function iqSalvarPonte(){
 var IQ_SERVIDORES={'binary-options':'Binária / Turbo','turbo-options':'Turbo','digital-options':'Digital','blitz-options':'Blitz'};
 var IQ={sess:{},seq:0,ok:false,erro:'',tools:null,schema:null,saldos:[],ativos:null,ativosT:0,ordemLiberada:false,motivoOrdem:'',enviando:{},ultSync:0,dirMaiuscula:false};
 function iqToken(){ return iqTokenLocal()||(iqTokenCodigoAtivo()?String(IQ_TOKEN_CODIGO).trim():''); }
+// (2026.10.08a) Decisão do dono: a IQ opera só na conta Real; a Demo saiu do painel.
+// Para voltar a ter a opção Demo, troque true por false.
+function iqSoReal(){ return true; }
 function iqCfg(){
   let c=null; try{ c=JSON.parse(localStorage.getItem(IQ_CFG_KEY)||'null'); }catch(e){ c=null; }
-  return Object.assign({servidor:'binary-options',conta:'TRAINING',modo:'manual',banca:true,maxDia:5,realOk:false},c||{});
+  const r=Object.assign({servidor:'binary-options',conta:iqSoReal()?'NORMAL':'TRAINING',modo:'manual',banca:true,maxDia:5,realOk:false},c||{});
+  if(iqSoReal()) r.conta='NORMAL';
+  return r;
 }
 function iqCfgSalvar(p){ const c=Object.assign(iqCfg(),p||{}); try{ localStorage.setItem(IQ_CFG_KEY,JSON.stringify(c)); }catch(e){ /* sem storage */ } return c; }
 function iqContaTxt(c){ return (c||iqCfg().conta)==='NORMAL'?'Real':'Demo'; }
@@ -6517,7 +6522,7 @@ function iqPodeEntrar(o,r){
   if(!o) return 'operação não encontrada';
   if(o.iq&&(o.iq.pos||o.iq.enviando)) return 'já enviada';
   const bt=bancaTravada(); if(bt) return bt.stopBatido?'stop do dia — travado até amanhã':'meta do dia — travado até amanhã';
-  if(c.conta==='NORMAL'&&!c.realOk) return 'conta Real não confirmada';
+  if(c.conta==='NORMAL'&&!c.realOk) return 'conta Real não confirmada — toque em "Confirmar conta Real" no painel da IQ';
   if(c.conta==='NORMAL'&&realExigeProva()&&!c.realSemProva&&!provaReal().ok) return 'conta Real bloqueada: falta prova na Demo';
   const tRef=(r&&r.tRef)||(o.entrada&&o.entrada.tVela);
   if(tRef&&Date.now()>tRef+MOTOR_CFG.janelaEntradaSeg*1000) return 'passou da janela de entrada';
@@ -6650,6 +6655,10 @@ function iqRender(){
     const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
     set('iqServidor',c.servidor); set('iqModo',c.modo); set('iqMaxDia',c.maxDia);
     const rd=document.querySelector(`input[name="iqConta"][value="${c.conta}"]`); if(rd) rd.checked=true;
+    const cx=document.getElementById('iqContaBox');
+    if(cx) cx.innerHTML=c.realOk||!iqSoReal()
+      ?'<span>💰 Real <span style="font-weight:400;color:var(--muted);">· Demo desativada</span></span>'
+      :'<button class="iq-b" style="color:var(--red);border-color:rgba(255,77,106,.4);" onclick="iqMudarConta(\'NORMAL\')">Confirmar conta Real</button>';
     const cb=document.getElementById('iqBanca'); if(cb) cb.checked=!!c.banca;
     const pi=document.getElementById('iqPonte'); if(pi&&document.activeElement!==pi) pi.value=iqPonte();
     const ti=document.getElementById('iqToken'); if(ti&&document.activeElement!==ti){ ti.value=''; ti.placeholder=tok?(iqTokenLocal()?`token salvo neste aparelho (…${tok.slice(-4)})`:`token embutido no código (…${tok.slice(-4)})`):(String(IQ_TOKEN_CODIGO||'').trim()&&!ehDono()?'marque "Este aparelho é meu" para usar o token do código':'cole o token da IQ'); }
@@ -6658,11 +6667,11 @@ function iqRender(){
       :'O token fica só neste aparelho: não vai para o código do site (que é público) nem para o backup. Stop, meta, limite do dia e "uma ordem por vez" valem também para a IQ.';
     const st=document.getElementById('iqStatus');
     if(st){
-      const saldos=(IQ.saldos||[]).filter(b=>b.type==='TRAINING'||b.type==='NORMAL').map(b=>`${b.type==='NORMAL'?'Real':'Demo'} ${iqFmt(b.amount,b.currency)}`).join(' · ');
+      const saldos=(IQ.saldos||[]).filter(b=>iqSoReal()?b.type==='NORMAL':(b.type==='TRAINING'||b.type==='NORMAL')).map(b=>`${b.type==='NORMAL'?'Real':'Demo'} ${iqFmt(b.amount,b.currency)}`).join(' · ');
       const a=IQ.ativos&&typeof pair!=='undefined'?iqAtivoDoPar(pair):null;
       st.innerHTML=!tok?'Cole o token (app da IQ → Configurações → AI integrations) e toque em Conectar.'
         :!IQ.ok?`<span style="color:var(--gold)">${surfEsc(IQ.erro||'Desconectada — toque em Conectar.')}</span>`
-        :`🟢 Conectada (${IQ_SERVIDORES[c.servidor]||c.servidor}${iqPonte()?' · via ponte':''}) · ${saldos||'sem saldos'}${a?` · ${a.name} paga ${Math.round(iqPayout(a)*100)}%`:''}<br>${IQ.ordemLiberada?`Ordens hoje: ${iqOrdensHoje()}/${c.maxDia}${IQ.ultSync?` · banca sincronizada às ${new Date(IQ.ultSync).toLocaleTimeString('pt-BR')}`:''}`:`<span style="color:var(--gold)">Ordens desligadas: ${surfEsc(IQ.motivoOrdem)} — baixe o diagnóstico e me mande.</span>`}`;
+        :`🟢 Conectada (${IQ_SERVIDORES[c.servidor]||c.servidor}${iqPonte()?' · via ponte':''}) · ${saldos||'sem saldos'}${a?` · ${a.name} paga ${Math.round(iqPayout(a)*100)}%`:''}<br>${IQ.ordemLiberada?`Ordens hoje: ${iqOrdensHoje()}/${c.maxDia}${IQ.ultSync?` · banca sincronizada às ${new Date(IQ.ultSync).toLocaleTimeString('pt-BR')}`:''}`:`<span style="color:var(--gold)">Ordens desligadas: ${surfEsc(IQ.motivoOrdem)} — baixe o diagnóstico e me mande.</span>`}${c.conta==='NORMAL'&&!c.realOk?'<br><span style="color:var(--gold)">Toque em "Confirmar conta Real" para liberar as ordens.</span>':''}`;
     }
     iqBotaoCartao();
   }catch(e){ console.warn('IQ painel:',e); }
@@ -6680,7 +6689,7 @@ function iqEsquecer(){
   try{ localStorage.removeItem(IQ_TOKEN_KEY); if(String(IQ_TOKEN_CODIGO||'').trim()) localStorage.setItem(IQ_SEM_CODIGO_KEY,'1'); }catch(e){ /* sem storage */ }
   IQ.ok=false; IQ.erro=''; IQ.sess={}; IQ.saldos=[]; iqRender(); showToast('Token da IQ apagado deste aparelho','warn-t');
 }
-// Prova para a conta Real: entradas confirmadas na IQ (Demo) com a faixa de 95% inteira acima do empate
+// Prova de vantagem: entradas confirmadas na IQ com a faixa de 95% inteira acima do empate
 function provaMin(){ return 50; }   // função: pode ser lida antes desta linha rodar
 // (2026.10.07h) Decisão do dono: a conta Real NÃO exige a prova na Demo. A prova segue medida e mostrada.
 // Para voltar a travar a Real até a prova, troque false por true.
@@ -6695,6 +6704,7 @@ function provaReal(){
   return{ok,n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi,be,txt,falta:Math.max(0,provaMin()-n)};
 }
 function iqMudarConta(conta){
+  if(iqSoReal()&&conta!=='NORMAL'){ showToast('A conta Demo foi retirada: o ProTrader opera só na conta Real','warn-t'); iqRender(); return; }
   const c=iqCfg();
   if(conta==='NORMAL'&&realExigeProva()&&!c.realSemProva){
     const pr=provaReal();
@@ -8341,6 +8351,10 @@ setTimeout(showDaySummary, 3000);
 // ║    realExigeProva() = false. A prova na Demo segue medida e       ║
 // ║    aparece no painel e na confirmação da Real. Continuam: stop,   ║
 // ║    meta, limite do dia, uma ordem por vez e regras de mão.        ║
+// ║ 2026.10.08a — IQ SÓ NA CONTA REAL (decisão do dono): sai a opção  ║
+// ║    Demo do painel; iqSoReal() = true força a conta Real. Fica a   ║
+// ║    confirmação única ("Confirmar conta Real") neste aparelho.     ║
+// ║    O histórico da Demo continua no placar e na prova.             ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
