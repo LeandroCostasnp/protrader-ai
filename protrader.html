@@ -1492,6 +1492,12 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
       <button class="btn-export" onclick="exportCSV()">⬇️ Exportar Diário CSV</button>
       <button class="btn-export" onclick="exportExcel()" style="background:rgba(0,212,170,.08);border-color:rgba(0,212,170,.3);color:var(--accent);">📊 Exportar Excel Formatado</button>
       <button class="btn-pdf" onclick="exportPDF()">📄 Relatório Semanal PDF</button>
+      <!-- TWELVE DATA × IQ (2026.10.07g) -->
+      <div class="tf-stats" style="border:1px solid rgba(0,152,255,.3);background:rgba(0,152,255,.04);">
+        <div class="tfs-title" style="color:var(--blue);margin-bottom:4px;">📏 Twelve Data × IQ — o que a corretora pagou</div>
+        <div style="font-size:8px;color:var(--muted);margin:0 0 6px;line-height:1.45;">O motor decide no preço da Twelve Data; a IQ paga no preço dela. Aqui: atraso entre o fechamento da vela e a ordem, diferença de preço e acerto confirmado por faixa de atraso.</div>
+        <div id="tdIqPanel"><div style="font-size:9px;color:var(--muted);text-align:center;padding:8px;">Carregando…</div></div>
+      </div>
       <!-- REVISOR IA (CLAUDE) -->
       <div class="tf-stats" style="border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.04);">
         <div style="display:flex;align-items:center;gap:6px;">
@@ -1523,9 +1529,11 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
           <b>Auditoria 2026.10.06</b>: + vela forte (≥ 0,75σ a favor): <b>71,6%</b> em 1.256 sinais, 18 de 18 dias (72,9% em 05/10, dia novo). Vela fraca: ~50%. Velas de fim de semana e buracos de dados não entram no cálculo; nos primeiros 60 min após a reabertura de domingo o motor espera.<br>
           <b>2026.10.06c</b>: + rompimento no lateral (CHOCH/BOS + vela forte): 75,3% · 74,7% · 70,0% em 05/10. Sistema completo: 72,5% em 1.832 sinais.<br>
           <b>2026.10.06d</b>: sem sinal no fechamento de NY (17h–20h em NY: 54,9% · 51,1%). <b>Sistema completo: 73,6% em 1.736 sinais</b> (73,5% · 73,8% · 72,6% em 05/10). Alinhar M5/M15/H1, notícias, viés do dia e força do dólar não melhoraram.<br>
-          Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na IQ" (Stats).
+          Tudo isso é preço da Twelve Data. O que vale é "Confirmadas na IQ" (Stats).<br>
+          <b>Teste independente (07/10)</b>: o mesmo motor em velas de outras corretoras (FXCM e Oanda, 2011–2018) deu <b>45,7% em 1.814 sinais</b> — abaixo do empate. Os números acima são da amostra em que as regras foram ajustadas.
         </div>
         <button class="btn-export" style="margin-top:6px;" onclick="runBacktest()">▶ Rodar Backtesting</button>
+        <div id="btFrente" style="margin-top:6px;"></div>
       </div>
       <div class="news-panel">
         <div class="news-title">📰 Notícias Econômicas</div>
@@ -1561,7 +1569,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07f (ponte e token da IQ no código; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07g (medição real e proteção do dinheiro; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2410,6 +2418,33 @@ function atualizarPaineisResultado(){
   renderPairDashboard(); renderWeeklyStats(); renderHeatmap(); updateSeqVisual();
   updateSessionCounter(); if(typeof calcBanca==='function') calcBanca();
   renderMLPanel(); renderCalibracao(); surfRenderStats(); avisarGuardiao(); renderIAPanel();
+  try{ renderTdIqPanel(); }catch(e){ console.warn('painel TD×IQ:',e); }
+  try{ renderBtFrente(); }catch(e){ /* painel do backtest ainda não montado */ }
+}
+function renderTdIqPanel(){
+  const el=document.getElementById('tdIqPanel'); if(!el) return;
+  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const conf=ops.filter(o=>o&&o.corretora==='iq'&&o.iq&&o.iq.pos&&(o.result==='win'||o.result==='loss'));
+  const pr=provaReal();
+  const linhaProva=`<div style="margin-top:6px;padding:5px 6px;border-radius:5px;font-size:9px;line-height:1.45;${pr.ok?'background:rgba(0,212,170,.08);color:var(--green);':'background:rgba(245,166,35,.08);color:var(--gold);'}">${pr.ok?'✅ Prova para a conta Real atingida':'🔒 Conta Real bloqueada até a prova'}: ${pr.txt}${pr.ok?'':` · precisa de ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`}</div>`;
+  if(!conf.length){ el.innerHTML='<div style="font-size:9px;color:var(--muted);text-align:center;padding:6px;">Sem ordens confirmadas na IQ ainda. O painel enche sozinho conforme as ordens da Demo fecham.</div>'+linhaProva; return; }
+  const est=a=>{ const n=a.length, w=a.filter(o=>o.result==='win').length, ic=wilsonIC(w,n); return{n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi}; };
+  const pct=v=>Math.round(v*100)+'%';
+  const atraso=o=>(o.entrada&&o.entrada.tVela&&o.iq.t)?(o.iq.t-o.entrada.tVela)/1000:null;
+  const comAtraso=conf.filter(o=>atraso(o)!=null), ats=comAtraso.map(atraso).sort((a,b)=>a-b);
+  const med=a=>a.length?a[Math.floor(a.length/2)]:null;
+  const faixas=[[0,5,'0–5 s'],[5,10,'5–10 s'],[10,20,'10–20 s'],[20,1e9,'20 s ou mais']];
+  const linhasAtraso=faixas.map(([a,b,rot])=>{ const S=est(comAtraso.filter(o=>atraso(o)>=a&&atraso(o)<b)); return S.n?`<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0;"><span style="color:var(--muted);">${rot}</span><span><b style="color:${S.lo>be?'var(--green)':S.hi<be?'var(--red)':'var(--text)'};">${pct(S.wr)}</b> <span style="color:var(--muted);">em ${S.n} · ${pct(S.lo)}–${pct(S.hi)}</span></span></div>`:''; }).join('');
+  const pip=o=>/JPY/.test(o.pair)?0.01:0.0001;
+  const comPreco=conf.filter(o=>o.entrada&&isFinite(o.entrada.preco)&&isFinite(o.entrada.precoIQ));
+  const difs=comPreco.map(o=>(o.entrada.precoIQ-o.entrada.preco)/pip(o)*(o.dir==='CALL'?1:-1));
+  const piorPct=difs.length?difs.filter(d=>d>0).length/difs.length:0, medAbs=med(difs.map(Math.abs).sort((a,b)=>a-b));
+  const T=est(conf);
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:9px;color:var(--muted);">Acerto confirmado na IQ</span><span style="font-size:15px;font-weight:800;color:${T.lo>be?'var(--green)':T.hi<be?'var(--red)':'var(--gold)'};">${pct(T.wr)} <span style="font-size:9px;font-weight:600;color:var(--muted);">em ${T.n} · faixa ${pct(T.lo)}–${pct(T.hi)} · empate ${(be*100).toFixed(1).replace('.',',')}%</span></span></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:4px;">Atraso fechamento → ordem: ${ats.length?`mediana <b style="color:var(--text);">${med(ats).toFixed(1).replace('.',',')} s</b> em ${ats.length} ordens`:'sem dado'}</div>
+    ${linhasAtraso}
+    <div style="font-size:9px;color:var(--muted);margin-top:4px;">Preço Twelve Data → IQ: ${difs.length?`diferença mediana <b style="color:var(--text);">${medAbs.toFixed(1).replace('.',',')} pip</b> · IQ pior para você em <b style="color:var(--text);">${pct(piorPct)}</b> das ${difs.length} ordens`:'sem dado'}</div>
+    ${linhaProva}`;
 }
 
 // ─── Acerto real por pontuação (o que a pontuação vale na prática) ───
@@ -3057,7 +3092,7 @@ function showAndFinalizeResult(r,opts){
   try{
     const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
     const nota=document.getElementById('confNota');
-    if(nota) nota.textContent=`Backtest (sistema completo): 73,6% (preço da Twelve Data) · Confirmado na IQ: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%`;
+    if(nota) nota.textContent=`Confirmado na IQ: ${textoAcertoConfirmado()} · Empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}% · backtest no preço da Twelve Data não é promessa`;
   }catch(e){ console.warn('nota:',e); }
 
   // ── ESTADO DE DISPARO — o sinal domina a tela ──
@@ -3199,7 +3234,7 @@ async function runBacktest(){
   if(!velas||velas.length<400){ el.textContent='⚠️ Sem dados suficientes da API agora (limite por minuto ou cota do dia). Tente de novo em 1 minuto.'; return; }
   const minP=getMinScore(), {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
   const cfgBT=cfgMotorUI(); // uma vez só: a Guardiã não é recalculada a cada vela nem muda no meio do teste
-  const M={w:0,l:0,e:0}, B={w:0,l:0,e:0}; let n=0;
+  const M={w:0,l:0,e:0}, B={w:0,l:0,e:0}, M5={w:0,l:0,e:0}, porDia={}; let n=0, ultSinal=null;
   for(let i=301;i<velas.length;i++){
     const c=velas[i], p=velas[i-1];
     if(c.t==null||p.t==null||c.t-p.t!==60000) continue;
@@ -3211,7 +3246,12 @@ async function runBacktest(){
     const m=motorSinal(velas.slice(i-300,i-1).concat([sint]),{par:pair,tf:'M1',agora:c.t+2000,pesos:null,cfg:cfgBT});
     const mov=Math.sign(c.close-p.close);
     const conta=(S,d)=>{ if(mov===0) S.e++; else if(mov===d) S.w++; else S.l++; };
-    if(m.ok) conta(M,m.direcao==='CALL'?1:-1);
+    if(m.ok){
+      const dS=m.direcao==='CALL'?1:-1; conta(M,dS);
+      if(ultSinal==null||p.t-ultSinal>=300000){ conta(M5,dS); ultSinal=p.t; }   // sinais menos colados, como o Auto
+      const dia=new Date(p.t).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+      conta(porDia[dia]=porDia[dia]||{w:0,l:0,e:0},dS);
+    }
     if(m.volRel>=MOTOR_CFG.filtroVol){ const cor=Math.sign(p.close-p.open); if(cor!==0) conta(B,cor); }
     if(++n%300===0){ el.textContent=`⏳ ${Math.round(i/velas.length*100)}% — ${M.w+M.l+M.e} sinais até agora...`; await new Promise(r=>setTimeout(r,0)); }
   }
@@ -3228,10 +3268,42 @@ async function runBacktest(){
   const d0=new Date(velas[301].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   const d1=new Date(velas[velas.length-1].t).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'});
   el.style.color='var(--text)';
+  const diasBT=Object.values(porDia).filter(S=>S.w+S.l>0), diasAcima=diasBT.filter(S=>S.w/(S.w+S.l)>be).length;
+  btFrenteGravar(pair,porDia,cfgBT);
   el.innerHTML=`<div style="font-size:9px;color:var(--muted);">${pair} · ${d0} a ${d1} · pontuação mínima ${minP} · BOS ${cfgBT.exigirBOS?'exigido':'livre'} · vela forte ${cfgBT.minForcaVela>0?'≥ '+fmtForca(cfgBT.minForcaVela,2):'livre'} · lateral ${cfgBT.lateralEstrutura?'rompimento':'desligado'} · empate com payout ${Math.round(payout*100)}%: ${(be*100).toFixed(1)}%</div>
     ${bloco('Motor como roda ao vivo (última vela pelo preço do fechamento)',M)}
+    ${bloco('Só 1 sinal a cada 5 min (como o Auto) — sinais menos colados',M5)}
+    <div style="font-size:9px;color:var(--muted);margin:2px 0 6px;">Por dia: <b>${diasAcima} de ${diasBT.length}</b> dias acima do empate (${(be*100).toFixed(1).replace('.',',')}%)</div>
     ${bloco('Referência: repetir a cor da última vela',B)}
     <div style="font-size:8px;color:var(--muted);line-height:1.4;">Preço da Twelve Data, entrada sem atraso. A corretora usa o próprio preço e há segundos entre o sinal e o clique — o resultado real tende a ser pior que este.</div>`;
+  renderBtFrente();
+}
+
+// ─── Teste para frente: dias que o motor 2026.10.06d nunca viu (depois da calibração de 06/10) ───
+// (constantes como função: podem ser lidas antes desta linha rodar)
+function btFrenteCfg(){ return {key:'protrader_bt_frente',fim:'2026-10-06'}; }
+function btChave(cfg){ return JSON.stringify({v:MOTOR_CFG.versao,p:cfg.minPontuacao,b:!!cfg.exigirBOS,f:cfg.minForcaVela,l:!!cfg.lateralEstrutura,ny:!!cfg.evitarFechamentoNY}); }
+function btFrenteLer(){ try{ return JSON.parse(localStorage.getItem(btFrenteCfg().key)||'{}')||{}; }catch(e){ return {}; } }
+function btFrenteGravar(par,porDia,cfg){
+  const m=btFrenteLer(), ch=btChave(cfg), CALIBRACAO_FIM=btFrenteCfg().fim;
+  for(const [dia,S] of Object.entries(porDia)){ if(dia<=CALIBRACAO_FIM||S.w+S.l===0) continue; m[`${par}|${dia}`]={w:S.w,l:S.l,e:S.e,cfg:ch,t:Date.now()}; }
+  const ks=Object.keys(m).sort((a,b)=>a.split('|')[1]<b.split('|')[1]?-1:1); while(ks.length>180) delete m[ks.shift()];
+  try{ localStorage.setItem(btFrenteCfg().key,JSON.stringify(m)); }catch(e){ /* sem storage */ }
+}
+function renderBtFrente(){
+  const el=document.getElementById('btFrente'); if(!el) return;
+  const CALIBRACAO_FIM=btFrenteCfg().fim;
+  const ch=btChave(cfgMotorUI()), {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const itens=Object.entries(btFrenteLer()).filter(([k,v])=>v.cfg===ch).map(([k,v])=>({par:k.split('|')[0],dia:k.split('|')[1],...v})).sort((a,b)=>a.dia<b.dia?1:-1);
+  if(!itens.length){ el.innerHTML=`<div style="font-size:8.5px;color:var(--muted);line-height:1.45;padding:6px;border:1px dashed var(--br);border-radius:6px;">🧪 <b>Teste para frente</b>: rode o backtest uma vez por dia. Os dias depois de ${CALIBRACAO_FIM.split('-').reverse().slice(0,2).join('/')} são dados que o motor nunca viu e ficam guardados aqui.</div>`; return; }
+  const w=itens.reduce((s,x)=>s+x.w,0), l=itens.reduce((s,x)=>s+x.l,0), N=w+l, ic=wilsonIC(w,N);
+  const cor=ic.lo>be?'var(--green)':ic.hi<be?'var(--red)':'var(--gold)';
+  const ver=ic.lo>be?'✅ acima do empate com folga':ic.hi<be?'❌ abaixo do empate':'⚪ ainda não dá para separar do acaso';
+  el.innerHTML=`<div style="padding:6px;border:1px solid var(--br);border-radius:6px;">
+    <div style="font-size:9px;color:var(--muted);">🧪 Teste para frente — dias que o motor nunca viu (${itens.length} par-dia)</div>
+    <div style="font-size:15px;font-weight:800;color:${cor};">${N?Math.round(w/N*100):0}% <span style="font-size:10px;font-weight:600;">(${w}W · ${l}L)</span></div>
+    <div style="font-size:9px;color:var(--muted);">Faixa provável ${Math.round(ic.lo*100)}–${Math.round(ic.hi*100)}% · empate ${(be*100).toFixed(1).replace('.',',')}% · ${ver}</div>
+    <div style="font-size:8.5px;color:var(--muted);margin-top:4px;line-height:1.5;">${itens.slice(0,10).map(x=>`${x.dia.slice(8,10)}/${x.dia.slice(5,7)} · ${x.par}: ${x.w}W ${x.l}L (${Math.round(x.w/Math.max(1,x.w+x.l)*100)}%)`).join('<br>')}</div></div>`;
 }
 
 // ═══ MODO AUTOMÁTICO — o MESMO motor da tela, SÓ no par selecionado ═══
@@ -5835,6 +5907,8 @@ function renderIAPanel(){
     </div>`;
 }
 setTimeout(()=>{ try{ renderIAPanel(); }catch(e){ /* sem painel */ } },1500);
+// (2026.10.07g) painel Twelve Data × IQ e teste para frente já preenchidos ao abrir
+setTimeout(()=>{ try{ renderTdIqPanel(); }catch(e){ /* sem painel */ } try{ renderBtFrente(); }catch(e){ /* sem painel */ } },1500);
 
 // ═══ TELA — grupos recolhíveis com resumo (2026.10.07) ═══
 function atualizarResumos(){
@@ -6444,6 +6518,7 @@ function iqPodeEntrar(o,r){
   if(o.iq&&(o.iq.pos||o.iq.enviando)) return 'já enviada';
   const bt=bancaTravada(); if(bt) return bt.stopBatido?'stop do dia — travado até amanhã':'meta do dia — travado até amanhã';
   if(c.conta==='NORMAL'&&!c.realOk) return 'conta Real não confirmada';
+  if(c.conta==='NORMAL'&&!c.realSemProva&&!provaReal().ok) return 'conta Real bloqueada: falta prova na Demo';
   const tRef=(r&&r.tRef)||(o.entrada&&o.entrada.tVela);
   if(tRef&&Date.now()>tRef+MOTOR_CFG.janelaEntradaSeg*1000) return 'passou da janela de entrada';
   if(iqOrdensHoje()>=c.maxDia) return `limite de ${c.maxDia} ordens hoje`;
@@ -6605,8 +6680,27 @@ function iqEsquecer(){
   try{ localStorage.removeItem(IQ_TOKEN_KEY); if(String(IQ_TOKEN_CODIGO||'').trim()) localStorage.setItem(IQ_SEM_CODIGO_KEY,'1'); }catch(e){ /* sem storage */ }
   IQ.ok=false; IQ.erro=''; IQ.sess={}; IQ.saldos=[]; iqRender(); showToast('Token da IQ apagado deste aparelho','warn-t');
 }
+// Prova para a conta Real: entradas confirmadas na IQ (Demo) com a faixa de 95% inteira acima do empate
+function provaMin(){ return 50; }   // função: pode ser lida antes desta linha rodar
+function provaReal(){
+  const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
+  const conf=ops.filter(o=>o&&o.corretora==='iq'&&o.entrou!==false&&(o.result==='win'||o.result==='loss'));
+  const n=conf.length, w=conf.filter(o=>o.result==='win').length, ic=wilsonIC(w,n);
+  const ok=n>=provaMin()&&ic.lo>be;
+  const pct=v=>(v*100).toFixed(1).replace('.',',')+'%';
+  const txt=n?`${pct(w/n)} em ${n} confirmadas (faixa ${pct(ic.lo)}–${pct(ic.hi)})`:'nenhuma entrada confirmada ainda';
+  return{ok,n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi,be,txt,falta:Math.max(0,provaMin()-n)};
+}
 function iqMudarConta(conta){
   const c=iqCfg();
+  if(conta==='NORMAL'&&!c.realSemProva){
+    const pr=provaReal();
+    if(!pr.ok){
+      const t=prompt(`Conta Real bloqueada pela regra de prova.\n\nNa IQ: ${pr.txt}.\nPara liberar sozinha: no mínimo ${provaMin()} entradas confirmadas e a faixa de 95% inteira acima do empate (${(pr.be*100).toFixed(2).replace('.',',')}%).\n\nPara usar a Real mesmo assim, digite LIBERAR REAL:`,'');
+      if(String(t||'').trim().toUpperCase()!=='LIBERAR REAL'){ showToast('Conta Real continua bloqueada — siga na Demo até a prova','warn-t'); iqRender(); return; }
+      iqCfgSalvar({realSemProva:true});
+    }
+  }
   if(conta==='NORMAL'&&!c.realOk){
     if(!confirm('Usar a conta REAL da IQ?\n\nAs ordens passam a usar dinheiro de verdade' + (c.modo==='auto'?' e o modo automático entra sozinho em cada sinal':'') + '.\nO combinado era testar na Demo antes (2 semanas ou 100 operações).\n\nConfirmar conta Real?')){ iqRender(); return; }
     iqCfgSalvar({conta:'NORMAL',realOk:true});
@@ -6952,14 +7046,16 @@ function sugerirEntrada(confianca){
 
   // 2. Histórico real vs ponto de equilíbrio
   // tamanho da entrada só reage a resultado CONFIRMADO na IQ (o da API pode ser otimista)
+  // (2026.10.07g) com 20 entradas, +15%/−40% reagia mais à sorte do que ao acerto: agora decide pela faixa de 95%
   const hist=historicoConfirmado();
-  if(hist.total>=20){
-    if(hist.wr < st.breakEven){
+  if(hist.total>=30){
+    const icH=wilsonIC(hist.wins,hist.total);
+    if(icH.hi<st.breakEven){
       mult*=0.6;
-      motivos.push(`acerto confirmado ${(hist.wr*100).toFixed(0)}% abaixo do equilíbrio (${(st.breakEven*100).toFixed(1)}%)`);
-    } else if(hist.wr > st.breakEven+0.08){
+      motivos.push(`acerto confirmado ${(hist.wr*100).toFixed(0)}% em ${hist.total} — abaixo do equilíbrio (${(st.breakEven*100).toFixed(1)}%) com folga`);
+    } else if(hist.total>=100&&icH.lo>st.breakEven){
       mult*=1.15;   // teto baixo de propósito
-      motivos.push('acerto confirmado na IQ acima do equilíbrio');
+      motivos.push(`acerto confirmado na IQ acima do equilíbrio com folga (${hist.total} entradas)`);
     }
   }
 
@@ -8228,6 +8324,14 @@ setTimeout(showDaySummary, 3000);
 // ║    decisão do dono, ciente de que o código é público. O token do  ║
 // ║    código só vale em aparelho marcado como seu; "Apagar token"    ║
 // ║    desliga também o do código naquele aparelho.                   ║
+// ║ 2026.10.07g — ANÁLISE DE DADOS: no teste independente (FXCM/Oanda ║
+// ║    2011–2018) o motor deu 45,7% em 1.814 sinais; 8 variantes pré- ║
+// ║    registradas, nenhuma passou no teste. Motor congelado. Novo:   ║
+// ║    painel Twelve Data × IQ (atraso, preço, acerto por atraso);    ║
+// ║    backtest com 1 sinal/5 min e por dia; teste para frente dos    ║
+// ║    dias pós-calibração; conta Real só com prova na Demo (50+ e    ║
+// ║    faixa acima do empate) ou "LIBERAR REAL"; mão corta com 30+ e  ║
+// ║    faixa abaixo, sobe só com 100+ e faixa acima; cartão sem 73,6%.║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
