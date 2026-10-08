@@ -1569,7 +1569,7 @@ details.td-ajuda>summary{cursor:pointer;color:var(--muted);font-size:9px;}
 <div class="toast" id="toast"><span id="toastMsg">—</span></div>
 
 <script>
-// ProTrader AI — versão 2026.10.07g (medição real e proteção do dinheiro; ver CHANGELOG)
+// ProTrader AI — versão 2026.10.07h (conta Real liberada sem trava de prova; ver CHANGELOG)
 // ═══ STATE ═══
 const CIRC=2*Math.PI*30, FCIRC=2*Math.PI*52;
 let pair='EUR/USD',price='1.08432',chg='+0.12%',tf='M1',isOTC=false;
@@ -2426,7 +2426,7 @@ function renderTdIqPanel(){
   const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
   const conf=ops.filter(o=>o&&o.corretora==='iq'&&o.iq&&o.iq.pos&&(o.result==='win'||o.result==='loss'));
   const pr=provaReal();
-  const linhaProva=`<div style="margin-top:6px;padding:5px 6px;border-radius:5px;font-size:9px;line-height:1.45;${pr.ok?'background:rgba(0,212,170,.08);color:var(--green);':'background:rgba(245,166,35,.08);color:var(--gold);'}">${pr.ok?'✅ Prova para a conta Real atingida':'🔒 Conta Real bloqueada até a prova'}: ${pr.txt}${pr.ok?'':` · precisa de ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`}</div>`;
+  const linhaProva=`<div style="margin-top:6px;padding:5px 6px;border-radius:5px;font-size:9px;line-height:1.45;${pr.ok?'background:rgba(0,212,170,.08);color:var(--green);':'background:rgba(245,166,35,.08);color:var(--gold);'}">${pr.ok?'✅ Prova para a conta Real atingida':(realExigeProva()?'🔒 Conta Real bloqueada até a prova':'⚠️ Conta Real liberada sem prova na Demo')}: ${pr.txt}${pr.ok?'':(realExigeProva()?` · precisa de ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`:` · a vantagem só fica provada com ${provaMin()}+ entradas e a faixa inteira acima de ${(be*100).toFixed(1).replace('.',',')}%${pr.falta?` (faltam ${pr.falta})`:''}`)}</div>`;
   if(!conf.length){ el.innerHTML='<div style="font-size:9px;color:var(--muted);text-align:center;padding:6px;">Sem ordens confirmadas na IQ ainda. O painel enche sozinho conforme as ordens da Demo fecham.</div>'+linhaProva; return; }
   const est=a=>{ const n=a.length, w=a.filter(o=>o.result==='win').length, ic=wilsonIC(w,n); return{n,w,wr:n?w/n:0,lo:ic.lo,hi:ic.hi}; };
   const pct=v=>Math.round(v*100)+'%';
@@ -6518,7 +6518,7 @@ function iqPodeEntrar(o,r){
   if(o.iq&&(o.iq.pos||o.iq.enviando)) return 'já enviada';
   const bt=bancaTravada(); if(bt) return bt.stopBatido?'stop do dia — travado até amanhã':'meta do dia — travado até amanhã';
   if(c.conta==='NORMAL'&&!c.realOk) return 'conta Real não confirmada';
-  if(c.conta==='NORMAL'&&!c.realSemProva&&!provaReal().ok) return 'conta Real bloqueada: falta prova na Demo';
+  if(c.conta==='NORMAL'&&realExigeProva()&&!c.realSemProva&&!provaReal().ok) return 'conta Real bloqueada: falta prova na Demo';
   const tRef=(r&&r.tRef)||(o.entrada&&o.entrada.tVela);
   if(tRef&&Date.now()>tRef+MOTOR_CFG.janelaEntradaSeg*1000) return 'passou da janela de entrada';
   if(iqOrdensHoje()>=c.maxDia) return `limite de ${c.maxDia} ordens hoje`;
@@ -6682,6 +6682,9 @@ function iqEsquecer(){
 }
 // Prova para a conta Real: entradas confirmadas na IQ (Demo) com a faixa de 95% inteira acima do empate
 function provaMin(){ return 50; }   // função: pode ser lida antes desta linha rodar
+// (2026.10.07h) Decisão do dono: a conta Real NÃO exige a prova na Demo. A prova segue medida e mostrada.
+// Para voltar a travar a Real até a prova, troque false por true.
+function realExigeProva(){ return false; }
 function provaReal(){
   const {payout}=getBancaConfig(), be=getBreakEvenWR(payout);
   const conf=ops.filter(o=>o&&o.corretora==='iq'&&o.entrou!==false&&(o.result==='win'||o.result==='loss'));
@@ -6693,7 +6696,7 @@ function provaReal(){
 }
 function iqMudarConta(conta){
   const c=iqCfg();
-  if(conta==='NORMAL'&&!c.realSemProva){
+  if(conta==='NORMAL'&&realExigeProva()&&!c.realSemProva){
     const pr=provaReal();
     if(!pr.ok){
       const t=prompt(`Conta Real bloqueada pela regra de prova.\n\nNa IQ: ${pr.txt}.\nPara liberar sozinha: no mínimo ${provaMin()} entradas confirmadas e a faixa de 95% inteira acima do empate (${(pr.be*100).toFixed(2).replace('.',',')}%).\n\nPara usar a Real mesmo assim, digite LIBERAR REAL:`,'');
@@ -6702,7 +6705,8 @@ function iqMudarConta(conta){
     }
   }
   if(conta==='NORMAL'&&!c.realOk){
-    if(!confirm('Usar a conta REAL da IQ?\n\nAs ordens passam a usar dinheiro de verdade' + (c.modo==='auto'?' e o modo automático entra sozinho em cada sinal':'') + '.\nO combinado era testar na Demo antes (2 semanas ou 100 operações).\n\nConfirmar conta Real?')){ iqRender(); return; }
+    const pr0=provaReal();
+    if(!confirm('Usar a conta REAL da IQ?\n\nAs ordens passam a usar dinheiro de verdade' + (c.modo==='auto'?' e o modo automático entra sozinho em cada sinal':'') + '.\nAcerto confirmado na IQ até agora: ' + pr0.txt + ' · empate com o payout: ' + (pr0.be*100).toFixed(2).replace('.',',') + '%.\nStop, meta, limite do dia e uma ordem por vez continuam valendo.\n\nConfirmar conta Real?')){ iqRender(); return; }
     iqCfgSalvar({conta:'NORMAL',realOk:true});
   } else iqCfgSalvar({conta});
   showToast(`IQ: conta ${iqContaTxt()} — a banca passa a seguir esse saldo`,conta==='NORMAL'?'put-t':'call-t');
@@ -8332,6 +8336,11 @@ setTimeout(showDaySummary, 3000);
 // ║    dias pós-calibração; conta Real só com prova na Demo (50+ e    ║
 // ║    faixa acima do empate) ou "LIBERAR REAL"; mão corta com 30+ e  ║
 // ║    faixa abaixo, sobe só com 100+ e faixa acima; cartão sem 73,6%.║
+// ║ 2026.10.07h — CONTA REAL LIBERADA sem a trava de prova, por       ║
+// ║    decisão do dono (ciente dos 45,7% no teste independente).      ║
+// ║    realExigeProva() = false. A prova na Demo segue medida e       ║
+// ║    aparece no painel e na confirmação da Real. Continuam: stop,   ║
+// ║    meta, limite do dia, uma ordem por vez e regras de mão.        ║
 // ╚══════════════════════════════════════════════════════════════════╝
 </script>
 </body>
